@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>
+      Midi SandBox
+    </ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+  <p>
+    File URI: {{fileUri}}
+    <br>
+    File Path: {{fileConvertedPath}}
+    <br>
+    <!--Loaded Midi: {{JSON.stringify(midi)}}-->
+  </p>
+  <button ion-button full (click)='selectFileURI()'>Find File</button>
+  <button ion-button full *ngIf='this.fileConvertedPath' (click)='playMidiFile()'>Play Midi File</button>
+  <button ion-button full *ngIf='this.fileConvertedPath' (click)='loadMidi()'>Load Midi</button>
+  <button ion-button full *ngIf='this.midi' (click)='createNewMidiFile()'>Generate New Midi</button>
+  <button ion-button full *ngIf='this.midi' (click)='playNewMidiFile()'>Play New Midi File</button>
+
+  <button ion-button full (click)='vai()'>Vai</button>
+</ion-content>
