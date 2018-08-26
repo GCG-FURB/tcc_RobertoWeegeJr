@@ -63,6 +63,7 @@ export class Midi {
         this.midiTracks = [];
 
         let midiTrack: MidiTrack = new MidiTrack();
+        this.midiTracks.push(midiTrack);
         let deltaTime: number = 0;
 
         for (let i = 22; i < binaryString.length;) {
@@ -95,8 +96,46 @@ export class Midi {
             i += midiEvent.getDataLength();
 
         }
-        let ggg = 0;
     }
+
+    public getBinaryString(): string {
+        let midiStartBinaryString: string;
+        let midiEndBinaryString: string = '';
+        midiStartBinaryString = 'MThd' + ConvertionUtil.convertHexStringToBinararyString('00000006' 
+        + '0000' + '0001' + this.timeDivision + '4d54726b') ;
+        for (let midiTrack of this.midiTracks) {
+            for (let midiEvent of midiTrack.midiEvents) {
+                midiEndBinaryString += midiEvent.deltaTime + midiEvent.midiEventData;
+            }
+        }
+        midiEndBinaryString = ConvertionUtil.convertHexStringToBinararyString(midiEndBinaryString);
+        let midiSizeBinaryString: string = ConvertionUtil.convertNumberToBinararyString(midiEndBinaryString.length, 4);
+        return midiStartBinaryString + midiSizeBinaryString + midiEndBinaryString;
+    }
+
+    public getMidiDescription(): string {
+ 
+    let description: string = `Midi Type: ${this.midiType}
+Number of Tracks: ${this.midiType}
+Time division: ${this.timeDivision}
+Midi Events:`
+
+    for (let midiTrack of this.midiTracks) {
+        for (let midiEvent of midiTrack.midiEvents) {
+            description += `    DeltaTime: ${midiEvent.deltaTime} - Data: ${midiEvent.midiEventData}`;
+        }
+    }
+    return description;
+
+
+;
+        
+        
+        
+        
+        
+    }
+
 }
 
 export class MidiTrack {
@@ -210,7 +249,7 @@ export class MidiEvent {
             case 'f':
                 if (firstEventByte == 'f0' || firstEventByte == 'f7') {
                     return new MidiEvent(''
-                                        ,MidiEventType.MIDI_EVENT
+                                        ,MidiEventType.SYSEX_EVENT
                                         ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 2 + ConvertionUtil.convertBinaryStringToNumber(midiData.charAt(1))))
                                         ,false);
 
@@ -218,9 +257,9 @@ export class MidiEvent {
                 if (firstEventByte == 'ff') {
                     let eventTypeByte: string = ConvertionUtil.convertBinaryStringToHexString(midiData.charAt(1)); 
                     return new MidiEvent(ConvertionUtil.getDeltaTimeStringFromNumber(deltaTime)
-                                        ,MidiEventType.MIDI_EVENT
+                                        ,MidiEventType.META_EVENT
                                         ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 3 + ConvertionUtil.convertBinaryStringToNumber(midiData.charAt(2))))
-                                        ,eventTypeByte == '58' || eventTypeByte == '59' || eventTypeByte == '2f');
+                                        ,eventTypeByte == '51' || eventTypeByte == '58' || eventTypeByte == '59' || eventTypeByte == '2f');
                 }
                 throw Error('Não mapeado...')
             default:

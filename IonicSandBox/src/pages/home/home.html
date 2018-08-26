@@ -7,18 +7,14 @@
 </ion-header>
 
 <ion-content padding>
-  <p>
-    File URI: {{fileUri}}
-    <br>
-    File Path: {{fileConvertedPath}}
-    <br>
-    <!--Loaded Midi: {{JSON.stringify(midi)}}-->
-  </p>
+  <p *ngIf='this.fileUri'>File URI: {{fileUri}}</p>
+  <p *ngIf='this.fileConvertedPath'>File Path: {{fileConvertedPath}}</p>
+  <p *ngIf='this.fileNewConvertedPath'>New File Path: {{fileNewConvertedPath}}</p>
+  <p *ngIf='this.midi'>Midi Json: {{midi.getMidiDescription()}}</p>
   <button ion-button full (click)='selectFileURI()'>Find File</button>
-  <button ion-button full *ngIf='this.fileConvertedPath' (click)='playMidiFile()'>Play Midi File</button>
+  <button ion-button full *ngIf='this.fileConvertedPath' (click)='playMidiFile(this.fileConvertedPath)'>Play Midi File</button>
   <button ion-button full *ngIf='this.fileConvertedPath' (click)='loadMidi()'>Load Midi</button>
   <button ion-button full *ngIf='this.midi' (click)='createNewMidiFile()'>Generate New Midi</button>
-  <button ion-button full *ngIf='this.midi' (click)='playNewMidiFile()'>Play New Midi File</button>
-
-  <button ion-button full (click)='vai()'>Vai</button>
+  <button ion-button full *ngIf='this.fileNewConvertedPath' (click)='playMidiFile(this.fileNewConvertedPath)'>Play New Midi File</button>
+  <button ion-button full (click)="goToVisualPage()">Go to visual page</button>
 </ion-content>

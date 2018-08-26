@@ -7,6 +7,7 @@ import { Midi } from '../../app/midi.util/midi';
 
 import { FileChooser } from '@ionic-native/file-chooser';
 import { FilePath } from '../../../node_modules/@ionic-native/file-path';
+import { VisualPage } from '../visual/visual';
 
 @Component({
   selector: 'page-home',
@@ -17,10 +18,15 @@ export class HomePage {
   fileUri: string;
   fileConvertedPath: string;
   midi;
+  fileNewConvertedPath: string;
 
   actualMidiFile;
 
   constructor(public navCtrl: NavController, private file: File , private media: Media, private fileChooser:FileChooser, private filePath: FilePath) {
+  }
+
+  goToVisualPage() {
+    this.navCtrl.push(VisualPage);
   }
 
   selectFileURI(){
@@ -35,9 +41,9 @@ export class HomePage {
   }
 
 
-  playMidiFile() {
+  playMidiFile(path: string) {
     //const file = this.media.create(this.file.externalRootDirectory + '/Download/' + 'testenew2.mid');
-    const file = this.media.create(this.fileConvertedPath);
+    const file = this.media.create(path);
     file.play();
   }
 
@@ -61,19 +67,23 @@ export class HomePage {
   }
 
   createNewMidiFile(){
-
-
-    alert(this.file.cacheDirectory);
-    this.file.createFile(this.file.cacheDirectory ,'newMidiFile.mid', true)
+    /*alert(this.file.externalDataDirectory);
+    this.file.createFile(this.file.externalDataDirectory ,'newMidiFile.mid', true)
     .then(a => alert(JSON.stringify(a)))
-    .catch(e => alert(JSON.stringify(e)));
+    .catch(e => alert(JSON.stringify(e)));*/
 
-    /*let options: IWriteOptions = { replace: true };
-    alert(this.actualMidiFile);
-    this.fileConvertedPath = this.file.cacheDirectory + 'newMidiFile.mid'
-    this.file.writeFile(this.file.cacheDirectory ,'newMidiFile.mid', this.actualMidiFile, options)
-      .then(a => alert(JSON.stringify(a)))
-      .catch(e => alert(JSON.stringify(e)));*/
+    let options: IWriteOptions = { replace: true };
+    let newMidi = this.midi.getBinaryString();
+
+    const len = newMidi.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = newMidi.charCodeAt(i);
+    }
+
+    this.file.writeFile(this.file.externalDataDirectory ,'newMidiFile.mid', bytes.buffer, options)
+      .then(a => this.fileNewConvertedPath = this.file.externalDataDirectory + 'newMidiFile.mid')
+      .catch(e => alert(JSON.stringify(e)));
   }
 
   /*vai(){

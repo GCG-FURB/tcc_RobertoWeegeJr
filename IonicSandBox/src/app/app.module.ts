@@ -11,12 +11,14 @@ import { File } from '@ionic-native/file';
 import {Media /*, MediaObject*/} from '@ionic-native/media';
 import {FileChooser} from '@ionic-native/file-chooser';
 import {FilePath} from '@ionic-native/file-path';
+import { VisualPage } from '../pages/visual/visual';
 
 
 @NgModule({
   declarations: [
     MyApp,
-    HomePage
+    HomePage,
+    VisualPage
   ],
   imports: [
     BrowserModule,
@@ -25,7 +27,8 @@ import {FilePath} from '@ionic-native/file-path';
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
-    HomePage
+    HomePage,
+    VisualPage
   ],
   providers: [
     StatusBar,

@@ -71,4 +71,21 @@ export class ConvertionUtil {
         return newBinaryString;
     } 
 
+    public static convertHexStringToBinararyString(hexString: string): string{
+        let bytes = new Uint8Array(hexString.length/2);
+        for (let i = 0; i < hexString.length/2; i++){
+            bytes[i] = parseInt(hexString.substr(i * 2, 2), 16);
+        }
+        return String.fromCharCode.apply(String, bytes);
+    }
+
+    public static convertNumberToBinararyString(num: number, numberOfBytes: number) {
+        let hexNum = num.toString(16);
+        for (let i = hexNum.length; i < numberOfBytes * 2; i++) {
+            hexNum = '0' + hexNum;
+        }
+        return this.convertHexStringToBinararyString(hexNum);
+    }
+
+
 }
