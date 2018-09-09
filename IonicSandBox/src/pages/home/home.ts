@@ -8,12 +8,22 @@ import { Midi } from '../../app/midi.util/midi';
 import { FileChooser } from '@ionic-native/file-chooser';
 import { FilePath } from '../../../node_modules/@ionic-native/file-path';
 import { VisualPage } from '../visual/visual';
+import { SumFiles } from '../sum-files/sum-files';
+import { DragPage } from '../drag/drag';
+
+
+
 
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
 })
 export class HomePage {
+
+  angle: Number;
+  transformStyle: String;
+  title = 'Rotate Me!';
+
 
   fileUri: string;
   fileConvertedPath: string;
@@ -22,12 +32,31 @@ export class HomePage {
 
   actualMidiFile;
 
-  constructor(public navCtrl: NavController, private file: File , private media: Media, private fileChooser:FileChooser, private filePath: FilePath) {
-  }
+  constructor(public navCtrl: NavController, private file: File , private media: Media, 
+    private fileChooser: FileChooser, private filePath: FilePath) {
+      this.fileConvertedPath = this.file.externalDataDirectory + 'Teste Midi/' + 'Teste TCC - Harmonia.mid';
+      this.angle=0;
+      this.transformStyle="rotate(0deg)"; 
+    }
+
+    onRotation(event: any): void {
+      this.angle=event.angle;
+      this.transformStyle="rotate("+this.angle+"deg)";
+    }
 
   goToVisualPage() {
     this.navCtrl.push(VisualPage);
   }
+
+  goToSumFiles() {
+    this.navCtrl.push(SumFiles);
+  }
+  
+  goToDragPage() {
+    this.navCtrl.push(DragPage);
+  }
+
+  
 
   selectFileURI(){
     this.fileChooser.open()
