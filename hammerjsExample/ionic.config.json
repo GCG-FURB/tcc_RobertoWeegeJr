@@ -1,7 +1,0 @@
-{
-  "name": "hammerjsExample",
-  "integrations": {
-    "cordova": {}
-  },
-  "type": "ionic-angular"
-}
