@@ -12,13 +12,27 @@ import {Media /*, MediaObject*/} from '@ionic-native/media';
 import {FileChooser} from '@ionic-native/file-chooser';
 import {FilePath} from '@ionic-native/file-path';
 import { VisualPage } from '../pages/visual/visual';
+import { SumFiles } from '../pages/sum-files/sum-files';
 
+//import { HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
+//import { RotateCustomeDirective } from '../directives/rotate-custom-directive';
+import { AbsoluteDrag } from '../directives/absolute-drag';
+import { DragPage } from '../pages/drag/drag';
+
+/*export class CustomHammerConfig extends HammerGestureConfig {
+  overrides = {
+    'rotate': { enable: true } //rotate is disabled by default, so we need to enable it
+  }
+}*/
 
 @NgModule({
   declarations: [
     MyApp,
     HomePage,
-    VisualPage
+    VisualPage,
+    SumFiles,
+    AbsoluteDrag,
+    DragPage 
   ],
   imports: [
     BrowserModule,
@@ -28,7 +42,9 @@ import { VisualPage } from '../pages/visual/visual';
   entryComponents: [
     MyApp,
     HomePage,
-    VisualPage
+    VisualPage,
+    SumFiles,
+    DragPage
   ],
   providers: [
     StatusBar,
@@ -38,7 +54,12 @@ import { VisualPage } from '../pages/visual/visual';
     Media, 
     //MediaObject
     FileChooser,
-    FilePath
+    FilePath /*,
+    {
+      provide: HAMMER_GESTURE_CONFIG,
+      useClass: CustomHammerConfig
+    }*/
   ]
 })
+
 export class AppModule {}

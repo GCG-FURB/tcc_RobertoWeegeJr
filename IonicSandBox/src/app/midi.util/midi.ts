@@ -40,6 +40,19 @@ export class Midi {
         this._midiTracks = midiTracks;
     }
 
+    public generateMidiType1(midis: Midi[]) {
+        this.midiType = MidiType.TYPE_1;
+        this.midiTracks = [];
+        this.timeDivision = midis[0].timeDivision;
+        this.numberOfTracks = 0;
+
+        for (let midi of midis) {
+            //validar
+            this.midiTracks.push(midi.midiTracks[0]);
+            this.numberOfTracks++;
+        }
+    }
+    
     public setupMidiFromFile(binaryString: string) {
         if (binaryString.substr(0, 4) != 'MThd') {
             throw Error('Midi file must start with "MThd" header indication');
@@ -99,18 +112,37 @@ export class Midi {
     }
 
     public getBinaryString(): string {
-        let midiStartBinaryString: string;
+        
+        let midiHeaderString: string;
+        let midiTracksString: string = '';
         let midiEndBinaryString: string = '';
-        midiStartBinaryString = 'MThd' + ConvertionUtil.convertHexStringToBinararyString('00000006' 
-        + '0000' + '0001' + this.timeDivision + '4d54726b') ;
+
+        let midiType: string = this.midiType + '';
+        while(midiType.length < 4) {
+            midiType = '0' + midiType;
+        }
+
+        let trackQuantity: string = this.midiTracks.length + '';
+        while(trackQuantity.length < 4) {
+            trackQuantity = '0' + trackQuantity;
+        }
+
+        midiHeaderString = 'MThd' + ConvertionUtil.convertHexStringToBinararyString('00000006'       
+        + midiType + trackQuantity + this.timeDivision);
+
         for (let midiTrack of this.midiTracks) {
+            midiTracksString += 'MTrk';
+            midiEndBinaryString = '';
+
             for (let midiEvent of midiTrack.midiEvents) {
                 midiEndBinaryString += midiEvent.deltaTime + midiEvent.midiEventData;
             }
+            midiEndBinaryString = ConvertionUtil.convertHexStringToBinararyString(midiEndBinaryString);
+            let midiSizeBinaryString: string = ConvertionUtil.convertNumberToBinararyString(midiEndBinaryString.length, 4);
+            midiTracksString += midiSizeBinaryString + midiEndBinaryString;
         }
-        midiEndBinaryString = ConvertionUtil.convertHexStringToBinararyString(midiEndBinaryString);
-        let midiSizeBinaryString: string = ConvertionUtil.convertNumberToBinararyString(midiEndBinaryString.length, 4);
-        return midiStartBinaryString + midiSizeBinaryString + midiEndBinaryString;
+       
+        return midiHeaderString + midiTracksString;
     }
 
     public getMidiDescription(): string {
@@ -126,14 +158,6 @@ Midi Events:`
         }
     }
     return description;
-
-
-;
-        
-        
-        
-        
-        
     }
 
 }

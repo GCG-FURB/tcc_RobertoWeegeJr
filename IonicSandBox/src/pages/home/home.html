@@ -7,6 +7,7 @@
 </ion-header>
 
 <ion-content padding>
+  aaa 02
   <p *ngIf='this.fileUri'>File URI: {{fileUri}}</p>
   <p *ngIf='this.fileConvertedPath'>File Path: {{fileConvertedPath}}</p>
   <p *ngIf='this.fileNewConvertedPath'>New File Path: {{fileNewConvertedPath}}</p>
@@ -17,4 +18,7 @@
   <button ion-button full *ngIf='this.midi' (click)='createNewMidiFile()'>Generate New Midi</button>
   <button ion-button full *ngIf='this.fileNewConvertedPath' (click)='playMidiFile(this.fileNewConvertedPath)'>Play New Midi File</button>
   <button ion-button full (click)="goToVisualPage()">Go to visual page</button>
+  <button ion-button full (click)="goToSumFiles()">Go to sum files</button>
+  <button ion-button full (click)="goToDragPage()">Go to drag page</button>
+
 </ion-content>
