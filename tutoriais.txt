@@ -1,0 +1,9 @@
+Tutorial utilizado para drag de objetos:
+https://www.joshmorony.com/building-an-absolute-drag-directive-in-ionic-2/
+
+Tela contruída com os arquivos:
+IonicSandBox/src/pages/drag
+
+Diretiva criada para drag:
+IonicSandBox/src/directives/absolute-drag.ts
+------------------------------------------------------------------------------
