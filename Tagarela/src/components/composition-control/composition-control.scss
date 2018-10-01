@@ -1,0 +1,26 @@
+.flex-parent {
+    display: flex;
+  }
+
+.flex-child {
+    flex: 1;
+}
+
+.choice-margin {
+    margin-left: 1%;
+    margin-right: 1%;
+}
+
+.teste {
+    display: inline;
+}
+
+.float-left-child {
+    display: inline-block;
+    min-width: 40%;
+}
+
+ion-scroll {
+    white-space: nowrap;
+    height: 150px;
+}

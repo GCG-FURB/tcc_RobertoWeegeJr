@@ -1,0 +1,19 @@
+.flex-parent {
+    display: flex;
+  }
+
+.flex-child-play {
+    flex: 1;
+}
+
+.flex-child-controls {
+    flex: 15;
+}
+
+.center {
+    margin: 0;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

@@ -1,0 +1,44 @@
+<ion-card>
+    <ion-card-content>
+        <div class="flex-parent">
+            <div class="flex-child-play">
+                <button ion-button large class="center">
+                    <ion-icon name="play"></ion-icon>
+                </button>
+            </div>
+            <div class="flex-child-controls">
+                <ion-list>
+                    <ion-item>
+                        <ion-label item-start color="secondary">Tonalidade</ion-label>
+                        <ion-badge item-end color="secondary">{{TONE_VALUES[toneIndex]}}</ion-badge>
+                    </ion-item>
+                    <ion-item>
+                        <ion-range min="0" 
+                                   [max]="TONE_VALUES.length - 1" 
+                                   step="1" 
+                                   snaps="true" 
+                                   [(ngModel)]="toneIndex" 
+                                   color="secondary">
+                        <ion-label range-left >{{TONE_VALUES[0]}}</ion-label>
+                        <ion-label range-right>{{TONE_VALUES[TONE_VALUES.length - 1]}}</ion-label>
+                        </ion-range>
+                    </ion-item>
+                    <ion-item>
+                        <ion-label item-start color="danger">Tempo</ion-label>
+                        <ion-badge item-end color="danger">{{tempoValue}}</ion-badge>
+                    </ion-item>
+                    <ion-item>
+                        <ion-range [min]="MIN_TEMPO_VALUE" 
+                                   [max]="MAX_TEMPO_VALUE" 
+                                   pin="true" 
+                                   [(ngModel)]="tempoValue" 
+                                   color="danger">
+                        <ion-label range-left >{{minTempoValue}}</ion-label>
+                        <ion-label range-right>{{maxTempoValue}}</ion-label>
+                        </ion-range>
+                    </ion-item>
+                </ion-list>
+            </div>
+        </div>
+    </ion-card-content>
+</ion-card>
