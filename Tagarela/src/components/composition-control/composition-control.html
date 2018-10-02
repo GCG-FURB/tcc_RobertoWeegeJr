@@ -1,22 +1,55 @@
 <ion-card>
-    <ion-card-content>
-        <ion-card>
-            <ion-card-content>
-                <div class="teste">
-                    <ion-scroll scrollX="true">
-                        
-                        <div class="choice-margin float-left-child"> <choice-component></choice-component> </div>
-                        <div class="choice-margin float-left-child"> <choice-component></choice-component> </div>
-                        <div class="choice-margin float-left-child"> <choice-component></choice-component> </div>
-                        <div class="choice-margin float-left-child"> <choice-component></choice-component> </div>
-
-                    </ion-scroll>
+    <ion-card-content class="overflow-drag">
+        <ion-card class="overflow-drag">
+            <ion-card-content class="overflow-drag">
+                <div class="teste overflow-drag">
+                    <ion-scroll id="scroll1" scrollX="true" class="scroll-1"> 
+                        <div id="choice1" class="choice-margin float-left-child top-z-index" drag-component elementId="choice1" scrollId="scroll1"> <choice-component></choice-component> </div>
+                        <div id="choice2" class="choice-margin float-left-child top-z-index" drag-component elementId="choice2" scrollId="scroll1"> <choice-component></choice-component> </div>
+                        <div id="choice3" class="choice-margin float-left-child top-z-index" drag-component elementId="choice3" scrollId="scroll1"> <choice-component></choice-component> </div>
+                        <div id="choice4" class="choice-margin float-left-child top-z-index" drag-component elementId="choice4" scrollId="scroll1"> <choice-component></choice-component> </div>
+                </ion-scroll> 
                 </div>
             </ion-card-content>
         </ion-card>
         <ion-card>
             <ion-card-content>
                 Record Card
+                <div class="flex-parent">
+                    <div class="flex-child-control">
+                        <ion-scroll scrollX="true" class="scroll-2">
+                                <div class="composition-line">
+                                    <volume-component class="float-left-child"></volume-component>
+                                </div>
+                                <div class="composition-line">
+                                    <volume-component class="float-left-child"></volume-component>
+                                </div>
+                                <div class="composition-line">
+                                    <volume-component class="float-left-child"></volume-component>
+                                </div>
+                            </ion-scroll>
+                    </div>
+                    <div class="flex-child-lines">
+                        <ion-scroll scrollX="true" class="scroll-2">
+                            <div class="composition-line">
+                                <choice-component class="float-left-child"></choice-component>
+                                <choice-component class="float-left-child"></choice-component>
+                                <choice-component class="float-left-child"></choice-component>
+                                <choice-component class="float-left-child"></choice-component>
+                            </div>
+                            <div class="composition-line">
+                                <choice-component class="float-left-child"></choice-component>
+                                <choice-component class="float-left-child"></choice-component>
+                                <choice-component class="float-left-child"></choice-component>
+                            </div>
+                            <div class="composition-line">
+                                <choice-component class="float-left-child"></choice-component>
+                                <choice-component class="float-left-child"></choice-component>
+                                <choice-component class="float-left-child"></choice-component>
+                            </div>
+                        </ion-scroll>
+                    </div>
+                </div>
             </ion-card-content>
         </ion-card>
     </ion-card-content>

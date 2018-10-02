@@ -1,0 +1,20 @@
+.flex-parent {
+    display: flex;
+  }
+
+.flex-child {
+    flex: 1;
+}
+
+.image2 {
+    min-height: 100px;
+    max-height: 200px;
+    min-width: 100px;
+    max-width: 500px;
+}
+
+.center2 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -10,6 +10,8 @@ import {CompositionPage} from '../pages/composition/composition';
 import { GeneralControlComponent } from '../components/general-control/general-control';
 import { CompositionControlComponent } from '../components/composition-control/composition-control';
 import { ChoiceComponent } from '../components/choice/choice';
+import { VolumeComponent } from '../components/volume/volume';
+import { DragComponentDirective } from '../directives/drag-component/drag-component';
 
 @NgModule({
   declarations: [
@@ -18,7 +20,10 @@ import { ChoiceComponent } from '../components/choice/choice';
     CompositionPage, 
     GeneralControlComponent,
     CompositionControlComponent,
-    ChoiceComponent
+    ChoiceComponent, 
+    VolumeComponent,
+    DragComponentDirective,
+    
   ],
   imports: [
     BrowserModule,
