@@ -6,18 +6,23 @@ import { StatusBar } from '@ionic-native/status-bar';
 
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
-import {CompositionPage} from '../pages/composition/composition';
+import { CompositionPage } from '../pages/composition/composition';
 import { GeneralControlComponent } from '../components/general-control/general-control';
 import { CompositionControlComponent } from '../components/composition-control/composition-control';
 import { ChoiceComponent } from '../components/choice/choice';
 import { VolumeComponent } from '../components/volume/volume';
 import { DragComponentDirective } from '../directives/drag-component/drag-component';
+import { MusicalInstrumentChoicePage } from '../pages/musical-instrument-choice/musical-instrument-choice';
+
+import { File } from '@ionic-native/file';
+import { FilePath } from '@ionic-native/file-path';
 
 @NgModule({
   declarations: [
     MyApp,
     HomePage,
     CompositionPage, 
+    MusicalInstrumentChoicePage,
     GeneralControlComponent,
     CompositionControlComponent,
     ChoiceComponent, 
@@ -33,11 +38,14 @@ import { DragComponentDirective } from '../directives/drag-component/drag-compon
   entryComponents: [
     MyApp,
     HomePage,
-    CompositionPage
+    CompositionPage,
+    MusicalInstrumentChoicePage
   ],
   providers: [
     StatusBar,
     SplashScreen,
+    File,
+    FilePath,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })
