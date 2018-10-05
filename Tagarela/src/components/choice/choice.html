@@ -1,7 +1,12 @@
-<div class="flex-parent image">
+<div class="flex-parent image" >
     <div class="flex-child" *ngIf="true">
-        <button ion-button icon-only class="center">
+        <button ion-button icon-only class="center" (click)="playMidi()">
             <ion-icon name="play"></ion-icon>
+        </button>
+    </div>
+    <div class="flex-child" *ngIf="true">
+        <button ion-button icon-only class="center" (click)="teste()">
+            <ion-icon name="ios-checkmark-circle"></ion-icon>
         </button>
     </div>
     <div class="flex-child">

@@ -1,22 +1,50 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { MusicalCompositionStep, Composition, MusicalCompositionOption } from '../../util/composition';
 
-/**
- * Generated class for the CompositionControlComponent component.
- *
- * See https://angular.io/api/core/Component for more info on Angular
- * Components.
- */
 @Component({
   selector: 'composition-control',
   templateUrl: 'composition-control.html'
 })
 export class CompositionControlComponent {
+    
+    @Input()
+    private compositionStep: MusicalCompositionStep;
+    private composition: Composition;
+    private compositionStepIndex: number;
 
-  text: string;
+    constructor(){
+        this.compositionStepIndex = 0;
+        this.composition = new Composition();
+    }
 
-  constructor() {
-    console.log('Hello CompositionControlComponent Component');
-    this.text = 'Hello World';
-  }
+    getCompositionStepName(): string {
+        return this.compositionStep && this.compositionStep.name ? this.compositionStep.name : '' 
+    }
 
+    getOptionsList(){
+        if (this.compositionStep 
+            && this.compositionStep.musicalCompositionLine
+            && this.compositionStep.musicalCompositionLine[this.compositionStepIndex]
+            && this.compositionStep.musicalCompositionLine[this.compositionStepIndex].musicalCompositionOption) {
+            alert(this.compositionStepIndex)
+            return this.compositionStep.musicalCompositionLine[this.compositionStepIndex].musicalCompositionOption;
+        }
+        return []
+    }
+
+    getCompositionLinesList(){
+        if (this.composition 
+            && this.composition.compositionLines) {
+            return this.composition.compositionLines;
+        }
+        return []
+    }
+
+    getCompositionOptionsList(lineIndex: number){
+        if (this.composition 
+            && this.composition.compositionLines) {
+            return this.composition.compositionLines[lineIndex].compositionOptions;
+        }
+        return []
+    }
 }

@@ -1,7 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MusicalInstrumentChoicePage } from '../../pages/musical-instrument-choice/musical-instrument-choice';
 import { NavController } from 'ionic-angular';
 import { VisualMidi } from '../../util/visual-midi';
+import { MusicalCompositionOption, Composition, MusicalCompositionStep } from '../../util/composition';
+import { File } from '@ionic-native/file';
+import { FileUtil } from '../../util/file';
+import { Media } from '@ionic-native/media';
+import { MediaUtil } from '../../util/media';
 
 @Component({
   selector: 'choice-component',
@@ -11,8 +16,24 @@ export class ChoiceComponent {
 
     private _instrumentMidiNumber: number = 1;
     private visualMidi: VisualMidi = new VisualMidi;
+    private fileUtil: FileUtil;
+    private mediaUtil: MediaUtil;
 
-    constructor(public navCtrl: NavController) {
+    @Input()
+    private midiChoice: MusicalCompositionOption;
+
+    @Input()
+    private composition: Composition;
+
+    @Input()
+    private compositionStepIndex: number;
+
+    @Input()
+    private compositionStep: MusicalCompositionStep;
+
+    constructor(public navCtrl: NavController, private file: File, private media: Media) {
+        this.fileUtil = new FileUtil(file);
+        this.mediaUtil = new MediaUtil(media)
     }
 
     get instrumentMidiNumber(): number {
@@ -30,10 +51,23 @@ export class ChoiceComponent {
     }
 
     public changeInstrumentMidiNumber(instrumentMidiNumber: number) {
-        console.log('aquii')
-        console.log(instrumentMidiNumber)
         this.instrumentMidiNumber = instrumentMidiNumber
     }
- 
 
+    public playMidi() {
+        let midiString = this.midiChoice.midi.getBinaryString();
+        this.fileUtil.writeBinaryStringToTempArea(this.midiChoice.uId, midiString)
+            .then(() => {
+                this.mediaUtil.playMidiFromTempArea(this.midiChoice.uId);
+            });
+    }
+
+    public teste() {
+        if (this.composition.compositionLines.length <= this.compositionStepIndex) {
+            this.composition.addCompositionLine(this.compositionStep.name);
+        }
+        this.composition.addCompositionOption(this.compositionStepIndex, this.midiChoice);
+        this.compositionStepIndex++;
+    }
+ 
 }

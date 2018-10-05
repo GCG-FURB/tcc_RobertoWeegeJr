@@ -16,6 +16,7 @@ import { MusicalInstrumentChoicePage } from '../pages/musical-instrument-choice/
 
 import { File } from '@ionic-native/file';
 import { FilePath } from '@ionic-native/file-path';
+import { Media } from '@ionic-native/media';
 
 @NgModule({
   declarations: [
@@ -46,6 +47,7 @@ import { FilePath } from '@ionic-native/file-path';
     SplashScreen,
     File,
     FilePath,
+    Media,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })
