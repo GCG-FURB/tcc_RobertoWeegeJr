@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { MusicalCompositionStep, Composition, MusicalCompositionOption } from '../../util/composition';
+import { Composition } from '../../util/composition';
 
 @Component({
   selector: 'composition-control',
@@ -8,26 +8,20 @@ import { MusicalCompositionStep, Composition, MusicalCompositionOption } from '.
 export class CompositionControlComponent {
     
     @Input()
-    private compositionStep: MusicalCompositionStep;
     private composition: Composition;
-    private compositionStepIndex: number;
 
-    constructor(){
-        this.compositionStepIndex = 0;
-        this.composition = new Composition();
-    }
+    constructor(){}
 
     getCompositionStepName(): string {
-        return this.compositionStep && this.compositionStep.name ? this.compositionStep.name : '' 
+        return this.composition && this.composition.actualStep && this.composition.actualStep.name ? this.composition.actualStep.name : '' 
     }
 
     getOptionsList(){
-        if (this.compositionStep 
-            && this.compositionStep.musicalCompositionLine
-            && this.compositionStep.musicalCompositionLine[this.compositionStepIndex]
-            && this.compositionStep.musicalCompositionLine[this.compositionStepIndex].musicalCompositionOption) {
-            alert(this.compositionStepIndex)
-            return this.compositionStep.musicalCompositionLine[this.compositionStepIndex].musicalCompositionOption;
+        if (this.composition && this.composition.actualStep 
+            && this.composition.actualStep.musicalCompositionLine
+            && this.composition.actualStep.musicalCompositionLine[this.composition.compositionLineIndex]
+            && this.composition.actualStep.musicalCompositionLine[this.composition.compositionLineIndex].musicalCompositionOption) {
+            return this.composition.actualStep.musicalCompositionLine[this.composition.compositionLineIndex].musicalCompositionOption;
         }
         return []
     }

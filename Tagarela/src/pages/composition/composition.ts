@@ -3,68 +3,33 @@ import { NavController, NavParams } from 'ionic-angular';
 import { File } from '@ionic-native/file';
 import { FilePath } from '@ionic-native/file-path';
 import { Media } from '@ionic-native/media';
-import { MusicalCompositionSource, MusicalCompositionStep } from '../../util/composition';
+import { MusicalCompositionSource, MusicalCompositionStep, Composition } from '../../util/composition';
 
 @Component({
   selector: 'page-composition',
   templateUrl: 'composition.html',
 })
 export class CompositionPage {
-    
-    private compositionPath: string;
-    private musicalCompositionSource: MusicalCompositionSource;
-    private compositionStep: MusicalCompositionStep;
 
-    constructor(public navCtrl: NavController, public navParams: NavParams , private file: File,  private filePath: FilePath,
-                private media: Media) {
+    private composition: Composition;
+
+    constructor(public navCtrl: NavController, public navParams: NavParams, 
+                private file: File,  private filePath: FilePath, private media: Media) {
         this.loadMidiFiles();
     }
 
     private async loadMidiFiles(){
-        this.musicalCompositionSource = new MusicalCompositionSource(this.file); 
-        this.musicalCompositionSource.buildSource(this.file.dataDirectory, 'Teste').then(()=>{
-            this.compositionStep = this.musicalCompositionSource.rootStep;
-        });
+        try {
+            let musicalCompositionSource: MusicalCompositionSource = new MusicalCompositionSource(this.file); 
+            musicalCompositionSource.buildSource(this.file.dataDirectory, 'Teste').then(()=>{
+                this.composition = new Composition(musicalCompositionSource);
+            });
+        } catch (e) {
+
+        }   
     }
 
-    ionViewDidLoad() {
-        console.log('ionViewDidLoad CompositionPage');
-        this.compositionPath = this.file.dataDirectory + 'Teste/'
-        this.listCompositionData();
-    }
-
-    listCompositionData(){
-        //alert(this.file.dataDirectory)
-        //alert(this.compositionPath)
-
-        //alert('vai!')
-        /*this.filePath.resolveNativePath(this.file.dataDirectory).then((a)=>{
-            alert(JSON.stringify(a))
-        }).catch((e) => {alert(JSON.stringify(e))});
-
-        this.filePath.resolveNativePath(this.file.externalDataDirectory).then((a)=>{
-            alert(JSON.stringify(a))
-        }).catch((e) => {alert(JSON.stringify(e))});*/
-
-        /*this.file.listDir(this.file.dataDirectory, '').then((a)=>{
-            alert(JSON.stringify(a))
-            for (let obj of a) {
-                alert(JSON.stringify(obj))
-            }
-        }).catch((e) => {alert(JSON.stringify(e))});
-
-        alert('vai!')
-*/
-        /*this.file.listDir(this.file.dataDirectory, 'Teste/Passo-1').then((a)=>{
-            alert(JSON.stringify(a))
-            for (let obj of a) {
-                alert(JSON.stringify(obj))
-            }
-        }).catch((e) => {alert(JSON.stringify(e))});*/
-
-       
-
-    }
+    ionViewDidLoad() {}
 
     testeP1M1(){ this.playMidiFile( this.file.dataDirectory + 'Teste/Passo-1/1-melodia/M1-S1.mid')  }
     testeP1M2(){ this.playMidiFile( this.file.dataDirectory + 'Teste/Passo-1/1-melodia/M2-S1.mid')  }
@@ -86,85 +51,12 @@ export class CompositionPage {
     testeP2R3(){ this.playMidiFile( this.file.dataDirectory + 'Teste/Passo-2/3-ritmo/R3-S2.mid')    }
 
     playMidiFile(path: string) {
-        
-        //alert(JSON.stringify(fu));
-
-        /*let fileUtil: FileUtil = new FileUtil(this.file);
-        fileUtil.getListOfDirectories(this.file.dataDirectory, 'Teste').then(a => {alert(a)});*/
-        
-        /*this.file.createDir(this.file.dataDirectory, 'Teste', false)
-            .then((e) => {
-                this.file.createDir(this.file.dataDirectory + 'Teste/', 'Passo-1', false)
-                .then((e) => {
-                    this.file.createDir(this.file.dataDirectory + 'Teste/', 'Passo-2', false)
-                    .then((e) => {
-                        this.file.createDir(this.file.dataDirectory + 'Teste/Passo-1/', '1-melodia', false)
-                        .then((e) => {
-                            this.file.createDir(this.file.dataDirectory + 'Teste/Passo-1/', '2-harmonia', false)
-                            .then((e) => {
-                                this.file.createDir(this.file.dataDirectory + 'Teste/Passo-1/', '3-ritmo', false)
-                                .then((e) => {
-                                    this.file.createDir(this.file.dataDirectory + 'Teste/Passo-2/', '1-melodia', false)
-                                    .then((e) => {
-                                        this.file.createDir(this.file.dataDirectory + 'Teste/Passo-2/', '2-harmonia', false)
-                                        .then((e) => {
-                                            this.file.createDir(this.file.dataDirectory + 'Teste/Passo-2/', '3-ritmo', false)
-                                            .then((e) => {
-                                                
-                                                
-                                            })
-                                            .catch((e) => {alert(JSON.stringify(e))});
-                                    
-                                            
-                                        })
-                                        .catch((e) => {alert(JSON.stringify(e))});
-                                
-                                        
-                                    })
-                                    .catch((e) => {alert(JSON.stringify(e))});
-                            
-                                    
-                                })
-                                .catch((e) => {alert(JSON.stringify(e))});
-                        
-                                
-                            })
-                            .catch((e) => {alert(JSON.stringify(e))});
-                    
-                            
-                        })
-                        .catch((e) => {alert(JSON.stringify(e))});
-                
-                        
-                    })
-                    .catch((e) => {alert(JSON.stringify(e))});
-            
-                    
-                })
-                .catch((e) => {alert(JSON.stringify(e))});
-        
-                
-            })
-            .catch((e) => {alert(JSON.stringify(e))});*/
-    
-        //const file = this.media.create(this.file.externalRootDirectory + '/Download/' + 'testenew2.mid');
-        /*this.file.createDir(this.file.dataDirectory + 'teeeste/teeeste/teeeste/', 'teeeste1', false)
-            .then((e) => {alert(JSON.stringify(e))})
-            .catch((e) => {alert(JSON.stringify(e))});
-        this.file.createDir(this.file.dataDirectory + 'teeeste/teeeste/teeeste/', 'teeeste2', false)
-            .then((e) => {alert(JSON.stringify(e))})
-            .catch((e) => {alert(JSON.stringify(e))});   
-        this.file.createDir(this.file.dataDirectory + 'teeeste/teeeste/teeeste/', 'teeeste3', false)
-            .then((e) => {alert(JSON.stringify(e))})
-            .catch((e) => {alert(JSON.stringify(e))});
-        */
-        //alert(path)
-        /*const file = this.media.create(path);
+        const file = this.media.create(path);
         try {
             file.play();
         } catch (e) {
             alert(JSON.stringify(e))
-        }*/
+        }
         
       }
     

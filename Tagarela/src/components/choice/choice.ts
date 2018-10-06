@@ -20,16 +20,10 @@ export class ChoiceComponent {
     private mediaUtil: MediaUtil;
 
     @Input()
-    private midiChoice: MusicalCompositionOption;
-
-    @Input()
     private composition: Composition;
-
+    
     @Input()
-    private compositionStepIndex: number;
-
-    @Input()
-    private compositionStep: MusicalCompositionStep;
+    private midiChoice: MusicalCompositionOption;
 
     constructor(public navCtrl: NavController, private file: File, private media: Media) {
         this.fileUtil = new FileUtil(file);
@@ -63,11 +57,12 @@ export class ChoiceComponent {
     }
 
     public teste() {
-        if (this.composition.compositionLines.length <= this.compositionStepIndex) {
+        /*if (this.composition.compositionLines.length <= this.compositionStepIndex) {
             this.composition.addCompositionLine(this.compositionStep.name);
         }
         this.composition.addCompositionOption(this.compositionStepIndex, this.midiChoice);
-        this.compositionStepIndex++;
+        this.compositionStepIndex++;*/
+        this.composition.applyChoice(this.midiChoice);
     }
  
 }

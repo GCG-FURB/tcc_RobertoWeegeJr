@@ -202,10 +202,31 @@ export class MusicalCompositionOption {
 
 export class Composition {
 
+    private _musicalCompositionSource: MusicalCompositionSource;
     private _compositionLines: CompositionLine[];
+    private _actualStep: MusicalCompositionStep;
+    private _compositionLineIndex: number;
 
-    constructor() {
+    constructor(musicalCompositionSource: MusicalCompositionSource) {
+        this._musicalCompositionSource = musicalCompositionSource;
         this.compositionLines = [];
+        this.actualStep = musicalCompositionSource.rootStep;
+        this.compositionLineIndex = 0;
+    }
+
+    public applyChoice(choice: MusicalCompositionOption) {
+        if (this.compositionLines.length <= this.compositionLineIndex) {
+            this.addCompositionLine(this.actualStep.musicalCompositionLine[this.compositionLineIndex].name);
+        }
+
+        this.compositionLines[this.compositionLineIndex].addCompositionOption(choice);
+
+        this.compositionLineIndex++;
+        if (this.actualStep.musicalCompositionLine.length <= this.compositionLineIndex) {
+            this.compositionLineIndex = 0;
+            this.actualStep = this.actualStep.nextStep;
+        } 
+
     }
 
     get compositionLines(): CompositionLine[] {
@@ -224,6 +245,21 @@ export class Composition {
         this.compositionLines[compositionIndex].addCompositionOption(musicalCompositionOption);
     }
 
+    get actualStep(): MusicalCompositionStep {
+        return this._actualStep;
+    }
+
+    set actualStep(actualStep: MusicalCompositionStep) {
+        this._actualStep = actualStep;
+    }
+
+    get compositionLineIndex(): number {
+        return this._compositionLineIndex;
+    }
+
+    set compositionLineIndex(compositionLineIndex: number) {
+        this._compositionLineIndex = compositionLineIndex;
+    }
 }
 
 export class CompositionLine {
