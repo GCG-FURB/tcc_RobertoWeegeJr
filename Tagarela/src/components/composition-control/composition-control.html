@@ -19,21 +19,16 @@
                 <div class="flex-parent">
                     <div class="flex-child-control">
                         <ion-scroll scrollX="true" class="scroll-2">
-                                <div class="composition-line">
-                                    <volume-component class="float-left-child"></volume-component>
-                                </div>
-                                <div class="composition-line">
-                                    <volume-component class="float-left-child"></volume-component>
-                                </div>
-                                <div class="composition-line">
-                                    <volume-component class="float-left-child"></volume-component>
-                                </div>
-                            </ion-scroll>
+                            <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
+                                <volume-component class="float-left-child" [compositionLine]="compositionLine"></volume-component>
+                            </div>
+                        </ion-scroll>
                     </div>
                     <div class="flex-child-lines">
                         <ion-scroll scrollX="true" class="scroll-2">
                             <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
-                                <choice-component class="float-left-child" *ngFor="let compositionOption of getCompositionOptionsList(getCompositionLinesList().indexOf(compositionLine))">
+                                <choice-component class="float-left-child" *ngFor="let compositionOption of getCompositionOptionsList(getCompositionLinesList().indexOf(compositionLine))"
+                                [midiChoice]="compositionOption">
                                 </choice-component>
                             </div>
                         </ion-scroll>

@@ -206,27 +206,27 @@ export class Composition {
     private _compositionLines: CompositionLine[];
     private _actualStep: MusicalCompositionStep;
     private _compositionLineIndex: number;
+    public midiId: string;
+    public midi: Midi;
 
     constructor(musicalCompositionSource: MusicalCompositionSource) {
         this._musicalCompositionSource = musicalCompositionSource;
         this.compositionLines = [];
         this.actualStep = musicalCompositionSource.rootStep;
         this.compositionLineIndex = 0;
+        this.midiId = uuid();
     }
 
     public applyChoice(choice: MusicalCompositionOption) {
         if (this.compositionLines.length <= this.compositionLineIndex) {
             this.addCompositionLine(this.actualStep.musicalCompositionLine[this.compositionLineIndex].name);
         }
-
         this.compositionLines[this.compositionLineIndex].addCompositionOption(choice);
-
         this.compositionLineIndex++;
         if (this.actualStep.musicalCompositionLine.length <= this.compositionLineIndex) {
             this.compositionLineIndex = 0;
             this.actualStep = this.actualStep.nextStep;
         } 
-
     }
 
     get compositionLines(): CompositionLine[] {
@@ -260,16 +260,30 @@ export class Composition {
     set compositionLineIndex(compositionLineIndex: number) {
         this._compositionLineIndex = compositionLineIndex;
     }
+
+    public generateGeneralMidi() {
+        this.midi = new Midi();
+        let midiLines: Midi[] = [];
+        for (let compositionLine of this.compositionLines) {
+            compositionLine.generateLineMidi();
+            midiLines.push(compositionLine.lineMidi);
+        }
+        this.midi.generateMidiType1(midiLines);
+    }
+
 }
 
 export class CompositionLine {
     
     public name: string;
     private _compositionOptions: MusicalCompositionOption[];
+    public lineMidiId: string;
+    public lineMidi: Midi;
 
     constructor(name: string) {
         this.name = name;
         this.compositionOptions = [];
+        this.lineMidiId = uuid();
     }
 
     get compositionOptions(): MusicalCompositionOption[] {
@@ -280,9 +294,17 @@ export class CompositionLine {
         this._compositionOptions = compositionOptions;
     }
 
+    public generateLineMidi() {
+        if (this.compositionOptions.length > 0) {
+            this.lineMidi = this.compositionOptions[0].midi.cloneMidi();
+        }
+        for (let i = 1; i < this.compositionOptions.length; i++) {
+            this.lineMidi.concatenateMidi(this.compositionOptions[i].midi);
+        }        
+    }
+
     public addCompositionOption(musicalCompositionOption: MusicalCompositionOption){
         this.compositionOptions.push(musicalCompositionOption);
     }
-
 
 }

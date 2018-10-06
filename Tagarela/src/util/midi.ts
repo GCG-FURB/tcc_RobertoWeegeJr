@@ -4,7 +4,6 @@ export class Midi {
 
     private _midiType: MidiType;
     private _numberOfTracks: number;
-    //necessário definir como tratar
     private _timeDivision: string;
     private _midiTracks: MidiTrack[];
 
@@ -38,6 +37,43 @@ export class Midi {
 
     set midiTracks(midiTracks: MidiTrack[]) {
         this._midiTracks = midiTracks;
+    }
+
+    public cloneMidi(): Midi{
+        let midi = new Midi();
+        midi.midiType = this.midiType;
+        midi.numberOfTracks = this.numberOfTracks;
+        midi.timeDivision = this.timeDivision;
+        midi.midiTracks = []; 
+        
+        for (let midiTrack of this.midiTracks) {
+            let newMidiTrack:MidiTrack = new MidiTrack()
+            newMidiTrack.midiEvents = Object.assign([], midiTrack.midiEvents);
+            midi.midiTracks.push(newMidiTrack);
+        }
+        return midi;
+    }
+
+    public concatenateMidi(midiToConcatenate: Midi) {
+        if (this.midiType != midiToConcatenate.midiType) {
+            throw Error('Erro');
+        }
+        if (this.numberOfTracks != midiToConcatenate.numberOfTracks) {
+            throw Error('Erro');
+        }        
+        if (this.timeDivision != midiToConcatenate.timeDivision) {
+            throw Error('Erro');
+        }        
+        for (let i = 0; i < this.midiTracks.length; i++) {
+            this.concatenateMidiTrack(i, midiToConcatenate.midiTracks[i]);
+        }
+    }
+
+    private concatenateMidiTrack(trackIndex: number, trackToConcatenate: MidiTrack) {
+        this.midiTracks[trackIndex].midiEvents.pop();
+        for (let midiEvent of trackToConcatenate.midiEvents) {
+            this.midiTracks[trackIndex].midiEvents.push(midiEvent)
+        }
     }
 
     public generateMidiType1(midis: Midi[]) {
@@ -265,7 +301,7 @@ export class MidiEvent {
                                     ,MidiEventType.MIDI_EVENT
                                     ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 2))
                                     ,false); 
-            case 'e' || 'e':
+            case 'e':
                 return new MidiEvent(''
                                     ,MidiEventType.MIDI_EVENT
                                     ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 3))

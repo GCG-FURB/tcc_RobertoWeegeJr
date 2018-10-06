@@ -1,4 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { CompositionLine } from '../../util/composition';
+import { File } from '@ionic-native/file';
+import { FileUtil } from '../../util/file';
+import { Media } from '@ionic-native/media';
+import { MediaUtil } from '../../util/media';
 
 /**
  * Generated class for the VolumeComponent component.
@@ -7,16 +12,34 @@ import { Component } from '@angular/core';
  * Components.
  */
 @Component({
-  selector: 'volume-component',
-  templateUrl: 'volume.html'
+    selector: 'volume-component',
+    templateUrl: 'volume.html'
 })
 export class VolumeComponent {
 
-  text: string;
+    @Input()
+    private compositionLine: CompositionLine;
 
-  constructor() {
-    console.log('Hello VolumeComponent Component');
-    this.text = 'Hello World';
-  }
+    private fileUtil: FileUtil;
+    private mediaUtil: MediaUtil;
+
+
+    constructor(private file: File, private media: Media) {        
+        this.fileUtil = new FileUtil(file);
+        this.mediaUtil = new MediaUtil(media)
+    }
+
+    teste() {
+        this.compositionLine.generateLineMidi()
+        this.playMidi();
+    }
+
+    public playMidi() {
+        let midiString = this.compositionLine.lineMidi.getBinaryString();
+        this.fileUtil.writeBinaryStringToTempArea(this.compositionLine.lineMidiId, midiString)
+            .then(() => {
+                this.mediaUtil.playMidiFromTempArea(this.compositionLine.lineMidiId);
+            });
+    }
 
 }
