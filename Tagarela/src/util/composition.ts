@@ -194,7 +194,7 @@ export class MusicalCompositionOption {
     setupMidi(){
         this.midi = new Midi();
         this.midi.setupMidiFromFile(this.midiFile)
-        this.midi.midiTracks[0].applyNoteTranspose(1);
+        this.midi.midiTracks[0].applyNoteTranspose(-4);
     }
 
 }

@@ -249,20 +249,16 @@ export class MidiTrack {
                     if (event.midiEventData.length != 6) {
                         throw Error ('format error');
                     }
-                    let noteNumber: number = ConvertionUtil.convertHexStringToNumber(event.midiEventData.substring(2, 3));
+                    let noteNumber: number = ConvertionUtil.convertHexStringToNumber(event.midiEventData.substring(2, 4));
                     //validar limites, o que fazer????
                     noteNumber += conversionFator;
-                    alert(event.midiEventData)
-                    event.midiEventData = event.midiEventData.substring(0, 1) 
-                                        + ConvertionUtil.convertNumberToBinararyString(noteNumber, 2)
+                    event.midiEventData = event.midiEventData.substring(0, 2) 
+                                        + ConvertionUtil.convertNumberToHexString(noteNumber, 1)
                                         + event.midiEventData.substring(4);
-                    alert(event.midiEventData)
                 } else if (event.midiEventData.length >= 4 && event.midiEventData.substr(0, 4) == MidiConstants.KEY_SIGNATURE_EVENT_PREFIX) {
                     //validar tamanho
-                    alert(event.midiEventData)
-                    event.midiEventData = event.midiEventData.substring(0, 7) 
-                                        + ConvertionUtil.convertNumberToBinararyString(newKeySignatue, 2)
-                    alert(event.midiEventData)
+                    event.midiEventData = event.midiEventData.substring(0, 8) 
+                                        + ConvertionUtil.convertNumberToHexString(newKeySignatue, 1)
                 }
             }
         }

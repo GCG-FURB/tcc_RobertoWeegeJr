@@ -91,6 +91,13 @@ export class ConvertionUtil {
         }
         return this.convertHexStringToBinararyString(hexNum);
     }
-
+    
+    public static convertNumberToHexString(num: number, numberOfBytes: number): string {
+        let hexNum: string = num.toString(16);
+        for (let i = hexNum.length; i < numberOfBytes * 2; i++) {
+            hexNum = '0' + hexNum;
+        }
+        return hexNum;
+    }
 
 }
