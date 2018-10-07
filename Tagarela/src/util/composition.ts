@@ -75,8 +75,6 @@ export class MusicalCompositionSource {
         }
     }
 
-
-
 }
 
 export class MusicalCompositionStep {
@@ -196,6 +194,7 @@ export class MusicalCompositionOption {
     setupMidi(){
         this.midi = new Midi();
         this.midi.setupMidiFromFile(this.midiFile)
+        this.midi.midiTracks[0].applyNoteTranspose(1);
     }
 
 }
@@ -208,6 +207,7 @@ export class Composition {
     private _compositionLineIndex: number;
     public midiId: string;
     public midi: Midi;
+    public compositionOptions: CompositionOptions;
 
     constructor(musicalCompositionSource: MusicalCompositionSource) {
         this._musicalCompositionSource = musicalCompositionSource;
@@ -272,6 +272,46 @@ export class Composition {
     }
 
 }
+
+export class CompositionOptions {
+
+    //FF59
+    public tone: number;
+    private toneConversionFactor: number[];
+
+    constructor () {
+    }
+
+    //FF58
+    public tempo: number;
+
+
+    public getTempoValue(): number {
+        //Tempo in microseconds per quarter note
+        return this.tempo * 100000 * 4
+    }
+
+    public getToneValue() {
+       
+    }
+
+    /*
+        00  0 Dó
+        01  7 Dó#
+        02  2 Ré
+        03 -3 Ré# 
+        04  4 Mi 
+        05 -1 Fá 
+        06  6 Fa#
+        07  1 Sol
+        08 -4 Sol#
+        09  3 Lá
+        10 -2 Lá# 
+        11  5 Si
+    */
+
+}
+
 
 export class CompositionLine {
     

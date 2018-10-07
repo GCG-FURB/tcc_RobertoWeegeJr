@@ -71,6 +71,11 @@ export class ConvertionUtil {
         return newBinaryString;
     } 
 
+    public static convertHexStringToNumber(hexString: string): number {
+        return parseInt(hexString, 16);
+    }
+
+
     public static convertHexStringToBinararyString(hexString: string): string{
         let bytes = new Uint8Array(hexString.length/2);
         for (let i = 0; i < hexString.length/2; i++){

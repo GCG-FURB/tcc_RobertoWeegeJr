@@ -24,6 +24,33 @@ export class CompositionPage {
             musicalCompositionSource.buildSource(this.file.dataDirectory, 'Teste').then(()=>{
                 this.composition = new Composition(musicalCompositionSource);
             });
+
+            /*let num: number = 1;
+            let hexNum = num.toString(16);
+            alert(hexNum);
+            
+            num = 20;
+            hexNum = num.toString(16);
+            alert(hexNum);
+
+            let decNum = parseInt(hexNum, 16);
+            alert(decNum);
+
+            num = -1;
+            hexNum = num.toString(16);
+            alert(hexNum);*/
+
+
+
+            /*
+            00 02 = +2
+            02 00 = -2
+            FF 00 = +1
+            00 FF = -1
+            -1 00 = +1
+            00 -1 = -1
+            */
+
         } catch (e) {
 
         }   

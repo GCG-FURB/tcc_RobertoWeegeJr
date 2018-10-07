@@ -217,6 +217,76 @@ export class MidiTrack {
         this.midiEvents.push(midiEvent);
     }
 
+    public applyNoteTranspose(newKeySignatue: number){
+        if (!(newKeySignatue >= -7 && newKeySignatue <=7)) {
+            throw Error('Wrong format')
+        }
+        let actualKeySignature: number = ConvertionUtil.convertHexStringToNumber(this.getActualKeySignature());
+        if ( !(actualKeySignature >= 0 && actualKeySignature <= 7) &&
+             !(actualKeySignature >= 249 && actualKeySignature <= 255) ) {
+                throw Error('Wrong format')
+        }
+        //Tratativa para Key Signatures negativos 
+        if (actualKeySignature >= 249) {
+            actualKeySignature = 256 - actualKeySignature;
+        }
+
+        if (newKeySignatue - actualKeySignature != 0) {
+            let conversionFactor = MidiConstants.KEY_SIGNATURE_CONVERSION_VECTOR.indexOf(newKeySignatue)
+                                 - MidiConstants.KEY_SIGNATURE_CONVERSION_VECTOR.indexOf(actualKeySignature);
+            
+            this.changeKeySignatue((newKeySignatue >= 0 ? newKeySignatue : newKeySignatue + 256), conversionFactor)
+                                 
+        }
+
+    }
+
+    public changeKeySignatue(newKeySignatue: number, conversionFator: number){
+        for (let event of this.midiEvents) {
+            if (event.midiEventData) {
+                if (event.midiEventData.length >= 1 && (event.midiEventData.substr(0, 1) == '8' || 
+                                                        event.midiEventData.substr(0, 1) == '9')) {
+                    if (event.midiEventData.length != 6) {
+                        throw Error ('format error');
+                    }
+                    let noteNumber: number = ConvertionUtil.convertHexStringToNumber(event.midiEventData.substring(2, 3));
+                    //validar limites, o que fazer????
+                    noteNumber += conversionFator;
+                    alert(event.midiEventData)
+                    event.midiEventData = event.midiEventData.substring(0, 1) 
+                                        + ConvertionUtil.convertNumberToBinararyString(noteNumber, 2)
+                                        + event.midiEventData.substring(4);
+                    alert(event.midiEventData)
+                } else if (event.midiEventData.length >= 4 && event.midiEventData.substr(0, 4) == MidiConstants.KEY_SIGNATURE_EVENT_PREFIX) {
+                    //validar tamanho
+                    alert(event.midiEventData)
+                    event.midiEventData = event.midiEventData.substring(0, 7) 
+                                        + ConvertionUtil.convertNumberToBinararyString(newKeySignatue, 2)
+                    alert(event.midiEventData)
+                }
+            }
+        }
+    }
+
+    public getEventByEventDataPrefix(eventDataPrefix: string): MidiEvent {
+        for (let event of this.midiEvents) {
+            if (event.midiEventData 
+                && event.midiEventData.length >= eventDataPrefix.length
+                && event.midiEventData.substr(0, eventDataPrefix.length) == eventDataPrefix) {
+                    return event;
+            }
+        }
+        return null;
+    }
+
+    public getActualKeySignature(): string {
+        let midiEvent: MidiEvent = this.getEventByEventDataPrefix(MidiConstants.KEY_SIGNATURE_EVENT_PREFIX);
+        if (!midiEvent || !midiEvent.midiEventData || midiEvent.midiEventData.length != 10) {
+            throw Error('formato errado') 
+        }
+        return midiEvent.midiEventData.substring(8);
+    }
+
 }
 
 export class MidiEvent {
@@ -328,6 +398,27 @@ export class MidiEvent {
        //return null;
     }
     
+}
+
+export class MidiConstants {
+    public static NOTE_OFF_EVENT_PREFIX: string = "8";
+    public static NOTE_ON_EVENT_PREFIX: string = "9";
+    public static KEY_SIGNATURE_EVENT_PREFIX: string = "ff59";
+    public static KEY_SIGNATURE_CONVERSION_VECTOR: number[] = 
+                    [     0 //Dó  
+                        , 7 //Dó# 
+                        , 2 //Ré  
+                        ,-3 //Ré# 
+                        , 4 //Mi  
+                        ,-1 //Fá 
+                        , 6 //Fa# 
+                        , 1 //Sol 
+                        ,-4 //Sol#
+                        , 3 //Lá  
+                        ,-2 //Lá# 
+                        , 5 //Si  
+                    ];
+
 }
 
 enum MidiType {
