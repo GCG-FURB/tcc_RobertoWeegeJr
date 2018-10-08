@@ -71,6 +71,7 @@ export class Midi {
 
     private concatenateMidiTrack(trackIndex: number, trackToConcatenate: MidiTrack) {
         this.midiTracks[trackIndex].midiEvents.pop();
+        trackToConcatenate.applyNoteTranspose(this.midiTracks[trackIndex].getDecimalKeySignature());
         for (let midiEvent of trackToConcatenate.midiEvents) {
             this.midiTracks[trackIndex].midiEvents.push(midiEvent)
         }
@@ -196,6 +197,18 @@ Midi Events:`
     return description;
     }
 
+    public applyNoteTranspose(newKeySignatue: number){
+        for (let midiTrack of this.midiTracks) {
+            midiTrack.applyNoteTranspose(newKeySignatue);
+        }
+    }
+
+    public applyTempoChange(newTempo: number){
+        for (let midiTrack of this.midiTracks) {
+            midiTrack.applyTempoChange(newTempo);
+        }
+    }
+
 }
 
 export class MidiTrack {
@@ -217,10 +230,26 @@ export class MidiTrack {
         this.midiEvents.push(midiEvent);
     }
 
+    public applyTempoChange(newTempo: number) {
+        this.changeTempo(newTempo);
+    }
+
     public applyNoteTranspose(newKeySignatue: number){
         if (!(newKeySignatue >= -7 && newKeySignatue <=7)) {
             throw Error('Wrong format')
         }
+        let actualKeySignature: number = this.getDecimalKeySignature();
+
+        if (newKeySignatue - actualKeySignature != 0) {
+            let conversionFactor = MidiConstants.KEY_SIGNATURE_CONVERSION_VECTOR.indexOf(newKeySignatue)
+                                 - MidiConstants.KEY_SIGNATURE_CONVERSION_VECTOR.indexOf(actualKeySignature);
+            
+            this.changeKeySignatue((newKeySignatue >= 0 ? newKeySignatue : newKeySignatue + 256), conversionFactor)
+        }
+
+    }
+    
+    public getDecimalKeySignature(): number {
         let actualKeySignature: number = ConvertionUtil.convertHexStringToNumber(this.getActualKeySignature());
         if ( !(actualKeySignature >= 0 && actualKeySignature <= 7) &&
              !(actualKeySignature >= 249 && actualKeySignature <= 255) ) {
@@ -228,18 +257,12 @@ export class MidiTrack {
         }
         //Tratativa para Key Signatures negativos 
         if (actualKeySignature >= 249) {
-            actualKeySignature = 256 - actualKeySignature;
+            actualKeySignature = (256 - actualKeySignature) * -1;
         }
-
-        if (newKeySignatue - actualKeySignature != 0) {
-            let conversionFactor = MidiConstants.KEY_SIGNATURE_CONVERSION_VECTOR.indexOf(newKeySignatue)
-                                 - MidiConstants.KEY_SIGNATURE_CONVERSION_VECTOR.indexOf(actualKeySignature);
-            
-            this.changeKeySignatue((newKeySignatue >= 0 ? newKeySignatue : newKeySignatue + 256), conversionFactor)
-                                 
-        }
-
+        return actualKeySignature;
     }
+
+
 
     public changeKeySignatue(newKeySignatue: number, conversionFator: number){
         for (let event of this.midiEvents) {
@@ -259,6 +282,18 @@ export class MidiTrack {
                     //validar tamanho
                     event.midiEventData = event.midiEventData.substring(0, 8) 
                                         + ConvertionUtil.convertNumberToHexString(newKeySignatue, 1)
+                }
+            }
+        }
+    }
+
+    public changeTempo(newTempo: number){
+        for (let event of this.midiEvents) {
+            if (event.midiEventData) {
+                 if (event.midiEventData.length >= 4 && event.midiEventData.substr(0, 4) == MidiConstants.TEMPO_EVENT_PREFIX) {
+                    //validar tamanho
+                    event.midiEventData = event.midiEventData.substring(0, 6) 
+                                        + ConvertionUtil.convertNumberToHexString(newTempo, 3)
                 }
             }
         }
@@ -400,6 +435,7 @@ export class MidiConstants {
     public static NOTE_OFF_EVENT_PREFIX: string = "8";
     public static NOTE_ON_EVENT_PREFIX: string = "9";
     public static KEY_SIGNATURE_EVENT_PREFIX: string = "ff59";
+    public static TEMPO_EVENT_PREFIX: string = "ff51";
     public static KEY_SIGNATURE_CONVERSION_VECTOR: number[] = 
                     [     0 //Dó  
                         , 7 //Dó# 

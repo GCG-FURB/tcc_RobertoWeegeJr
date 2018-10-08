@@ -49,6 +49,8 @@ export class ChoiceComponent {
     }
 
     public playMidi() {
+        this.midiChoice.midi.applyNoteTranspose(this.composition.getSignatureKey())
+        this.midiChoice.midi.applyTempoChange(this.composition.getTempo())
         let midiString = this.midiChoice.midi.getBinaryString();
         this.fileUtil.writeBinaryStringToTempArea(this.midiChoice.uId, midiString)
             .then(() => {

@@ -16,6 +16,10 @@ export class CompositionControlComponent {
         return this.composition && this.composition.actualStep && this.composition.actualStep.name ? this.composition.actualStep.name : '' 
     }
 
+    getCompositionSubStepName(): string {
+        return this.composition && this.composition.compositionLines && this.composition.compositionLines[this.composition.compositionLineIndex].name ? this.composition.compositionLines[this.composition.compositionLineIndex].name : '' 
+    }
+
     getOptionsList(){
         if (this.composition && this.composition.actualStep 
             && this.composition.actualStep.musicalCompositionLine

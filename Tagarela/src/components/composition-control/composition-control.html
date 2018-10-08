@@ -1,7 +1,10 @@
 <ion-card>
-    Step {{getCompositionStepName()}}
+  
     
     <ion-card-content class="overflow-drag">
+        Step {{getCompositionStepName()}}
+        <br>
+        Sub Step {{getCompositionSubStepName()}}
         <ion-card class="overflow-drag">
             <ion-card-content class="overflow-drag">
                 <div class="teste overflow-drag">
@@ -15,12 +18,11 @@
         </ion-card>
         <ion-card>
             <ion-card-content>
-                Record Card
                 <div class="flex-parent">
                     <div class="flex-child-control">
                         <ion-scroll scrollX="true" class="scroll-2">
                             <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
-                                <volume-component class="float-left-child" [compositionLine]="compositionLine"></volume-component>
+                                <volume-component class="float-left-child" [composition]="composition" [compositionLine]="compositionLine"></volume-component>
                             </div>
                         </ion-scroll>
                     </div>

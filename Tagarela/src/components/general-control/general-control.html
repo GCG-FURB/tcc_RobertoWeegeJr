@@ -7,17 +7,17 @@
                 </button>
             </div>
             <div class="flex-child-controls">
-                <ion-list>
+                <ion-list *ngIf="composition && composition.compositionOptions ">
                     <ion-item>
                         <ion-label item-start color="secondary">Tonalidade</ion-label>
-                        <ion-badge item-end color="secondary">{{TONE_VALUES[toneIndex]}}</ion-badge>
+                        <ion-badge item-end color="secondary">{{TONE_VALUES[composition.compositionOptions.keySignatureIndex]}}</ion-badge>
                     </ion-item>
                     <ion-item>
                         <ion-range min="0" 
                                    [max]="TONE_VALUES.length - 1" 
                                    step="1" 
                                    snaps="true" 
-                                   [(ngModel)]="toneIndex" 
+                                   [(ngModel)]="composition.compositionOptions.keySignatureIndex"
                                    color="secondary">
                         <ion-label range-left >{{TONE_VALUES[0]}}</ion-label>
                         <ion-label range-right>{{TONE_VALUES[TONE_VALUES.length - 1]}}</ion-label>
@@ -25,13 +25,13 @@
                     </ion-item>
                     <ion-item>
                         <ion-label item-start color="danger">Tempo</ion-label>
-                        <ion-badge item-end color="danger">{{tempoValue}}</ion-badge>
+                        <ion-badge item-end color="danger">{{composition.compositionOptions.tempo}}</ion-badge>
                     </ion-item>
                     <ion-item>
                         <ion-range [min]="MIN_TEMPO_VALUE" 
                                    [max]="MAX_TEMPO_VALUE" 
                                    pin="true" 
-                                   [(ngModel)]="tempoValue" 
+                                   [(ngModel)]="composition.compositionOptions.tempo" 
                                    color="danger">
                         <ion-label range-left >{{minTempoValue}}</ion-label>
                         <ion-label range-right>{{maxTempoValue}}</ion-label>

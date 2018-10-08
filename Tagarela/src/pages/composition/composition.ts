@@ -23,6 +23,10 @@ export class CompositionPage {
             let musicalCompositionSource: MusicalCompositionSource = new MusicalCompositionSource(this.file); 
             musicalCompositionSource.buildSource(this.file.dataDirectory, 'Teste').then(()=>{
                 this.composition = new Composition(musicalCompositionSource);
+                /*for (let ev of musicalCompositionSource.rootStep.musicalCompositionLine[0].musicalCompositionOption[0].midi.midiTracks[0].midiEvents
+                ){
+                    alert(ev.midiEventData)
+                }*/
             });
 
             /*let num: number = 1;

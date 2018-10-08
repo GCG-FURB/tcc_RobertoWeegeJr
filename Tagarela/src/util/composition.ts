@@ -1,6 +1,6 @@
 import { File } from '@ionic-native/file';
 import { FileUtil } from "./file";
-import { Midi } from './midi';
+import { Midi, MidiConstants } from './midi';
 import { v4 as uuid } from 'uuid';
 
 export class MusicalCompositionSource {
@@ -193,8 +193,7 @@ export class MusicalCompositionOption {
 
     setupMidi(){
         this.midi = new Midi();
-        this.midi.setupMidiFromFile(this.midiFile)
-        this.midi.midiTracks[0].applyNoteTranspose(-4);
+        this.midi.setupMidiFromFile(this.midiFile);
     }
 
 }
@@ -215,6 +214,7 @@ export class Composition {
         this.actualStep = musicalCompositionSource.rootStep;
         this.compositionLineIndex = 0;
         this.midiId = uuid();
+        this.compositionOptions = new CompositionOptions();
     }
 
     public applyChoice(choice: MusicalCompositionOption) {
@@ -271,44 +271,39 @@ export class Composition {
         this.midi.generateMidiType1(midiLines);
     }
 
+
+    public getSignatureKey(): number {
+        return this.compositionOptions.getkeySignatureValue();
+    }
+
+    public getTempo(): number {
+        return this.compositionOptions.getTempoValue();
+    }
+
 }
 
 export class CompositionOptions {
 
     //FF59
-    public tone: number;
+    public keySignatureIndex: number;
     private toneConversionFactor: number[];
-
-    constructor () {
-    }
-
-    //FF58
+    
+    //FF51
     public tempo: number;
 
+    constructor () {
+        this.keySignatureIndex = 0;
+        this.tempo = 120;
+    }
 
     public getTempoValue(): number {
         //Tempo in microseconds per quarter note
-        return this.tempo * 100000 * 4
+        return  Math.round(60000000 / this.tempo)
     }
 
-    public getToneValue() {
-       
+    public getkeySignatureValue(): number{
+        return MidiConstants.KEY_SIGNATURE_CONVERSION_VECTOR[this.keySignatureIndex];
     }
-
-    /*
-        00  0 Dó
-        01  7 Dó#
-        02  2 Ré
-        03 -3 Ré# 
-        04  4 Mi 
-        05 -1 Fá 
-        06  6 Fa#
-        07  1 Sol
-        08 -4 Sol#
-        09  3 Lá
-        10 -2 Lá# 
-        11  5 Si
-    */
 
 }
 

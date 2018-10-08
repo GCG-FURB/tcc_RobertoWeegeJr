@@ -21,7 +21,6 @@ export class GeneralControlComponent {
     //Tempo control
     private MIN_TEMPO_VALUE: number = 40;
     private MAX_TEMPO_VALUE: number = 200;
-    private tempoValue: number = 60;
 
     private fileUtil: FileUtil;
     private mediaUtil: MediaUtil;
@@ -32,6 +31,10 @@ export class GeneralControlComponent {
     }
     teste() {
         this.composition.generateGeneralMidi();
+        if (this.composition.midi) {
+            this.composition.midi.applyNoteTranspose(this.composition.getSignatureKey());
+            this.composition.midi.applyTempoChange(this.composition.getTempo());
+        }
         this.playMidi();
     }
 

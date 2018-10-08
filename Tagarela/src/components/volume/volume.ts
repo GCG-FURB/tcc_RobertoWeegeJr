@@ -1,16 +1,10 @@
 import { Component, Input } from '@angular/core';
-import { CompositionLine } from '../../util/composition';
+import { CompositionLine, Composition } from '../../util/composition';
 import { File } from '@ionic-native/file';
 import { FileUtil } from '../../util/file';
 import { Media } from '@ionic-native/media';
 import { MediaUtil } from '../../util/media';
 
-/**
- * Generated class for the VolumeComponent component.
- *
- * See https://angular.io/api/core/Component for more info on Angular
- * Components.
- */
 @Component({
     selector: 'volume-component',
     templateUrl: 'volume.html'
@@ -19,6 +13,9 @@ export class VolumeComponent {
 
     @Input()
     private compositionLine: CompositionLine;
+
+    @Input()
+    private composition: Composition;
 
     private fileUtil: FileUtil;
     private mediaUtil: MediaUtil;
@@ -31,6 +28,10 @@ export class VolumeComponent {
 
     teste() {
         this.compositionLine.generateLineMidi()
+        if (this.compositionLine.lineMidi) {
+            this.compositionLine.lineMidi.applyNoteTranspose(this.composition.getSignatureKey());
+            this.compositionLine.lineMidi.applyTempoChange(this.composition.getTempo());
+        }
         this.playMidi();
     }
 
