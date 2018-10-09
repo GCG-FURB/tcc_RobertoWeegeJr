@@ -14,7 +14,7 @@ import { MediaUtil } from '../../util/media';
 })
 export class ChoiceComponent {
 
-    private _instrumentMidiNumber: number = 1;
+    //private _instrumentMidiNumber: number = 1;
     private visualMidi: VisualMidi = new VisualMidi;
     private fileUtil: FileUtil;
     private mediaUtil: MediaUtil;
@@ -30,13 +30,13 @@ export class ChoiceComponent {
         this.mediaUtil = new MediaUtil(media)
     }
 
-    get instrumentMidiNumber(): number {
+    /*get instrumentMidiNumber(): number {
         return this._instrumentMidiNumber;
     }
 
     set instrumentMidiNumber(instrumentMidiNumber: number) {
         this._instrumentMidiNumber = instrumentMidiNumber;
-    }
+    }*/
 
     public goToMusicalInstrumentChoice(){
         this.navCtrl.push(MusicalInstrumentChoicePage, {
@@ -45,12 +45,13 @@ export class ChoiceComponent {
     }
 
     public changeInstrumentMidiNumber(instrumentMidiNumber: number) {
-        this.instrumentMidiNumber = instrumentMidiNumber
+        this.midiChoice.midiCompositionOptions.musicalInstrumentNumber = instrumentMidiNumber
     }
 
     public playMidi() {
         this.midiChoice.midi.applyNoteTranspose(this.composition.getSignatureKey())
         this.midiChoice.midi.applyTempoChange(this.composition.getTempo())
+        this.midiChoice.midi.applyInstrumentChange(this.midiChoice.midiCompositionOptions.musicalInstrumentNumber)
         let midiString = this.midiChoice.midi.getBinaryString();
         this.fileUtil.writeBinaryStringToTempArea(this.midiChoice.uId, midiString)
             .then(() => {

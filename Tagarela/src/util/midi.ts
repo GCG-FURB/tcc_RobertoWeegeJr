@@ -209,6 +209,18 @@ Midi Events:`
         }
     }
 
+    public applyInstrumentChange(instrumentNumber: number){
+        for (let midiTrack of this.midiTracks) {
+            midiTrack.applyInstrumentChange(instrumentNumber);
+        }
+    }
+    public applyVolumeChange(volume: number){
+        for (let midiTrack of this.midiTracks) {
+            midiTrack.applyVolumeChange(volume);
+        }
+    }
+
+
 }
 
 export class MidiTrack {
@@ -318,6 +330,62 @@ export class MidiTrack {
         return midiEvent.midiEventData.substring(8);
     }
 
+    public applyInstrumentChange(instrumentNumber: number){
+        this.removeAllInstrumentEvents();
+        for (let channel of this.findAllUsedChannels()) {
+            this.midiEvents.unshift(new MidiEvent('00', MidiEventType.MIDI_EVENT, 'c' + channel + 
+                                                                                   ConvertionUtil.convertNumberToHexString(instrumentNumber, 1), false));
+        }
+    }
+
+    public applyVolumeChange(volume: number){
+        this.removeAllVolumeEvents();
+        for (let event of this.midiEvents) {
+        /*    this.midiEvents.unshift(new MidiEvent('00', MidiEventType.MIDI_EVENT, 'b' + channel + '07' +
+                                                                                   ConvertionUtil.convertNumberToHexString(volume, 1), false));
+        */
+            if (event.midiEventData.length >= 1 && event.midiEventData.substr(0, 1) == '9') {
+                    if (event.midiEventData.length != 6) {
+                        throw Error ('format error');
+                    }
+                    //validar limites, o que fazer????
+                    event.midiEventData = event.midiEventData.substring(0, 4) 
+                                        + ConvertionUtil.convertNumberToHexString(volume, 1)
+                }
+        }
+    }
+
+    private removeAllInstrumentEvents() {
+        for (let event of this.midiEvents) {
+            if (event && event.midiEventData && event.midiEventData.length > 1 && event.midiEventData.substr(0, 1) == 'c') {
+                this.midiEvents.splice(this.midiEvents.indexOf(event), 1);
+            }
+        }       
+    }
+
+    private removeAllVolumeEvents() {
+        for (let event of this.midiEvents) {
+            if (event && event.midiEventData && event.midiEventData.length > 4 && event.midiEventData.substr(0, 1) == 'b' && event.midiEventData.substr(2, 2) == '07') {
+                this.midiEvents.splice(this.midiEvents.indexOf(event), 1);
+            }
+        }       
+    }
+
+    private findAllUsedChannels():string[] {
+        let chanels: string[] = [];
+        for (let event of this.midiEvents) {
+            if (event && event.midiEventData && event.midiEventData.length > 1 && (event.midiEventData.substr(0, 1) == '8' || 
+                                                        event.midiEventData.substr(0, 1) == '9')) {
+                if (event.midiEventData.length != 6) {
+                    throw Error ('format error');
+                }
+                if (chanels.indexOf(event.midiEventData.substr(1, 1)) < 0) {
+                    chanels.push(event.midiEventData.substr(1, 1))
+                }
+            }
+        }        
+        return chanels;
+    }
 }
 
 export class MidiEvent {

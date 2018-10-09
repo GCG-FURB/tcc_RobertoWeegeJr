@@ -5,15 +5,12 @@
 // roboto, and noto sans fonts
 $font-path: "../assets/fonts";
 
-
 // The app direction is used to include
 // rtl styles in your app. For more info, please see:
 // http://ionicframework.com/docs/theming/rtl-support/
 $app-direction: ltr;
 
-
 @import "ionic.globals";
-
 
 // Shared Variables
 // --------------------------------------------------
@@ -21,9 +18,6 @@ $app-direction: ltr;
 // the Sass variables found in Ionic's source scss files.
 // To view all the possible Ionic variables, see:
 // http://ionicframework.com/docs/theming/overriding-ionic-variables/
-
-
-
 
 // Named Color Variables
 // --------------------------------------------------
@@ -47,20 +41,14 @@ $colors: (
 // iOS only Sass variables can go here
 
 
-
-
 // App Material Design Variables
 // --------------------------------------------------
 // Material Design only Sass variables can go here
 
 
-
-
 // App Windows Variables
 // --------------------------------------------------
 // Windows only Sass variables can go here
-
-
 
 
 // App Theme
@@ -90,7 +78,7 @@ $colors: (
 
 //custom
 ion-icon {
-  &[class*="appname-"] {
+  &[class*="instrument-"] {
       mask-size: contain;
       mask-position: 50% 50%;
       mask-repeat: no-repeat;
@@ -99,17 +87,20 @@ ion-icon {
       height: 1em;
   }
   // custom icons
-  &[class*="appname-customicon1"] {
+  &[class*="instrument-trumpet"] {
       mask-image: url(../assets/icon/trumpet.svg);
   }
-  &[class*="appname-customicon2"] {
+  &[class*="instrument-guitar"] {
       mask-image: url(../assets/icon/acoustic-guitar.svg);
   }
-  &[class*="appname-customicon3"] {
+  &[class*="instrument-accordion"] {
       mask-image: url(../assets/icon/accordion.svg);
   }
-  &[class*="appname-customicon4"] {
+  &[class*="instrument-saxophone"] {
     mask-image: url(../assets/icon/saxophone.svg);
+  }
+  &[class*="instrument-piano"] {
+    mask-image: url(../assets/icon/piano.svg);
   }
 }
 

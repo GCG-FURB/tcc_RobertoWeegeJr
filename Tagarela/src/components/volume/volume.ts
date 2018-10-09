@@ -23,7 +23,7 @@ export class VolumeComponent {
 
     constructor(private file: File, private media: Media) {        
         this.fileUtil = new FileUtil(file);
-        this.mediaUtil = new MediaUtil(media)
+        this.mediaUtil = new MediaUtil(media);
     }
 
     teste() {
@@ -41,6 +41,14 @@ export class VolumeComponent {
             .then(() => {
                 this.mediaUtil.playMidiFromTempArea(this.compositionLine.lineMidiId);
             });
+    }
+
+    volumeDown(){
+        this.compositionLine.lineCompositionOptions.volumeDown();
+    }
+
+    volumeUp(){
+        this.compositionLine.lineCompositionOptions.volumeUp();
     }
 
 }

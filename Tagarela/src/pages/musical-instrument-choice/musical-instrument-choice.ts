@@ -15,11 +15,11 @@ export class MusicalInstrumentChoicePage {
 
     constructor(public navCtrl: NavController, public navParams: NavParams) {
         this.musicalInstrument = [];
-        this.musicalInstrument.push(new MidiMusicalInstrument(1));
-        this.musicalInstrument.push(new MidiMusicalInstrument(2));
-        this.musicalInstrument.push(new MidiMusicalInstrument(3));
-        this.musicalInstrument.push(new MidiMusicalInstrument(4));
-
+        this.musicalInstrument.push(new MidiMusicalInstrument(0));
+        this.musicalInstrument.push(new MidiMusicalInstrument(21));
+        this.musicalInstrument.push(new MidiMusicalInstrument(24));
+        this.musicalInstrument.push(new MidiMusicalInstrument(56));
+        this.musicalInstrument.push(new MidiMusicalInstrument(65));
     }
 
     ionViewDidLoad() {

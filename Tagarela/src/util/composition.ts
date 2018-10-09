@@ -2,6 +2,7 @@ import { File } from '@ionic-native/file';
 import { FileUtil } from "./file";
 import { Midi, MidiConstants } from './midi';
 import { v4 as uuid } from 'uuid';
+import { MidiMusicalInstrument } from './midi-models';
 
 export class MusicalCompositionSource {
 
@@ -154,9 +155,11 @@ export class MusicalCompositionOption {
     private _name: string;
     private _midiFile: string;
     private _midi: Midi;
+    public midiCompositionOptions: MidiCompositionOptions;
 
     constructor() {
         this.uId = uuid();
+        this.midiCompositionOptions = new MidiCompositionOptions();
     }
 
     get uId(): string {
@@ -280,7 +283,7 @@ export class Composition {
         return this.compositionOptions.getTempoValue();
     }
 
-}
+ }
 
 export class CompositionOptions {
 
@@ -307,6 +310,36 @@ export class CompositionOptions {
 
 }
 
+export class CompositionMidiOptions {
+    public musicalInstrument: MidiMusicalInstrument;
+
+    constructor(midiInstrumentNumber: number) {
+        this.musicalInstrument = new MidiMusicalInstrument(midiInstrumentNumber);
+    }
+
+}
+
+export class MidiCompositionOptions {
+    public musicalInstrumentNumber: number = 0;
+}
+
+export class LineCompositionOptions {
+    public volume: number = 64;
+
+    volumeDown(){
+        if (this.volume > 0) {
+            this.volume--;
+        }
+    }
+
+    volumeUp(){
+        if (this.volume < 127) {
+            this.volume++;
+        }
+    }
+}
+
+
 
 export class CompositionLine {
     
@@ -314,11 +347,14 @@ export class CompositionLine {
     private _compositionOptions: MusicalCompositionOption[];
     public lineMidiId: string;
     public lineMidi: Midi;
+    public lineCompositionOptions: LineCompositionOptions;
+    
 
     constructor(name: string) {
         this.name = name;
         this.compositionOptions = [];
         this.lineMidiId = uuid();
+        this.lineCompositionOptions = new LineCompositionOptions();
     }
 
     get compositionOptions(): MusicalCompositionOption[] {
@@ -331,11 +367,14 @@ export class CompositionLine {
 
     public generateLineMidi() {
         if (this.compositionOptions.length > 0) {
+            this.compositionOptions[0].midi.applyInstrumentChange(this.compositionOptions[0].midiCompositionOptions.musicalInstrumentNumber);
             this.lineMidi = this.compositionOptions[0].midi.cloneMidi();
         }
         for (let i = 1; i < this.compositionOptions.length; i++) {
+            this.compositionOptions[i].midi.applyInstrumentChange(this.compositionOptions[i].midiCompositionOptions.musicalInstrumentNumber);
             this.lineMidi.concatenateMidi(this.compositionOptions[i].midi);
         }        
+        this.lineMidi.applyVolumeChange(this.lineCompositionOptions.volume);
     }
 
     public addCompositionOption(musicalCompositionOption: MusicalCompositionOption){

@@ -30,7 +30,7 @@
                         <ion-scroll scrollX="true" class="scroll-2">
                             <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
                                 <choice-component class="float-left-child" *ngFor="let compositionOption of getCompositionOptionsList(getCompositionLinesList().indexOf(compositionLine))"
-                                [midiChoice]="compositionOption">
+                                [midiChoice]="compositionOption" [composition]="composition">
                                 </choice-component>
                             </div>
                         </ion-scroll>
