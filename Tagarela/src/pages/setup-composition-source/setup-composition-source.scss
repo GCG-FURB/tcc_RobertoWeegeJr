@@ -1,0 +1,17 @@
+.swiper-container-horizontal > .swiper-pagination
+{
+    bottom          : 50%; //Change accordingly
+    z-index         : 99 !important;
+}
+
+.scroll {
+    white-space: nowrap;
+    height: 900px;
+}
+
+.swiper-slide {
+    overflow-y: scroll;
+    display: block;
+}
+
+

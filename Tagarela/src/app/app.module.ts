@@ -5,7 +5,6 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { StatusBar } from '@ionic-native/status-bar';
 
 import { MyApp } from './app.component';
-import { HomePage } from '../pages/home/home';
 import { CompositionPage } from '../pages/composition/composition';
 import { GeneralControlComponent } from '../components/general-control/general-control';
 import { CompositionControlComponent } from '../components/composition-control/composition-control';
@@ -17,11 +16,14 @@ import { MusicalInstrumentChoicePage } from '../pages/musical-instrument-choice/
 import { File } from '@ionic-native/file';
 import { FilePath } from '@ionic-native/file-path';
 import { Media } from '@ionic-native/media';
+import { CompositionSourcePage } from '../pages/composition-source/composition-source';
+import { SetupCompositionSourcePage } from '../pages/setup-composition-source/setup-composition-source';
 
 @NgModule({
   declarations: [
     MyApp,
-    HomePage,
+    CompositionSourcePage,
+    SetupCompositionSourcePage,
     CompositionPage, 
     MusicalInstrumentChoicePage,
     GeneralControlComponent,
@@ -38,9 +40,10 @@ import { Media } from '@ionic-native/media';
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
-    HomePage,
     CompositionPage,
-    MusicalInstrumentChoicePage
+    SetupCompositionSourcePage,
+    MusicalInstrumentChoicePage,
+    CompositionSourcePage
   ],
   providers: [
     StatusBar,

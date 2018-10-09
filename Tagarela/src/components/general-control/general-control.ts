@@ -13,14 +13,6 @@ export class GeneralControlComponent {
     
     @Input()
     private composition: Composition;
-    
-    //Tone control
-    private toneIndex: number = 0;
-    private TONE_VALUES: string[] = ['Dó', 'Dó#', 'Ré', 'Ré#', 'Mi', 'Fá', 'Fá#', 'Sol', 'Sol#', 'Lá', 'Lá#', 'Si'];
-
-    //Tempo control
-    private MIN_TEMPO_VALUE: number = 40;
-    private MAX_TEMPO_VALUE: number = 200;
 
     private fileUtil: FileUtil;
     private mediaUtil: MediaUtil;

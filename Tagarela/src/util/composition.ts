@@ -8,6 +8,7 @@ export class MusicalCompositionSource {
 
     private fileUtil: FileUtil;
     private _rootStep: MusicalCompositionStep;
+    public musicalCompositionSourceOptions: MusicalCompositionSourceOptions;
 
     get rootStep(): MusicalCompositionStep {
         return this._rootStep;
@@ -19,6 +20,7 @@ export class MusicalCompositionSource {
 
     constructor(file: File){
         this.fileUtil = new FileUtil(file);
+        this.musicalCompositionSourceOptions = new MusicalCompositionSourceOptions();
     }
 
     public async buildSource(devicePath: string, relativePath: string) {
@@ -57,25 +59,95 @@ export class MusicalCompositionSource {
                 lastCompositionStep = musicalCompositionStep;
             }
 
-            /*
-            let teste:MusicalCompositionStep = this.rootStep;
-            while (teste){
-                alert(teste.name)
-                for (let a of teste._musicalCompositionLine){
-                    alert(a.name)
-                    for (let b of a._musicalCompositionOption){
-                        alert(b.name)
-                    }
-                }
-                teste = teste.nextStep
-            }
-            */
-
         } catch (e) {
             console.log(e)
         }
     }
 
+    public async buildSourceOptions(devicePath: string, relativePath: string) {
+        try {
+            let stepDirectoriesList: string[] = await this.fileUtil.getListOfDirectories(devicePath, relativePath);
+            //steps
+            for (let stepDirectory of stepDirectoriesList) {
+                let stepPath: string = this.fileUtil.concatenatePath(relativePath, stepDirectory);
+                let lineDirectoriesList: string[] = await this.fileUtil.getListOfDirectories(devicePath, stepPath);
+                //lines
+                for (let lineDirectory of lineDirectoriesList) {
+                    this.musicalCompositionSourceOptions.addLineOptions(new MusicalCompositionLineOptions(lineDirectory), true)
+                    let linePath: string = this.fileUtil.concatenatePath(stepPath, lineDirectory);
+                    let optionDirectoriesList: string[] = await this.fileUtil.getListOfFiles(devicePath, linePath)
+                    //options
+                    for (let optionFile of optionDirectoriesList) {
+                        this.musicalCompositionSourceOptions.addOptionOptions(new MusicalCompositionOptionOptions(optionFile), true)
+
+                    }
+                }
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+}
+
+export class MusicalCompositionSourceOptions {
+    
+    public minTempoValue: number = 40;
+    public maxTempoValue: number = 220;
+    public stepTempoValue: number = 1;
+    public startTempoValue: number = 120;
+
+    public musicalCompositionLineOptions: MusicalCompositionLineOptions[];
+    public musicalCompositionOptionOptions: MusicalCompositionOptionOptions[];
+
+    constructor() {
+        this.musicalCompositionLineOptions = [];
+        this.musicalCompositionOptionOptions = [];
+    }
+
+    public addLineOptions(lineOptions: MusicalCompositionLineOptions, distintValue?: boolean) {
+        if (distintValue) {
+            if (this.musicalCompositionLineOptions.find((element) => {
+                return element.name == lineOptions.name
+            })) {
+                return;
+            }
+        }
+        this.musicalCompositionLineOptions.push(lineOptions);
+    }
+
+    public addOptionOptions(optionOptions: MusicalCompositionOptionOptions, distintValue?: boolean) {
+        if (distintValue) {
+            if (this.musicalCompositionOptionOptions.find((element) => {
+                return element.name == optionOptions.name
+            })) {
+                return;
+            }
+        }
+        this.musicalCompositionOptionOptions.push(optionOptions);
+    }
+
+}
+
+export class MusicalCompositionLineOptions {
+    public name: string;
+    public minVolumeValue: number = 0;
+    public maxVolumeValue: number = 200;
+    public stepVolumeValue: number = 10;
+    public startVolumeValue: number = 100;
+
+    constructor(name: string) {
+        this.name = name;
+    }
+
+}
+
+export class MusicalCompositionOptionOptions {
+    public name: string;
+    public musicalInstrumentsValues: number[] = [0, 56];
+
+    constructor(name: string) {
+        this.name = name;
+    }
 }
 
 export class MusicalCompositionStep {
@@ -218,6 +290,11 @@ export class Composition {
         this.compositionLineIndex = 0;
         this.midiId = uuid();
         this.compositionOptions = new CompositionOptions();
+
+        this.compositionOptions.minTempoValue = musicalCompositionSource.musicalCompositionSourceOptions.minTempoValue;
+        this.compositionOptions.maxTempoValue = musicalCompositionSource.musicalCompositionSourceOptions.maxTempoValue;
+        this.compositionOptions.stepTempoValue = musicalCompositionSource.musicalCompositionSourceOptions.stepTempoValue;
+        this.compositionOptions.tempo = musicalCompositionSource.musicalCompositionSourceOptions.startTempoValue;
     }
 
     public applyChoice(choice: MusicalCompositionOption) {
@@ -287,12 +364,14 @@ export class Composition {
 
 export class CompositionOptions {
 
-    //FF59
-    public keySignatureIndex: number;
-    private toneConversionFactor: number[];
+    public TONE_VALUES: string[] = ['Dó', 'Dó#', 'Ré', 'Ré#', 'Mi', 'Fá', 'Fá#', 'Sol', 'Sol#', 'Lá', 'Lá#', 'Si'];
     
-    //FF51
+    public minTempoValue: number = 40;
+    public maxTempoValue: number = 200;
+    public stepTempoValue: number = 1;
     public tempo: number;
+
+    public keySignatureIndex: number;
 
     constructor () {
         this.keySignatureIndex = 0;
@@ -324,17 +403,17 @@ export class MidiCompositionOptions {
 }
 
 export class LineCompositionOptions {
-    public volume: number = 64;
+    public volume: number = 100;
 
     volumeDown(){
         if (this.volume > 0) {
-            this.volume--;
+            this.volume = this.volume - 10;
         }
     }
 
     volumeUp(){
-        if (this.volume < 127) {
-            this.volume++;
+        if (this.volume < 200) {
+            this.volume = this.volume + 10;
         }
     }
 }

@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { MusicalInstrumentChoicePage } from '../../pages/musical-instrument-choice/musical-instrument-choice';
-import { NavController } from 'ionic-angular';
+import { NavController, PopoverController } from 'ionic-angular';
 import { VisualMidi } from '../../util/visual-midi';
 import { MusicalCompositionOption, Composition, MusicalCompositionStep } from '../../util/composition';
 import { File } from '@ionic-native/file';
@@ -25,7 +25,7 @@ export class ChoiceComponent {
     @Input()
     private midiChoice: MusicalCompositionOption;
 
-    constructor(public navCtrl: NavController, private file: File, private media: Media) {
+    constructor(public navCtrl: NavController, private file: File, private media: Media, public popoverCtrl: PopoverController) {
         this.fileUtil = new FileUtil(file);
         this.mediaUtil = new MediaUtil(media)
     }
@@ -39,9 +39,12 @@ export class ChoiceComponent {
     }*/
 
     public goToMusicalInstrumentChoice(){
-        this.navCtrl.push(MusicalInstrumentChoicePage, {
+        const popover = this.popoverCtrl.create(MusicalInstrumentChoicePage, {callback: this.changeInstrumentMidiNumber.bind(this)});
+        popover.present();
+        
+        /*this.navCtrl.push(MusicalInstrumentChoicePage, {
             callback: this.changeInstrumentMidiNumber.bind(this)
-        });
+        });*/
     }
 
     public changeInstrumentMidiNumber(instrumentMidiNumber: number) {

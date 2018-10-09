@@ -345,13 +345,17 @@ export class MidiTrack {
                                                                                    ConvertionUtil.convertNumberToHexString(volume, 1), false));
         */
             if (event.midiEventData.length >= 1 && event.midiEventData.substr(0, 1) == '9') {
-                    if (event.midiEventData.length != 6) {
+                    
+                if (event.midiEventData.length != 6) {
                         throw Error ('format error');
-                    }
-                    //validar limites, o que fazer????
-                    event.midiEventData = event.midiEventData.substring(0, 4) 
-                                        + ConvertionUtil.convertNumberToHexString(volume, 1)
                 }
+                let originalVolume = ConvertionUtil.convertHexStringToNumber(event.midiOriginalEventData.substring(4)); 
+                let newVolume = Math.round(volume * originalVolume / 100);
+                
+                //validar limites, o que fazer????
+                event.midiEventData = event.midiEventData.substring(0, 4) 
+                                    + ConvertionUtil.convertNumberToHexString((newVolume > 127 ? 127 : newVolume), 1)
+            }
         }
     }
 
@@ -392,12 +396,14 @@ export class MidiEvent {
     private _deltaTime: string;
     private _midiEventType: MidiEventType;
     private _midiEventData: string;
+    private _midiOriginalEventData: string;
     private _loadEvent: boolean;
 
     constructor(deltaTime: string, midiEventType: MidiEventType, midiEventData: string, loadEvent: boolean){
         this.deltaTime = deltaTime;
         this.midiEventType = midiEventType;
         this.midiEventData = midiEventData;
+        this._midiOriginalEventData = midiEventData;
         this.loadEvent = loadEvent;
     }
 
@@ -423,6 +429,14 @@ export class MidiEvent {
     
     set midiEventData(midiEventData: string){
         this._midiEventData = midiEventData;
+    }
+
+    get midiOriginalEventData(): string{
+        return this._midiOriginalEventData;
+    }
+    
+    set midiOriginalEventData(midiOriginalEventData: string){
+        this._midiOriginalEventData = midiOriginalEventData;
     }
 
     get loadEvent(): boolean{
