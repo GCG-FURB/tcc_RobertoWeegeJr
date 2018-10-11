@@ -2,14 +2,13 @@ import { Component } from '@angular/core';
 import { NavController, NavParams } from 'ionic-angular';
 import { File } from '@ionic-native/file';
 import { SetupCompositionSourcePage } from '../setup-composition-source/setup-composition-source';
+import { MusicalCompositionConfigControl } from '../../control/musical-composition-config';
 
 @Component({
     selector: 'page-composition-source',
     templateUrl: 'composition-source.html',
 })
 export class CompositionSourcePage {
-
-    private COMPOSITION_SOURCES_RELATIVE_PATH = 'www/assets/composition-sources/'
 
     private _defaultCompositionSources: string[]; 
     private _chosedCompositionSource: string;
@@ -32,15 +31,15 @@ export class CompositionSourcePage {
         this._chosedCompositionSource = chosedCompositionSource; 
         this.navCtrl.setRoot(SetupCompositionSourcePage, {
             baseFileSystem: this.file.applicationDirectory,
-            relativePath: this.COMPOSITION_SOURCES_RELATIVE_PATH + chosedCompositionSource
+            relativePath: MusicalCompositionConfigControl.COMPOSITION_SOURCES_RELATIVE_PATH + chosedCompositionSource
         });
     }
 
     ionViewDidLoad() {
         this.defaultCompositionSources = []
-        this.file.checkDir(this.file.applicationDirectory, this.COMPOSITION_SOURCES_RELATIVE_PATH)
+        this.file.checkDir(this.file.applicationDirectory, MusicalCompositionConfigControl.COMPOSITION_SOURCES_RELATIVE_PATH)
             .then(() => {
-                this.file.listDir(this.file.applicationDirectory, this.COMPOSITION_SOURCES_RELATIVE_PATH)
+                this.file.listDir(this.file.applicationDirectory, MusicalCompositionConfigControl.COMPOSITION_SOURCES_RELATIVE_PATH)
                     .then((listDir) => {
                         for (let dir of listDir) {
                             if (dir.isDirectory == true) {

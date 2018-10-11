@@ -88,6 +88,7 @@ export class Midi {
             this.midiTracks.push(midi.midiTracks[0]);
             this.numberOfTracks++;
         }
+        
     }
     
     public setupMidiFromFile(binaryString: string) {

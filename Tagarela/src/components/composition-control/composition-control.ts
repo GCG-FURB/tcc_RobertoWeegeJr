@@ -1,46 +1,37 @@
 import { Component, Input } from '@angular/core';
-import { Composition } from '../../util/composition';
+import { MusicalCompositionControl } from '../../control/musical-composition';
+import { MusicalCompositionOption } from '../../model/musical-composition';
 
 @Component({
   selector: 'composition-control',
   templateUrl: 'composition-control.html'
 })
 export class CompositionControlComponent {
+    
     @Input()
-    private composition: Composition;
+    private compositionControl: MusicalCompositionControl;
 
     constructor(){}
 
-    getCompositionStepName(): string {
-        return this.composition && this.composition.actualStep && this.composition.actualStep.name ? this.composition.actualStep.name : '' 
-    }
-
-    getCompositionSubStepName(): string {
-        return this.composition && this.composition.compositionLines && this.composition.compositionLines[this.composition.compositionLineIndex].name ? this.composition.compositionLines[this.composition.compositionLineIndex].name : '' 
-    }
-
-    getOptionsList(){
-        if (this.composition && this.composition.actualStep 
-            && this.composition.actualStep.musicalCompositionLine
-            && this.composition.actualStep.musicalCompositionLine[this.composition.compositionLineIndex]
-            && this.composition.actualStep.musicalCompositionLine[this.composition.compositionLineIndex].musicalCompositionOption) {
-            return this.composition.actualStep.musicalCompositionLine[this.composition.compositionLineIndex].musicalCompositionOption;
+    getOptionsList(): MusicalCompositionOption[] {
+        if (this.compositionControl) {
+            return  this.compositionControl.getOptionsToChoice();
         }
-        return []
+        return [];
     }
 
     getCompositionLinesList(){
-        if (this.composition 
-            && this.composition.compositionLines) {
-            return this.composition.compositionLines;
+        if (this.compositionControl 
+            && this.compositionControl.composition) {
+            return this.compositionControl.composition.lines;
         }
         return []
     }
 
     getCompositionOptionsList(lineIndex: number){
-        if (this.composition 
-            && this.composition.compositionLines) {
-            return this.composition.compositionLines[lineIndex].compositionOptions;
+        if (this.compositionControl 
+            && this.compositionControl.composition) {
+            return this.compositionControl.composition.lines[lineIndex].options;
         }
         return []
     }

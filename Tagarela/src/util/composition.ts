@@ -405,17 +405,6 @@ export class MidiCompositionOptions {
 export class LineCompositionOptions {
     public volume: number = 100;
 
-    volumeDown(){
-        if (this.volume > 0) {
-            this.volume = this.volume - 10;
-        }
-    }
-
-    volumeUp(){
-        if (this.volume < 200) {
-            this.volume = this.volume + 10;
-        }
-    }
 }
 
 

@@ -1,9 +1,3 @@
-<!--
-  Generated template for the SetupCompositionSourcePage page.
-
-  See http://ionicframework.com/docs/components/#navigation for more info on
-  Ionic pages and navigation.
--->
 <ion-header>
 
     <ion-navbar>
@@ -17,55 +11,56 @@
 
 <ion-content pager paginationType=“bullets”>
     <ion-slides>
-        <ion-slide *ngIf="this.musicalCompositionSource && this.musicalCompositionSource.musicalCompositionSourceOptions">
+        <ion-slide *ngIf="configControl && configControl.config">
             <ion-scroll scrollY="true" class="scroll">
-                <ion-label>Escolha os parâmetrosgerais de composição:</ion-label>
+                <ion-label>Escolha os parâmetros gerais de composição:</ion-label>
                 <ion-item>
                     <ion-label floating>Valor mínimo de tempo (BPM)</ion-label>
-                    <ion-input type="number" [(ngModel)]="this.musicalCompositionSource.musicalCompositionSourceOptions.minTempoValue" ></ion-input>
+                    <ion-input type="number" [(ngModel)]="configControl.config.minTempo" ></ion-input>
                 </ion-item>
                 <ion-item>
                     <ion-label floating>Valor maximo de tempo (BPM)</ion-label>
-                    <ion-input type="number" [(ngModel)]="this.musicalCompositionSource.musicalCompositionSourceOptions.maxTempoValue" ></ion-input>
+                    <ion-input type="number" [(ngModel)]="configControl.config.maxTempo" ></ion-input>
                 </ion-item>
                 <ion-item>
                     <ion-label floating>Quantidade de números incrementados</ion-label>
-                    <ion-input type="number" [(ngModel)]="this.musicalCompositionSource.musicalCompositionSourceOptions.stepTempoValue" ></ion-input>
+                    <ion-input type="number" [(ngModel)]="configControl.config.stepTempo" ></ion-input>
                 </ion-item>
                 <ion-item>
                     <ion-label floating>Valor inicial de tempo</ion-label>
-                    <ion-input type="number" [(ngModel)]="this.musicalCompositionSource.musicalCompositionSourceOptions.startTempoValue" ></ion-input>
+                    <ion-input type="number" [(ngModel)]="configControl.config.defaultTempo" ></ion-input>
                 </ion-item>
             </ion-scroll>
         </ion-slide>
-        <ion-slide *ngIf="this.musicalCompositionSource && this.musicalCompositionSource.musicalCompositionSourceOptions">
+        <ion-slide *ngIf="configControl && configControl.config">
             <ion-label>Escolha os parâmetros das linhas de composição:</ion-label>
             <ion-scroll scrollY="true" class="scroll">
-                <div *ngFor="let musicalCompositionLineOption of this.musicalCompositionSource.musicalCompositionSourceOptions.musicalCompositionLineOptions">
-                    <ion-label>{{musicalCompositionLineOption.name}}</ion-label>
+                <div *ngFor="let lineConfig of configControl.config.linesConfig">
+                    <ion-label>{{lineConfig.name}}</ion-label>
                     <ion-item>
                         <ion-label floating>Valor mínimo de volume</ion-label>
-                        <ion-input type="number" [(ngModel)]="musicalCompositionLineOption.minVolumeValue" ></ion-input>
+                        <ion-input type="number" [(ngModel)]="lineConfig.minVolume" ></ion-input>
                     </ion-item>
                     <ion-item>
                         <ion-label floating>Valor maximo de volume</ion-label>
-                        <ion-input type="number" [(ngModel)]="musicalCompositionLineOption.maxVolumeValue" ></ion-input>
+                        <ion-input type="number" [(ngModel)]="lineConfig.maxVolume" ></ion-input>
                     </ion-item>
                     <ion-item>
                         <ion-label floating>Quantidade de números incrementados</ion-label>
-                        <ion-input type="number" [(ngModel)]="musicalCompositionLineOption.stepVolumeValue" ></ion-input>
+                        <ion-input type="number" [(ngModel)]="lineConfig.stepVolume" ></ion-input>
                     </ion-item>
                     <ion-item>
                         <ion-label floating>Valor inicial de volume</ion-label>
-                        <ion-input type="number" [(ngModel)]="musicalCompositionLineOption.startVolumeValue" ></ion-input>
+                        <ion-input type="number" [(ngModel)]="lineConfig.defaultVolume" ></ion-input>
                     </ion-item>
                 </div>
             </ion-scroll>
         </ion-slide>
-        <ion-slide *ngIf="this.musicalCompositionSource && this.musicalCompositionSource.musicalCompositionSourceOptions">
+        <!--
+            <ion-slide *ngIf="configControl">
                 <ion-label>Escolha os parâmetros das opções de composição:</ion-label>
                 <ion-scroll scrollY="true" class="scroll">
-                    <div *ngFor="let musicalCompositionOptionOption of this.musicalCompositionSource.musicalCompositionSourceOptions.musicalCompositionOptionOptions">
+                    <div *ngFor="let musicalCompositionOptionOption of lineControl.musicalCompositionOptionOptions">
                         <ion-label>{{musicalCompositionOptionOption.name}}</ion-label>
                         <ion-item>
                             <ion-label>Instrumentos</ion-label>
@@ -80,5 +75,6 @@
                     </div>
                 </ion-scroll> 
             </ion-slide>
+        -->
     </ion-slides>
 </ion-content>

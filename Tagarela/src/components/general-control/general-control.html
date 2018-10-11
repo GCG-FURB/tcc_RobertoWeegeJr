@@ -7,36 +7,36 @@
                 </button>
             </div>
             <div class="flex-child-controls">
-                <ion-list *ngIf="composition && composition.compositionOptions ">
+                <ion-list *ngIf="compositionControl && compositionControl.composition ">
                     <ion-item>
                         <ion-label item-start color="secondary">Tonalidade</ion-label>
-                        <ion-badge item-end color="secondary">{{composition.compositionOptions.TONE_VALUES[composition.compositionOptions.keySignatureIndex]}}</ion-badge>
+                        <ion-badge item-end color="secondary">{{compositionControl.composition.keySignatures[compositionControl.composition.keySignatureIndex]}}</ion-badge>
                     </ion-item>
                     <ion-item>
                         <ion-range min="0" 
-                                   [max]="composition.compositionOptions.TONE_VALUES.length - 1" 
+                                   [max]="compositionControl.composition.keySignatures.length - 1" 
                                    step="1" 
                                    snaps="true" 
-                                   [(ngModel)]="composition.compositionOptions.keySignatureIndex"
+                                   [(ngModel)]="compositionControl.composition.keySignatureIndex"
                                    color="secondary">
-                        <ion-label range-left >{{composition.compositionOptions.TONE_VALUES[0]}}</ion-label>
-                        <ion-label range-right>{{composition.compositionOptions.TONE_VALUES[composition.compositionOptions.TONE_VALUES.length - 1]}}</ion-label>
+                        <ion-label range-left >{{compositionControl.composition.keySignatures[0]}}</ion-label>
+                        <ion-label range-right>{{compositionControl.composition.keySignatures[compositionControl.composition.keySignatures.length - 1]}}</ion-label>
 
                         </ion-range>
                     </ion-item>
                     <ion-item>
                         <ion-label item-start color="danger">Tempo</ion-label>
-                        <ion-badge item-end color="danger">{{composition.compositionOptions.tempo}}</ion-badge>
+                        <ion-badge item-end color="danger">{{compositionControl.composition.tempo}}</ion-badge>
                     </ion-item>
                     <ion-item>
-                        <ion-range [min]="composition.compositionOptions.minTempoValue" 
-                                   [max]="composition.compositionOptions.maxTempoValue" 
+                        <ion-range [min]="compositionControl.composition.minTempo" 
+                                   [max]="compositionControl.composition.maxTempo" 
                                    pin="true" 
-                                   [(ngModel)]="composition.compositionOptions.tempo" 
+                                   [(ngModel)]="compositionControl.composition.tempo" 
                                    color="danger"
-                                   [step]="composition.compositionOptions.stepTempoValue" >
-                        <ion-label range-left >{{composition.compositionOptions.minTempoValue}}</ion-label>
-                        <ion-label range-right>{{composition.compositionOptions.maxTempoValue}}</ion-label>
+                                   [step]="compositionControl.composition.stepTempo" >
+                        <ion-label range-left >{{compositionControl.composition.minTempo}}</ion-label>
+                        <ion-label range-right>{{compositionControl.composition.maxTempo}}</ion-label>
                         </ion-range>
                     </ion-item>
                 </ion-list>

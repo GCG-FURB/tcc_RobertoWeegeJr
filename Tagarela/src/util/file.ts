@@ -1,4 +1,5 @@
 import { File, IWriteOptions } from '@ionic-native/file';
+import { ReturnStatement } from '@angular/compiler';
 
 export class FileUtil {
 
@@ -22,6 +23,16 @@ export class FileUtil {
     set nativeFile(nativeFile: File) {
         this._nativeFile = nativeFile;
     }
+
+    public concatenatePaths(paths: string[]): string {
+        let returnPath: string;
+        returnPath = paths[0]
+        for (let i = 1; i < paths.length; i++) {
+            returnPath = this.concatenatePath(returnPath, paths[i]);
+        }
+        return returnPath;
+    }
+
 
     public concatenatePath(startPath: string, endPath: string): string {
         if (!startPath || startPath.length <= 0) {
