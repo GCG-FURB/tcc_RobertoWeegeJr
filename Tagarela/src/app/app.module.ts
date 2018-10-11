@@ -11,13 +11,13 @@ import { CompositionControlComponent } from '../components/composition-control/c
 import { ChoiceComponent } from '../components/choice/choice';
 import { VolumeComponent } from '../components/volume/volume';
 import { DragComponentDirective } from '../directives/drag-component/drag-component';
-import { MusicalInstrumentChoicePage } from '../pages/musical-instrument-choice/musical-instrument-choice';
 
 import { File } from '@ionic-native/file';
 import { FilePath } from '@ionic-native/file-path';
 import { Media } from '@ionic-native/media';
 import { CompositionSourcePage } from '../pages/composition-source/composition-source';
 import { SetupCompositionSourcePage } from '../pages/setup-composition-source/setup-composition-source';
+import { MusicalInstrumentChoiceComponent } from '../components/musical-instrument-choice/musical-instrument-choice';
 
 @NgModule({
   declarations: [
@@ -25,13 +25,12 @@ import { SetupCompositionSourcePage } from '../pages/setup-composition-source/se
     CompositionSourcePage,
     SetupCompositionSourcePage,
     CompositionPage, 
-    MusicalInstrumentChoicePage,
     GeneralControlComponent,
     CompositionControlComponent,
     ChoiceComponent, 
     VolumeComponent,
-    DragComponentDirective,
-    
+    MusicalInstrumentChoiceComponent,
+    DragComponentDirective
   ],
   imports: [
     BrowserModule,
@@ -42,8 +41,8 @@ import { SetupCompositionSourcePage } from '../pages/setup-composition-source/se
     MyApp,
     CompositionPage,
     SetupCompositionSourcePage,
-    MusicalInstrumentChoicePage,
-    CompositionSourcePage
+    CompositionSourcePage,
+    MusicalInstrumentChoiceComponent
   ],
   providers: [
     StatusBar,

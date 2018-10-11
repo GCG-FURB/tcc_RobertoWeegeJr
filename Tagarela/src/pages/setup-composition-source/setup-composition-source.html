@@ -4,14 +4,14 @@
         <ion-title>setup-composition-source-page</ion-title>
     </ion-navbar>
     <ion-toolbar>
-        <button ion-button (click)="save()">Pronto!</button>
+        <button ion-button (click)="save()" *ngIf="setupControl">Pronto!</button>
     </ion-toolbar>
 
 </ion-header>
 
 <ion-content pager paginationType=“bullets”>
     <ion-slides>
-        <ion-slide *ngIf="configControl && configControl.config">
+        <ion-slide *ngIf="setupControl">
             <ion-scroll scrollY="true" class="scroll">
                 <ion-label>Escolha os parâmetros gerais de composição:</ion-label>
                 <ion-item>
@@ -32,7 +32,7 @@
                 </ion-item>
             </ion-scroll>
         </ion-slide>
-        <ion-slide *ngIf="configControl && configControl.config">
+        <ion-slide *ngIf="setupControl">
             <ion-label>Escolha os parâmetros das linhas de composição:</ion-label>
             <ion-scroll scrollY="true" class="scroll">
                 <div *ngFor="let lineConfig of configControl.config.linesConfig">
@@ -56,25 +56,37 @@
                 </div>
             </ion-scroll>
         </ion-slide>
-        <!--
-            <ion-slide *ngIf="configControl">
-                <ion-label>Escolha os parâmetros das opções de composição:</ion-label>
-                <ion-scroll scrollY="true" class="scroll">
-                    <div *ngFor="let musicalCompositionOptionOption of lineControl.musicalCompositionOptionOptions">
-                        <ion-label>{{musicalCompositionOptionOption.name}}</ion-label>
-                        <ion-item>
-                            <ion-label>Instrumentos</ion-label>
-                            <ion-select [(ngModel)]="musicalCompositionOptionOption.musicalInstrumentsValues" multiple="true">
-                                <ion-option value="0">Piano</ion-option>
-                                <ion-option value="21">Acordeon</ion-option>
-                                <ion-option value="24">Violão</ion-option>
-                                <ion-option value="56">Trompete</ion-option>
-                                <ion-option value="65">Saxofone</ion-option>
-                            </ion-select>
-                        </ion-item>
+        <ion-slide *ngIf="setupControl">
+            <ion-label>Escolha os parâmetros das opções de composição:</ion-label>
+            <ion-scroll scrollY="true" class="scroll">
+                <div *ngFor="let stepConfig of configControl.config.stepsConfig">
+                    <ion-label>Passo: {{stepConfig.relativePath}}</ion-label>
+                    
+                    <div *ngFor="let groupConfig of stepConfig.groupsConfig">
+                        <ion-label>Grupo: {{groupConfig.relativePath}}</ion-label>
+                  
+                        <div *ngFor="let optionConfig of groupConfig.optionsConfig">
+                            <ion-label>Option: {{optionConfig.fileName}}</ion-label>
+                            <ion-item>
+                                <ion-label>Instrumentos para escolha:</ion-label>
+                                <ion-select [(ngModel)]="optionConfig.musicalInstrumentsAllowed" multiple="true">
+                                    <ion-option *ngFor=" let instrument of optionConfig.baseMusicalInstrumentsAllowed" [value]="instrument">
+                                            {{visualMidi.getInstrumentNameToMidiNumber(instrument)}}
+                                    </ion-option> 
+                                </ion-select>
+                            </ion-item>
+                            <ion-item>
+                                <ion-label>Instrumento padrão:</ion-label>
+                                <ion-select [(ngModel)]="optionConfig.defaultMusicalInstrument" multiple="false">
+                                    <ion-option *ngFor="let instrument of optionConfig.baseMusicalInstrumentsAllowed" [value]="instrument">
+                                            {{visualMidi.getInstrumentNameToMidiNumber(instrument)}}
+                                    </ion-option>
+                                </ion-select>
+                            </ion-item>
+                        </div>
                     </div>
-                </ion-scroll> 
-            </ion-slide>
-        -->
+                </div>
+            </ion-scroll> 
+        </ion-slide>
     </ion-slides>
 </ion-content>

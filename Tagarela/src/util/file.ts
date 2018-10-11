@@ -1,5 +1,4 @@
 import { File, IWriteOptions } from '@ionic-native/file';
-import { ReturnStatement } from '@angular/compiler';
 
 export class FileUtil {
 

@@ -3,7 +3,6 @@ import { NavController, NavParams } from 'ionic-angular';
 import { File } from '@ionic-native/file';
 import { FilePath } from '@ionic-native/file-path';
 import { Media } from '@ionic-native/media';
-import {  Composition } from '../../util/composition';
 import { MusicalCompositionControl } from '../../control/musical-composition';
 
 @Component({

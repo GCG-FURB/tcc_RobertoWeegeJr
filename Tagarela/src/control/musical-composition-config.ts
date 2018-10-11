@@ -1,23 +1,25 @@
 import { MusicalCompositionConfig, MusicalCompositionStepConfig, MusicalCompositionGroupConfig, MusicalCompositionOptionConfig, MusicalCompositionLineConfig } from "../model/musical-composition-config";
 import { File } from '@ionic-native/file';
 import { FileUtil } from "../util/file";
+import { MusicalCompositionSource } from "../model/musical-composition-source";
+import { MidiConstants } from "../model/midi";
 
 export class MusicalCompositionConfigControl {
 
     public static COMPOSITION_SOURCES_RELATIVE_PATH: string = 'www/assets/composition-sources/'
 
-    private CONTROL_DEFAULT_MIN_TEMPO: number = 40 
-    private CONTROL_DEFAULT_MAX_TEMPO: number = 240
-    private CONTROL_DEFAULT_STEP_TEMPO: number = 1
-    private CONTROL_DEFAULT_DEFAULT_TEMPO: number = 120
+    private CONFIG_DEFAULT_MIN_TEMPO: number = 40 
+    private CONFIG_DEFAULT_MAX_TEMPO: number = 240
+    private CONFIG_DEFAULT_STEP_TEMPO: number = 1
+    private CONFIG_DEFAULT_DEFAULT_TEMPO: number = 120
 
-    private CONTROL_DEFAULT_MUSICAL_INSTRUMENTS_ALLOWED: number[] = [0, 56]
-    private CONTROL_DEFAULT_DEFAULT_MUSICAL_INSTRUMENT: number = 0
+    private CONFIG_DEFAULT_MUSICAL_INSTRUMENTS_ALLOWED: number[] = [0, 11, 13, 21, 24, 26, 33, 41, 46, 56, 57, 58, 65, 73, 105]
+    private CONFIG_DEFAULT_DRUMS_MUSICAL_INSTRUMENTS_ALLOWED: number[] = [999]
 
-    private CONTROL_DEFAULT_MIN_VOLUME: number = 0 
-    private CONTROL_DEFAULT_MAX_VOLUME: number = 200
-    private CONTROL_DEFAULT_STEP_VOLUME: number = 10
-    private CONTROL_DEFAULT_DEFAULT_VOLUME: number = 100
+    private CONFIG_DEFAULT_MIN_VOLUME: number = 0 
+    private CONFIG_DEFAULT_MAX_VOLUME: number = 200
+    private CONFIG_DEFAULT_STEP_VOLUME: number = 10
+    private CONFIG_DEFAULT_DEFAULT_VOLUME: number = 100
 
     public config: MusicalCompositionConfig;
     fileUtil: FileUtil;
@@ -33,10 +35,10 @@ export class MusicalCompositionConfigControl {
 
             //set default values
             config.relativePath = relativePath;
-            config.minTempo = this.CONTROL_DEFAULT_MIN_TEMPO;
-            config.maxTempo = this.CONTROL_DEFAULT_MAX_TEMPO;
-            config.stepTempo = this.CONTROL_DEFAULT_STEP_TEMPO;
-            config.defaultTempo = this.CONTROL_DEFAULT_DEFAULT_TEMPO;
+            config.minTempo = this.CONFIG_DEFAULT_MIN_TEMPO;
+            config.maxTempo = this.CONFIG_DEFAULT_MAX_TEMPO;
+            config.stepTempo = this.CONFIG_DEFAULT_STEP_TEMPO;
+            config.defaultTempo = this.CONFIG_DEFAULT_DEFAULT_TEMPO;
         
             let stepDirectoriesList: string[] = await this.fileUtil.getListOfDirectories(devicePath, relativePath);
             //steps
@@ -59,8 +61,6 @@ export class MusicalCompositionConfigControl {
                     for (let optionFile of optionFilesList) {
                         let optionConfig: MusicalCompositionOptionConfig = new MusicalCompositionOptionConfig();
                         optionConfig.fileName = optionFile;
-                        optionConfig.musicalInstrumentsAllowed = this.CONTROL_DEFAULT_MUSICAL_INSTRUMENTS_ALLOWED;
-                        optionConfig.defaultMusicalInstrument = this.CONTROL_DEFAULT_DEFAULT_MUSICAL_INSTRUMENT;
                         groupConfig.optionsConfig.push(optionConfig);
                     }
                     stepConfig.groupsConfig.push(groupConfig);
@@ -74,10 +74,10 @@ export class MusicalCompositionConfigControl {
                     }))) {
                         let lineConfig: MusicalCompositionLineConfig = new MusicalCompositionLineConfig();
                         lineConfig.name = groupConfig.relativePath;
-                        lineConfig.minVolume = this.CONTROL_DEFAULT_MIN_VOLUME;
-                        lineConfig.maxVolume = this.CONTROL_DEFAULT_MAX_VOLUME;
-                        lineConfig.stepVolume = this.CONTROL_DEFAULT_STEP_VOLUME;
-                        lineConfig.defaultVolume = this.CONTROL_DEFAULT_DEFAULT_VOLUME;
+                        lineConfig.minVolume = this.CONFIG_DEFAULT_MIN_VOLUME;
+                        lineConfig.maxVolume = this.CONFIG_DEFAULT_MAX_VOLUME;
+                        lineConfig.stepVolume = this.CONFIG_DEFAULT_STEP_VOLUME;
+                        lineConfig.defaultVolume = this.CONFIG_DEFAULT_DEFAULT_VOLUME;
                         config.linesConfig.push(lineConfig);
                     }
                 }
@@ -97,5 +97,27 @@ export class MusicalCompositionConfigControl {
         }
 
     }
+
+    public determinateMidiChannels(source: MusicalCompositionSource) {
+        for (let i = 0; i < this.config.stepsConfig.length; i++) {
+            for (let j = 0; j < this.config.stepsConfig[i].groupsConfig.length; j++) {
+                for (let k = 0; k < this.config.stepsConfig[i].groupsConfig[j].optionsConfig.length; k++) {
+                    let channels: string[] = source.stepsSource[i].groupsSource[j].optionsSource[k].midi.getAllUsedChannels();
+                    if (channels.length > 1 || channels.length == 0) {
+                        throw Error('Cada midi deve possuir somente um canal');
+                    }
+                    if (MidiConstants.DRUMS_MIDI_CHANNELS.indexOf(channels[0]) >= 0) {
+                        this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].musicalInstrumentsAllowed = this.CONFIG_DEFAULT_DRUMS_MUSICAL_INSTRUMENTS_ALLOWED;
+                        this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].baseMusicalInstrumentsAllowed = this.CONFIG_DEFAULT_DRUMS_MUSICAL_INSTRUMENTS_ALLOWED;
+                        this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].defaultMusicalInstrument = this.CONFIG_DEFAULT_DRUMS_MUSICAL_INSTRUMENTS_ALLOWED[0];
+                    } else {
+                        this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].musicalInstrumentsAllowed = this.CONFIG_DEFAULT_MUSICAL_INSTRUMENTS_ALLOWED;
+                        this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].baseMusicalInstrumentsAllowed = this.CONFIG_DEFAULT_MUSICAL_INSTRUMENTS_ALLOWED;
+                        this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].defaultMusicalInstrument = this.CONFIG_DEFAULT_MUSICAL_INSTRUMENTS_ALLOWED[0];
+                    }
+                }
+            }
+        }
+    };
 
 }

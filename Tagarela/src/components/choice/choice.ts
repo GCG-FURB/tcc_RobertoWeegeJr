@@ -1,13 +1,13 @@
 import { Component, Input } from '@angular/core';
-import { MusicalInstrumentChoicePage } from '../../pages/musical-instrument-choice/musical-instrument-choice';
 import { NavController, PopoverController } from 'ionic-angular';
-import { VisualMidi } from '../../util/visual-midi';
+import { VisualMidiUtil } from '../../util/visual-midi';
 import { File } from '@ionic-native/file';
 import { FileUtil } from '../../util/file';
 import { Media } from '@ionic-native/media';
 import { MediaUtil } from '../../util/media';
 import { MusicalCompositionControl } from '../../control/musical-composition';
 import { MusicalCompositionOption } from '../../model/musical-composition';
+import { MusicalInstrumentChoiceComponent } from '../musical-instrument-choice/musical-instrument-choice';
 
 @Component({
   selector: 'choice-component',
@@ -15,7 +15,7 @@ import { MusicalCompositionOption } from '../../model/musical-composition';
 })
 export class ChoiceComponent {
 
-    private visualMidi: VisualMidi = new VisualMidi;
+    private visualMidi: VisualMidiUtil = new VisualMidiUtil;
     private fileUtil: FileUtil;
     private mediaUtil: MediaUtil;
 
@@ -35,15 +35,17 @@ export class ChoiceComponent {
     }
 
     public goToMusicalInstrumentChoice(){
-        const popover = this.popoverCtrl.create(MusicalInstrumentChoicePage, {callback: this.changeInstrumentMidiNumber.bind(this)});
+        const popover = this.popoverCtrl.create(MusicalInstrumentChoiceComponent, 
+            {
+                callback: this.changeInstrumentMidiNumber.bind(this),
+                musicalInstruments: this.midiChoice.musicalInstrumentsAllowed 
+            });
         popover.present();
     }
-
     
     public changeInstrumentMidiNumber(instrumentMidiNumber: number) {
         this.midiChoice.musicalInstrument = instrumentMidiNumber
     }
-    
 
     public playMidi() {
         this.composition.applyOptionChanges(this.midiChoice);

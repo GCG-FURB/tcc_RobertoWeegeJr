@@ -2,7 +2,7 @@ import { File } from '@ionic-native/file';
 import { FileUtil } from "../util/file";
 import { MusicalCompositionSource, MusicalCompositionStepSource, MusicalCompositionGroupSource, MusicalCompositionOptionSource } from "../model/musical-composition-source";
 import { MusicalCompositionConfig } from '../model/musical-composition-config';
-import { Midi } from '../util/midi';
+import { Midi } from '../model/midi';
 
 export class MusicalCompositionSourceControl {
 

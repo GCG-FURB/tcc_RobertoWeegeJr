@@ -1,5 +1,3 @@
-/**/
-
 export class MusicalCompositionConfig {
 
     // General Config
@@ -194,7 +192,8 @@ export class MusicalCompositionOptionConfig {
 
     //Options Config
     private _fileName: string;
-    private _musicalInstrumentsAllowed: number[]
+    private _baseMusicalInstrumentsAllowed: number[];
+    private _musicalInstrumentsAllowed: number[];
     private _defaultMusicalInstrument: number;
 
     get fileName(): string {
@@ -208,6 +207,17 @@ export class MusicalCompositionOptionConfig {
         this._fileName = fileName;
     }
     
+    get baseMusicalInstrumentsAllowed(): number[] {
+        return this._baseMusicalInstrumentsAllowed;
+    }
+    
+    set baseMusicalInstrumentsAllowed(baseMusicalInstrumentsAllowed:number[]) {
+        if (!baseMusicalInstrumentsAllowed) {
+            throw new Error("Os instrumentos musicais permitidos não podem ser nulos");
+        }
+        this._baseMusicalInstrumentsAllowed = baseMusicalInstrumentsAllowed;
+    }
+
     get musicalInstrumentsAllowed(): number[] {
         return this._musicalInstrumentsAllowed;
     }

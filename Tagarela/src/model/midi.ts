@@ -1,4 +1,4 @@
-import { ConvertionUtil } from "./hexa";
+import { ConvertionUtil } from "../util/hexa";
 
 export class Midi {
 
@@ -183,21 +183,6 @@ export class Midi {
         return midiHeaderString + midiTracksString;
     }
 
-    public getMidiDescription(): string {
- 
-    let description: string = `Midi Type: ${this.midiType}
-Number of Tracks: ${this.midiType}
-Time division: ${this.timeDivision}
-Midi Events:`
-
-    for (let midiTrack of this.midiTracks) {
-        for (let midiEvent of midiTrack.midiEvents) {
-            description += `    DeltaTime: ${midiEvent.deltaTime} - Data: ${midiEvent.midiEventData}`;
-        }
-    }
-    return description;
-    }
-
     public applyNoteTranspose(newKeySignatue: number){
         for (let midiTrack of this.midiTracks) {
             midiTrack.applyNoteTranspose(newKeySignatue);
@@ -219,6 +204,14 @@ Midi Events:`
         for (let midiTrack of this.midiTracks) {
             midiTrack.applyVolumeChange(volume);
         }
+    }
+
+    public getAllUsedChannels(): string[] {
+        let channels: string[] = [];
+        for (let track of this.midiTracks) {
+            channels = channels.concat(track.getAllUsedChannels());
+        }
+        return channels;
     }
 
 
@@ -333,7 +326,7 @@ export class MidiTrack {
 
     public applyInstrumentChange(instrumentNumber: number){
         this.removeAllInstrumentEvents();
-        for (let channel of this.findAllUsedChannels()) {
+        for (let channel of this.getAllUsedChannels()) {
             this.midiEvents.unshift(new MidiEvent('00', MidiEventType.MIDI_EVENT, 'c' + channel + 
                                                                                    ConvertionUtil.convertNumberToHexString(instrumentNumber, 1), false));
         }
@@ -376,7 +369,7 @@ export class MidiTrack {
         }       
     }
 
-    private findAllUsedChannels():string[] {
+    public getAllUsedChannels():string[] {
         let chanels: string[] = [];
         for (let event of this.midiEvents) {
             if (event && event.midiEventData && event.midiEventData.length > 1 && (event.midiEventData.substr(0, 1) == '8' || 
@@ -533,6 +526,8 @@ export class MidiConstants {
                         ,-2 //Lá# 
                         , 5 //Si  
                     ];
+
+    public static DRUMS_MIDI_CHANNELS: string[] = ['9']
 
 }
 

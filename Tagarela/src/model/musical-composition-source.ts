@@ -1,4 +1,4 @@
-import { Midi } from "../util/midi";
+import { Midi } from "./midi";
 
 export class MusicalCompositionSource {
     private _relativePath: string;           //Caminho relativo raiz da composição 
