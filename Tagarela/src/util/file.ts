@@ -125,4 +125,72 @@ export class FileUtil {
         });
     }
 
+    public getFileContentIfExists(systemPath: string, relativePath: string, fileName: string): Promise<any> {
+        return new Promise(async (resolve, reject) => {
+            if (await this.verifyFile(systemPath, relativePath, fileName)) {
+                this.nativeFile.readAsText(this.concatenatePath(systemPath, relativePath) , fileName)
+                    .then((text: string) => {
+                        resolve(text);
+                    })
+                    .catch((e) => {
+                        reject(e);
+                    })
+            } else {
+                resolve(null);
+            }
+        });
+    }
+
+    public writeFile(systemPath: string, relativePath: string, fileName: string, fileContent: string): Promise<any> {
+        return new Promise(async (resolve, reject) => {
+            await this.verifyAndCreateDirs(systemPath, relativePath);
+            let options: IWriteOptions = { replace: true };
+            this.nativeFile.writeFile(this.concatenatePath(systemPath, relativePath) , fileName, fileContent, options)
+                .then(() => {
+                    resolve(null);
+                })
+                .catch((e) => {
+                    reject(e);
+                })
+        });
+    }
+
+    public async verifyFile(systemPath: string, relativePath: string, fileName: string) {
+        try {
+            return await this.nativeFile.checkFile(systemPath, this.concatenatePath(relativePath, fileName));
+        } catch (e) {
+            if (e && e.code && e.code == 1 && e.message && e.message == 'NOT_FOUND_ERR') {
+                return false;
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    public async verifyAndCreateDirs(systemPath: string, relativePath: string){
+        try { 
+            await this.nativeFile.checkDir(systemPath, relativePath);
+        } catch (e) {
+            try { 
+                await this.nativeFile.createDir(systemPath, relativePath, false);
+            } catch (e) {
+                alert(e)
+                if (e && e.code && e.code == 12 && e.message && e.message == 'PATH_EXISTS_ERR') {
+                    await this.verifyAndCreateDirs(systemPath, this.removePath(relativePath))
+                    try {
+                        await this.nativeFile.createDir(systemPath, relativePath, false);
+                    } catch (e) {
+                        throw e;
+                    }
+                } else {
+                    throw e;
+                }
+            }
+        }
+    }
+
+    public removePath(relativePath: string): string {
+        return relativePath.substring(0, relativePath.lastIndexOf('/'));
+    }
+
 }

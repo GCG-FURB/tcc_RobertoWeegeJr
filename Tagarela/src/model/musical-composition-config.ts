@@ -23,9 +23,9 @@ export class MusicalCompositionConfig {
     }
     
     set relativePath(relativePath:string) {
-        if (!relativePath || relativePath.length <= 0){
+        /*if (!relativePath || relativePath.length <= 0){
             throw new Error("O caminho relativo não pode ser nulo ou vazio");
-        }
+        }*/
         this._relativePath = relativePath;
     }
     
@@ -34,7 +34,7 @@ export class MusicalCompositionConfig {
     }
     
     set minTempo(minTempo:number) {
-        if (!minTempo || minTempo < 1) {
+        /*if (!minTempo || minTempo < 1) {
             throw new Error("O tempo mínimo não pode ser nulo ou menor que 1");
         }
         if (this.maxTempo && minTempo > this.maxTempo) {
@@ -42,7 +42,7 @@ export class MusicalCompositionConfig {
         }
         if (this.defaultTempo && minTempo > this.defaultTempo) {
             throw new Error("O tempo mínimo não pode ser maior que o tempo padrão");
-        }
+        }*/
         this._minTempo = minTempo;
     }
     
@@ -51,7 +51,7 @@ export class MusicalCompositionConfig {
     }
     
     set maxTempo(maxTempo:number) {
-        if (!maxTempo || maxTempo < 1) {
+        /*if (!maxTempo || maxTempo < 1) {
             throw new Error("O tempo máximo não pode ser nulo ou menor que 1");
         }
         if (this.minTempo && maxTempo < this.minTempo) {
@@ -59,7 +59,7 @@ export class MusicalCompositionConfig {
         }
         if (this.defaultTempo && maxTempo < this.defaultTempo) {
             throw new Error("O tempo máximo não pode ser menor que o tempo padrão");
-        }
+        }*/
         this._maxTempo = maxTempo;
     }
     
@@ -68,9 +68,9 @@ export class MusicalCompositionConfig {
     }
     
     set stepTempo(stepTempo:number) {
-        if (!stepTempo || stepTempo < 1) {
+        /*if (!stepTempo || stepTempo < 1) {
             throw new Error("O intervalo de escolha de tempo não pode ser nulo ou menor que 1");
-        }
+        }*/
         this._stepTempo = stepTempo;
     }
     
@@ -79,7 +79,7 @@ export class MusicalCompositionConfig {
     }
     
     set defaultTempo(defaultTempo:number) {
-        if (!defaultTempo || defaultTempo < 1) {
+        /*if (!defaultTempo || defaultTempo < 1) {
             throw new Error("O tempo padrão não pode ser nulo ou menor que 1");
         }
         if (this.minTempo && defaultTempo < this.minTempo) {
@@ -87,7 +87,7 @@ export class MusicalCompositionConfig {
         }
         if (this.maxTempo && defaultTempo > this.maxTempo) {
             throw new Error("O tempo padrão não pode ser maior que o tempo máximo");
-        }
+        }*/
         this._defaultTempo = defaultTempo;
     }
 
@@ -96,9 +96,9 @@ export class MusicalCompositionConfig {
     }
     
     set stepsConfig(stepsConfig:MusicalCompositionStepConfig[]) {
-        if (!stepsConfig) {
+        /*if (!stepsConfig) {
             throw new Error("As configurações de passos não podem ser nulas");
-        }
+        }*/
         this._stepsConfig = stepsConfig;
     }
     
@@ -107,9 +107,9 @@ export class MusicalCompositionConfig {
     }
     
     set linesConfig(linesConfig:MusicalCompositionLineConfig[]) {
-        if (!linesConfig) {
+        /*if (!linesConfig) {
             throw new Error("As configurações de linhas não podem ser nulas");
-        }
+        }*/
         this._linesConfig = linesConfig;
     }
 
@@ -169,9 +169,9 @@ export class MusicalCompositionGroupConfig {
     }
     
     set relativePath(relativePath:string) {
-        if (!relativePath || relativePath.length <= 0){
+        /*if (!relativePath || relativePath.length <= 0){
             throw new Error("O caminho relativo não pode ser nulo ou vazio");
-        }
+        }*/
         this._relativePath = relativePath;
     }
     
@@ -180,9 +180,9 @@ export class MusicalCompositionGroupConfig {
     }
     
     set optionsConfig(optionsConfig:MusicalCompositionOptionConfig[]) {
-        if (!optionsConfig) {
+        /*if (!optionsConfig) {
             throw new Error("As configurações de opções não podem ser nulas");
-        }
+        }*/
         this._optionsConfig = optionsConfig;
     }
 
@@ -212,9 +212,9 @@ export class MusicalCompositionOptionConfig {
     }
     
     set baseMusicalInstrumentsAllowed(baseMusicalInstrumentsAllowed:number[]) {
-        if (!baseMusicalInstrumentsAllowed) {
+        /*if (!baseMusicalInstrumentsAllowed) {
             throw new Error("Os instrumentos musicais permitidos não podem ser nulos");
-        }
+        }*/
         this._baseMusicalInstrumentsAllowed = baseMusicalInstrumentsAllowed;
     }
 
@@ -223,9 +223,9 @@ export class MusicalCompositionOptionConfig {
     }
     
     set musicalInstrumentsAllowed(musicalInstrumentsAllowed:number[]) {
-        if (!musicalInstrumentsAllowed) {
+        /*if (!musicalInstrumentsAllowed) {
             throw new Error("Os instrumentos musicais permitidos não podem ser nulos");
-        }
+        }*/
         this._musicalInstrumentsAllowed = musicalInstrumentsAllowed;
     }
     
@@ -234,9 +234,9 @@ export class MusicalCompositionOptionConfig {
     }
     
     set defaultMusicalInstrument(defaultMusicalInstrument:number) {
-        if (!defaultMusicalInstrument && defaultMusicalInstrument !== 0) {
+        /*if (!defaultMusicalInstrument && defaultMusicalInstrument !== 0) {
             throw new Error("O instrumento musical padrão não pode ser nulo");
-        }
+        }*/
         this._defaultMusicalInstrument = defaultMusicalInstrument;
     }
 
@@ -266,7 +266,7 @@ export class MusicalCompositionLineConfig {
     }
     
     set minVolume(minVolume:number) {
-        if ((!minVolume && minVolume !== 0) || minVolume < 0) {
+        /*if ((!minVolume && minVolume !== 0) || minVolume < 0) {
             throw new Error("O volume mínimo não pode ser nulo ou menor que 0");
         }
         if (this.maxVolume && minVolume > this.maxVolume) {
@@ -274,7 +274,7 @@ export class MusicalCompositionLineConfig {
         }
         if (this.defaultVolume && minVolume > this.defaultVolume) {
             throw new Error("O volume mínimo não pode ser maior que o volume padrão");
-        }
+        }*/
         this._minVolume = minVolume;
     }
     
@@ -283,7 +283,7 @@ export class MusicalCompositionLineConfig {
     }
     
     set maxVolume(maxVolume:number) {
-        if ((!maxVolume && maxVolume !== 0) || maxVolume < 0) {
+        /*if ((!maxVolume && maxVolume !== 0) || maxVolume < 0) {
             throw new Error("O volume máximo não pode ser nulo ou menor que 0");
         }
         if (this.minVolume && maxVolume < this.minVolume) {
@@ -291,7 +291,7 @@ export class MusicalCompositionLineConfig {
         }
         if (this.defaultVolume && maxVolume < this.defaultVolume) {
             throw new Error("O volume máximo não pode ser menor que o volume padrão");
-        }
+        }*/
         this._maxVolume = maxVolume;
     }
     
@@ -300,9 +300,9 @@ export class MusicalCompositionLineConfig {
     }
     
     set stepVolume(stepVolume:number) {
-        if (!stepVolume || stepVolume < 1) {
+        /*if (!stepVolume || stepVolume < 1) {
             throw new Error("O intervalo de escolha de volume não pode ser nulo ou menor que 1");
-        }
+        }*/
         this._stepVolume = stepVolume;
     }
     
@@ -311,7 +311,7 @@ export class MusicalCompositionLineConfig {
     }
     
     set defaultVolume(defaultVolume:number) {
-        if ((!defaultVolume && defaultVolume !== 0) || defaultVolume < 0) {
+        /*if ((!defaultVolume && defaultVolume !== 0) || defaultVolume < 0) {
             throw new Error("O volume padrão não pode ser nulo ou menor que 0");
         }
         if (this.minVolume && defaultVolume < this.minVolume) {
@@ -319,7 +319,7 @@ export class MusicalCompositionLineConfig {
         }
         if (this.maxVolume && defaultVolume > this.maxVolume) {
             throw new Error("O volume padrão não pode ser maior que o volume máximo");
-        }
+        }*/
         this._defaultVolume = defaultVolume;
     }
 

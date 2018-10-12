@@ -47,6 +47,7 @@ export class MusicalComposition {
     }
     
     set minTempo(minTempo:number) {
+        minTempo = +minTempo
         if (!minTempo || minTempo < 1) {
             throw new Error("O tempo mínimo não pode ser nulo ou menor que 1");
         }
@@ -64,6 +65,7 @@ export class MusicalComposition {
     }
     
     set maxTempo(maxTempo:number) {
+        maxTempo = +maxTempo;
         if (!maxTempo || maxTempo < 1) {
             throw new Error("O tempo máximo não pode ser nulo ou menor que 1");
         }
@@ -81,6 +83,7 @@ export class MusicalComposition {
     }
     
     set stepTempo(stepTempo:number) {
+        stepTempo = +stepTempo
         if (!stepTempo || stepTempo < 1) {
             throw new Error("O intervalo de escolha de tempo não pode ser nulo ou menor que 1");
         }
@@ -264,6 +267,7 @@ export class MusicalCompositionLine {
     }
     
     set minVolume(minVolume:number) {
+        minVolume = +minVolume
         if ((!minVolume && minVolume !== 0) || minVolume < 0) {
             throw new Error("O volume mínimo não pode ser nulo ou menor que 0");
         }
@@ -281,6 +285,7 @@ export class MusicalCompositionLine {
     }
     
     set maxVolume(maxVolume:number) {
+        maxVolume = +maxVolume
         if ((!maxVolume && maxVolume !== 0) || maxVolume < 0) {
             throw new Error("O volume máximo não pode ser nulo ou menor que 0");
         }
@@ -298,6 +303,7 @@ export class MusicalCompositionLine {
     }
     
     set stepVolume(stepVolume:number) {
+        stepVolume = +stepVolume
         if (!stepVolume || stepVolume < 1) {
             throw new Error("O intervalo de escolha de volume não pode ser nulo ou menor que 1");
         }
@@ -309,6 +315,7 @@ export class MusicalCompositionLine {
     }
     
     set volume(volume:number) {
+        volume = +volume
         if ((!volume && volume !== 0) || volume < 0) {
             throw new Error("O volume padrão não pode ser nulo ou menor que 0");
         }
@@ -404,6 +411,7 @@ export class MusicalCompositionOption {
     }
     
     set musicalInstrument(musicalInstrument:number) {
+        musicalInstrument = +musicalInstrument
         if (!musicalInstrument && musicalInstrument !== 0) {
             throw new Error("O instrumento musical padrão não pode ser nulo");
         }

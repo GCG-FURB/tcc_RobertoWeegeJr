@@ -38,12 +38,12 @@ export class SetupCompositionSourcePage {
         });
     }
 
-    save() {        
+    async save() {    
+        await this.configControl.persistConfig(this.file.dataDirectory, this.relativePath);
         let compositionControl: MusicalCompositionControl = new MusicalCompositionControl(this.configControl.config, this.sourceControl.source);
         this.navCtrl.setRoot(CompositionPage, {
             compositionControl: compositionControl
         }); 
-
     }
 
 }
