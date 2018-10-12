@@ -82,11 +82,23 @@ export class Midi {
         this.midiTracks = [];
         this.timeDivision = midis[0].timeDivision;
         this.numberOfTracks = 0;
+        
+        let midiChannels: string[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', 'a', 'b', 'c', 'd', 'e', 'f'];
+        let midiChannelIndex: number = 0 
+        let channelChanged: boolean;
 
         for (let midi of midis) {
-            //validar
-            this.midiTracks.push(midi.midiTracks[0]);
-            this.numberOfTracks++;
+            for (let midiTrack of midi.midiTracks) {
+                channelChanged = midiTrack.changeMidiChannel(midiChannels[midiChannelIndex]);
+                if (channelChanged) {
+                    midiChannelIndex++;
+                    if (midiChannelIndex >= midiChannels.length){
+                        midiChannelIndex = 0;
+                    }
+                }
+                this.midiTracks.push(midiTrack);
+                this.numberOfTracks++
+            }
         }
         
     }
@@ -327,8 +339,10 @@ export class MidiTrack {
     public applyInstrumentChange(instrumentNumber: number){
         this.removeAllInstrumentEvents();
         for (let channel of this.getAllUsedChannels()) {
-            this.midiEvents.unshift(new MidiEvent('00', MidiEventType.MIDI_EVENT, 'c' + channel + 
-                                                                                   ConvertionUtil.convertNumberToHexString(instrumentNumber, 1), false));
+            if (channel != '9') {
+                this.midiEvents.unshift(new MidiEvent('00', MidiEventType.MIDI_EVENT, 'c' + channel + 
+                                                                                    ConvertionUtil.convertNumberToHexString(instrumentNumber, 1), false));
+            }
         }
     }
 
@@ -384,6 +398,24 @@ export class MidiTrack {
         }        
         return chanels;
     }
+
+    public changeMidiChannel(midiChannel: string): boolean {
+        let midiChannelChanged: boolean = false;
+        for (let event of this.midiEvents) {
+            if (event && event.midiEventData && event.midiEventData.length > 1 && (event.midiEventData.substr(0, 1) == '8' || 
+                                                        event.midiEventData.substr(0, 1) == '9' || event.midiEventData.substr(0, 1) == 'c')) {
+            
+                if (!(event.midiEventData.substr(1, 1) == '9')) {
+                    event.midiEventData = event.midiEventData.substring(0, 1) 
+                                        + midiChannel
+                                        + event.midiEventData.substring(2);
+                    midiChannelChanged = true;
+                }
+            }
+        }
+        return midiChannelChanged;    
+    }
+
 }
 
 export class MidiEvent {

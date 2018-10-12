@@ -1,5 +1,5 @@
 import { MusicalCompositionSource, MusicalCompositionOptionSource } from "./musical-composition-source";
-import { Midi, MidiConstants } from "./midi";
+import { Midi, MidiConstants } from "../control/midi";
 import { v4 as uuid } from 'uuid';
 import { MusicalCompositionConfig, MusicalCompositionOptionConfig } from "./musical-composition-config";
 
