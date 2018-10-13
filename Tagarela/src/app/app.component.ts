@@ -2,16 +2,15 @@ import { Component } from '@angular/core';
 import { Platform } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
+import { ChoiceCompositionSourcePage } from '../pages/choice-composition-source/choice-composition-source';
 
-import { CompositionPage } from '../pages/composition/composition';
-import { CompositionSourcePage }  from '../pages/composition-source/composition-source';
 @Component({
   templateUrl: 'app.html'
 })
-export class MyApp {
+export class Tagarela {
   //rootPage:any = HomePage;
   //rootPage:any = CompositionPage;
-  rootPage:any = CompositionSourcePage;
+  rootPage:any = ChoiceCompositionSourcePage;
 
   constructor(platform: Platform, statusBar: StatusBar, splashScreen: SplashScreen) {
     platform.ready().then(() => {

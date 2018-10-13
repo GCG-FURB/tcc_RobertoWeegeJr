@@ -4,7 +4,7 @@ import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { StatusBar } from '@ionic-native/status-bar';
 
-import { MyApp } from './app.component';
+import { Tagarela } from './app.component';
 import { CompositionPage } from '../pages/composition/composition';
 import { GeneralControlComponent } from '../components/general-control/general-control';
 import { CompositionControlComponent } from '../components/composition-control/composition-control';
@@ -15,14 +15,14 @@ import { DragComponentDirective } from '../directives/drag-component/drag-compon
 import { File } from '@ionic-native/file';
 import { FilePath } from '@ionic-native/file-path';
 import { Media } from '@ionic-native/media';
-import { CompositionSourcePage } from '../pages/composition-source/composition-source';
 import { SetupCompositionSourcePage } from '../pages/setup-composition-source/setup-composition-source';
 import { MusicalInstrumentChoiceComponent } from '../components/musical-instrument-choice/musical-instrument-choice';
+import { ChoiceCompositionSourcePage } from '../pages/choice-composition-source/choice-composition-source';
 
 @NgModule({
   declarations: [
-    MyApp,
-    CompositionSourcePage,
+    Tagarela,
+    ChoiceCompositionSourcePage,
     SetupCompositionSourcePage,
     CompositionPage, 
     GeneralControlComponent,
@@ -34,14 +34,14 @@ import { MusicalInstrumentChoiceComponent } from '../components/musical-instrume
   ],
   imports: [
     BrowserModule,
-    IonicModule.forRoot(MyApp)
+    IonicModule.forRoot(Tagarela)
   ],
   bootstrap: [IonicApp],
   entryComponents: [
-    MyApp,
+    Tagarela,
     CompositionPage,
     SetupCompositionSourcePage,
-    CompositionSourcePage,
+    ChoiceCompositionSourcePage,
     MusicalInstrumentChoiceComponent
   ],
   providers: [

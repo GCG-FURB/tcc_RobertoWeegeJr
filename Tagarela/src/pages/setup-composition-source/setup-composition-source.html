@@ -1,92 +1,107 @@
 <ion-header>
 
     <ion-navbar>
-        <ion-title>setup-composition-source-page</ion-title>
+        <ion-title>Configure a composição</ion-title>
     </ion-navbar>
     <ion-toolbar>
-        <button ion-button (click)="save()" *ngIf="setupControl">Pronto!</button>
+
+        <button ion-button (click)="saveConfigAndStartComposition()" *ngIf="configControl && sourceControl">Pronto!</button>
+    
+    </ion-toolbar>
+    <ion-toolbar>
+    
+        <ion-segment [(ngModel)]="configSegment" *ngIf="configControl && sourceControl">
+            <ion-segment-button value="general">
+                Geral
+            </ion-segment-button>
+            <ion-segment-button value="lines">
+                Linhas
+            </ion-segment-button>
+            <ion-segment-button value="options">
+                Opções
+            </ion-segment-button>
+        </ion-segment>
+
     </ion-toolbar>
 
 </ion-header>
 
-<ion-content pager paginationType=“bullets”>
-    <ion-slides>
-        <ion-slide *ngIf="setupControl">
-            <ion-scroll scrollY="true" class="scroll">
-                <ion-label>Escolha os parâmetros gerais de composição:</ion-label>
+<ion-content>
+
+    <div [ngSwitch]="configSegment" *ngIf="configControl && sourceControl">
+        <ion-list *ngSwitchCase="'general'">
+            <ion-label>Escolha os parâmetros gerais de composição:</ion-label>
+            <ion-item>
+                <ion-label floating>Valor mínimo de tempo (BPM)</ion-label>
+                <ion-input type="number" [(ngModel)]="configControl.config.minTempo" ></ion-input>
+            </ion-item>
+            <ion-item>
+                <ion-label floating>Valor maximo de tempo (BPM)</ion-label>
+                <ion-input type="number" [(ngModel)]="configControl.config.maxTempo" ></ion-input>
+            </ion-item>
+            <ion-item>
+                <ion-label floating>Quantidade de números incrementados</ion-label>
+                <ion-input type="number" [(ngModel)]="configControl.config.stepTempo" ></ion-input>
+            </ion-item>
+            <ion-item>
+                <ion-label floating>Valor inicial de tempo</ion-label>
+                <ion-input type="number" [(ngModel)]="configControl.config.defaultTempo" ></ion-input>
+            </ion-item>
+        </ion-list>
+      
+        <ion-list *ngSwitchCase="'lines'">
+            <ion-label>Escolha os parâmetros das linhas de composição:</ion-label>
+            <div *ngFor="let lineConfig of configControl.config.linesConfig">
+                <ion-label>{{lineConfig.name}}</ion-label>
                 <ion-item>
-                    <ion-label floating>Valor mínimo de tempo (BPM)</ion-label>
-                    <ion-input type="number" [(ngModel)]="configControl.config.minTempo" ></ion-input>
+                    <ion-label floating>Valor mínimo de volume</ion-label>
+                    <ion-input type="number" [(ngModel)]="lineConfig.minVolume" ></ion-input>
                 </ion-item>
                 <ion-item>
-                    <ion-label floating>Valor maximo de tempo (BPM)</ion-label>
-                    <ion-input type="number" [(ngModel)]="configControl.config.maxTempo" ></ion-input>
+                    <ion-label floating>Valor maximo de volume</ion-label>
+                    <ion-input type="number" [(ngModel)]="lineConfig.maxVolume" ></ion-input>
                 </ion-item>
                 <ion-item>
                     <ion-label floating>Quantidade de números incrementados</ion-label>
-                    <ion-input type="number" [(ngModel)]="configControl.config.stepTempo" ></ion-input>
+                    <ion-input type="number" [(ngModel)]="lineConfig.stepVolume" ></ion-input>
                 </ion-item>
                 <ion-item>
-                    <ion-label floating>Valor inicial de tempo</ion-label>
-                    <ion-input type="number" [(ngModel)]="configControl.config.defaultTempo" ></ion-input>
+                    <ion-label floating>Valor inicial de volume</ion-label>
+                    <ion-input type="number" [(ngModel)]="lineConfig.defaultVolume" ></ion-input>
                 </ion-item>
-            </ion-scroll>
-        </ion-slide>
-        <ion-slide *ngIf="setupControl">
-            <ion-label>Escolha os parâmetros das linhas de composição:</ion-label>
-            <ion-scroll scrollY="true" class="scroll">
-                <div *ngFor="let lineConfig of configControl.config.linesConfig">
-                    <ion-label>{{lineConfig.name}}</ion-label>
-                    <ion-item>
-                        <ion-label floating>Valor mínimo de volume</ion-label>
-                        <ion-input type="number" [(ngModel)]="lineConfig.minVolume" ></ion-input>
-                    </ion-item>
-                    <ion-item>
-                        <ion-label floating>Valor maximo de volume</ion-label>
-                        <ion-input type="number" [(ngModel)]="lineConfig.maxVolume" ></ion-input>
-                    </ion-item>
-                    <ion-item>
-                        <ion-label floating>Quantidade de números incrementados</ion-label>
-                        <ion-input type="number" [(ngModel)]="lineConfig.stepVolume" ></ion-input>
-                    </ion-item>
-                    <ion-item>
-                        <ion-label floating>Valor inicial de volume</ion-label>
-                        <ion-input type="number" [(ngModel)]="lineConfig.defaultVolume" ></ion-input>
-                    </ion-item>
-                </div>
-            </ion-scroll>
-        </ion-slide>
-        <ion-slide *ngIf="setupControl">
+            </div>
+        </ion-list>
+
+        <ion-list *ngSwitchCase="'options'">
             <ion-label>Escolha os parâmetros das opções de composição:</ion-label>
-            <ion-scroll scrollY="true" class="scroll">
-                <div *ngFor="let stepConfig of configControl.config.stepsConfig">
-                    <ion-label>Passo: {{stepConfig.relativePath}}</ion-label>
-                    
-                    <div *ngFor="let groupConfig of stepConfig.groupsConfig">
-                        <ion-label>Grupo: {{groupConfig.relativePath}}</ion-label>
-                  
-                        <div *ngFor="let optionConfig of groupConfig.optionsConfig">
-                            <ion-label>Option: {{optionConfig.fileName}}</ion-label>
-                            <ion-item>
-                                <ion-label>Instrumentos para escolha:</ion-label>
-                                <ion-select [(ngModel)]="optionConfig.musicalInstrumentsAllowed" multiple="true">
-                                    <ion-option *ngFor=" let instrument of optionConfig.baseMusicalInstrumentsAllowed" [value]="instrument">
-                                            {{visualMidi.getInstrumentNameToMidiNumber(instrument)}}
-                                    </ion-option> 
-                                </ion-select>
-                            </ion-item>
-                            <ion-item>
-                                <ion-label>Instrumento padrão:</ion-label>
-                                <ion-select [(ngModel)]="optionConfig.defaultMusicalInstrument" multiple="false">
-                                    <ion-option *ngFor="let instrument of optionConfig.baseMusicalInstrumentsAllowed" [value]="instrument">
-                                            {{visualMidi.getInstrumentNameToMidiNumber(instrument)}}
-                                    </ion-option>
-                                </ion-select>
-                            </ion-item>
-                        </div>
+            <div *ngFor="let stepConfig of configControl.config.stepsConfig">
+                <ion-label>Passo: {{stepConfig.relativePath}}</ion-label>
+                
+                <div *ngFor="let groupConfig of stepConfig.groupsConfig">
+                    <ion-label>Grupo: {{groupConfig.relativePath}}</ion-label>
+                
+                    <div *ngFor="let optionConfig of groupConfig.optionsConfig">
+                        <ion-label>Option: {{optionConfig.fileName}}</ion-label>
+                        <ion-item>
+                            <ion-label>Instrumentos para escolha:</ion-label>
+                            <ion-select [(ngModel)]="optionConfig.musicalInstrumentsAllowed" multiple="true">
+                                <ion-option *ngFor=" let instrument of optionConfig.baseMusicalInstrumentsAllowed" [value]="instrument">
+                                        {{visualMidi.getInstrumentNameToMidiNumber(instrument)}}
+                                </ion-option> 
+                            </ion-select>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label>Instrumento padrão:</ion-label>
+                            <ion-select [(ngModel)]="optionConfig.defaultMusicalInstrument" multiple="false">
+                                <ion-option *ngFor="let instrument of optionConfig.baseMusicalInstrumentsAllowed" [value]="instrument">
+                                        {{visualMidi.getInstrumentNameToMidiNumber(instrument)}}
+                                </ion-option>
+                            </ion-select>
+                        </ion-item>
                     </div>
                 </div>
-            </ion-scroll> 
-        </ion-slide>
-    </ion-slides>
+            </div>
+        </ion-list>
+    </div>
+    
 </ion-content>

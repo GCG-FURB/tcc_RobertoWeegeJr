@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams } from 'ionic-angular';
+import { NavController, NavParams, LoadingController  } from 'ionic-angular';
 import { File } from '@ionic-native/file';
 import { MusicalCompositionConfigControl } from '../../control/musical-composition-config';
 import { MusicalCompositionSourceControl } from '../../control/musical-composition-source';
-import { MusicalCompositionControl } from '../../control/musical-composition';
 import { CompositionPage } from '../composition/composition';
 import { VisualMidiUtil } from '../../util/visual-midi';
 
@@ -13,36 +12,86 @@ import { VisualMidiUtil } from '../../util/visual-midi';
 })
 export class SetupCompositionSourcePage {
 
-    baseFileSystem: string;
-    relativePath: string;
+    private _configControl: MusicalCompositionConfigControl;
+    private _sourceControl: MusicalCompositionSourceControl;
 
-    configControl: MusicalCompositionConfigControl;
-    sourceControl: MusicalCompositionSourceControl;
-
-    visualMidi: VisualMidiUtil = new VisualMidiUtil();
+    private _visualMidi: VisualMidiUtil;
     
-    setupControl: boolean;
+    private _configSegment: string;
 
-    constructor(private file: File,public navCtrl: NavController, public navParams: NavParams) {    }
+    constructor(public navCtrl: NavController, 
+                public navParams: NavParams,
+                public loadingController: LoadingController,
+                private file: File) {}
 
-    ionViewDidLoad() {
-        this.baseFileSystem = this.navParams.get('baseFileSystem')
-        this.relativePath = this.navParams.get('relativePath')
-        this.configControl = new MusicalCompositionConfigControl(this.file);
-        this.configControl.loadConfigs(this.baseFileSystem, this.relativePath).then(() => {
-            this.sourceControl = new MusicalCompositionSourceControl(this.file);
-            this.sourceControl.loadSources(this.baseFileSystem, this.configControl.config).then(() => {
-                this.configControl.determinateMidiChannels(this.sourceControl.source);
-                this.setupControl = true;
-            });
-        });
+    get configControl(): MusicalCompositionConfigControl {
+        return this._configControl;
+    }
+    
+    set configControl(configControl:MusicalCompositionConfigControl) {
+        this._configControl = configControl;
+    }
+    
+    get sourceControl(): MusicalCompositionSourceControl {
+        return this._sourceControl;
+    }
+    
+    set sourceControl(sourceControl:MusicalCompositionSourceControl) {
+        this._sourceControl = sourceControl;
+    }
+    
+    get visualMidi(): VisualMidiUtil {
+        return this._visualMidi;
+    }
+    
+    set visualMidi(visualMidi:VisualMidiUtil) {
+        this._visualMidi = visualMidi;
+    }
+         
+    get configSegment(): string {
+        return this._configSegment;
+    }
+    
+    set configSegment(configSegment:string) {
+        this._configSegment = configSegment;
     }
 
-    async save() {    
-        await this.configControl.persistConfig(this.file.dataDirectory, this.relativePath);
-        let compositionControl: MusicalCompositionControl = new MusicalCompositionControl(this.configControl.config, this.sourceControl.source);
+    ionViewDidLoad() {
+        this.visualMidi = new VisualMidiUtil();
+        this.configSegment = 'general';
+        this.loadConfigs();
+    }
+
+    private async loadConfigs(){
+        let loading = await this.loadingController.create({content: 'Carregando dados de composição'});
+        loading.present();
+        try {
+            
+            let configControl: MusicalCompositionConfigControl = new MusicalCompositionConfigControl(this.file, this.navParams.get('baseFileSystem'), this.navParams.get('relativePath'), this.navParams.get('isCustomSource'));
+            await configControl.loadConfigs();
+
+            let sourceControl: MusicalCompositionSourceControl = new MusicalCompositionSourceControl(this.file, this.navParams.get('baseFileSystem'));
+            await sourceControl.loadSources(configControl.config);
+
+            await configControl.determinateMidiChannels(sourceControl.source);
+
+            this.configControl = configControl;
+            this.sourceControl = sourceControl;
+
+            loading.dismiss();
+
+        } catch (e) {
+            loading.dismiss();
+            alert('aqui')
+            alert(JSON.stringify(e))
+        }
+    }
+
+    private async saveConfigAndStartComposition() {    
+        await this.configControl.persistConfig();
         this.navCtrl.setRoot(CompositionPage, {
-            compositionControl: compositionControl
+            compositionConfig: this.configControl.config,
+            compositionSource: this.sourceControl.source
         }); 
     }
 

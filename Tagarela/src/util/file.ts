@@ -174,15 +174,16 @@ export class FileUtil {
             try { 
                 await this.nativeFile.createDir(systemPath, relativePath, false);
             } catch (e) {
-                alert(e)
                 if (e && e.code && e.code == 12 && e.message && e.message == 'PATH_EXISTS_ERR') {
                     await this.verifyAndCreateDirs(systemPath, this.removePath(relativePath))
                     try {
                         await this.nativeFile.createDir(systemPath, relativePath, false);
                     } catch (e) {
+                        alert(e)
                         throw e;
                     }
                 } else {
+                    alert(e)
                     throw e;
                 }
             }
@@ -191,6 +192,15 @@ export class FileUtil {
 
     public removePath(relativePath: string): string {
         return relativePath.substring(0, relativePath.lastIndexOf('/'));
+    }
+
+    public async verifyDir(systemPath: string, relativePath: string) {
+        try { 
+            return await this.nativeFile.checkDir(systemPath, relativePath);
+        } catch (e) {
+            return false;
+        }
+
     }
 
 }

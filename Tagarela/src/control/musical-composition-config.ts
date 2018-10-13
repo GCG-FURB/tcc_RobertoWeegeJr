@@ -6,7 +6,12 @@ import { MidiConstants } from "./midi";
 
 export class MusicalCompositionConfigControl {
 
-    public static COMPOSITION_SOURCES_RELATIVE_PATH: string = 'www/assets/composition-sources/'
+    //static constants
+    public static DEFAULT_COMPOSITION_SOURCES_RELATIVE_PATH: string = 'www/assets/composition-sources/'
+    public static CUSTOM_COMPOSITION_SOURCES_RELATIVE_PATH: string = 'Tagarela/Musicoterapia/Composicoes/'
+
+    //private constants
+    private CONFIG_FILE_NAME: string = 'config.json';
 
     private CONFIG_DEFAULT_MIN_TEMPO: number = 40 
     private CONFIG_DEFAULT_MAX_TEMPO: number = 240
@@ -21,36 +26,102 @@ export class MusicalCompositionConfigControl {
     private CONFIG_DEFAULT_STEP_VOLUME: number = 10
     private CONFIG_DEFAULT_DEFAULT_VOLUME: number = 100
 
-    public config: MusicalCompositionConfig;
-    fileUtil: FileUtil;
+    //variables
+    private _fileUtil: FileUtil;
 
-    dataDirectory;
+    private _config: MusicalCompositionConfig;
 
-    constructor(file: File){
+    private _baseFileSystemComposition: string;
+    private _baseFileSystemConfig: string;
+    private _relativePath: string;
+
+    constructor(file: File, baseFileSystem: string, relativePath: string, isCustomSource: boolean){
         this.fileUtil = new FileUtil(file);
-        this.dataDirectory = file.dataDirectory;
+        this.baseFileSystemComposition = baseFileSystem;
+        this.baseFileSystemConfig = (isCustomSource ? baseFileSystem : file.dataDirectory);
+        this.relativePath = relativePath;
     }
 
-    public async loadConfigs(devicePath: string, relativePath: string){
+    get fileUtil(): FileUtil {
+        return this._fileUtil;
+    }
+    
+    set fileUtil(fileUtil:FileUtil) {
+        this._fileUtil = fileUtil;
+    }
+    
+    get config(): MusicalCompositionConfig {
+        return this._config;
+    }
+    
+    set config(config:MusicalCompositionConfig) {
+        this._config = config;
+    }
+    
+    get baseFileSystemComposition(): string {
+        return this._baseFileSystemComposition;
+    }
+    
+    set baseFileSystemComposition(baseFileSystemComposition:string) {
+        this._baseFileSystemComposition = baseFileSystemComposition;
+    }
+    
+    get baseFileSystemConfig(): string {
+        return this._baseFileSystemConfig;
+    }
+    
+    set baseFileSystemConfig(baseFileSystemConfig:string) {
+        this._baseFileSystemConfig = baseFileSystemConfig;
+    }
+    
+    get relativePath(): string {
+        return this._relativePath;
+    }
+    
+    set relativePath(relativePath:string) {
+        this._relativePath = relativePath;
+    }
+    
+    public async persistConfig() {
+        if (!this.config) {
+            throw Error('As configurações não estão carregadas');
+        }
+        try { 
+            await this.fileUtil.writeFile(this.baseFileSystemConfig, this.relativePath, this.CONFIG_FILE_NAME, JSON.stringify(this.config));
+        } catch (e) {
+            alert(JSON.stringify(e))
+        }
+    }
+
+    public async getConfig(): Promise<string> {
+        try { 
+            return await this.fileUtil.getFileContentIfExists(this.baseFileSystemConfig, this.relativePath, this.CONFIG_FILE_NAME);
+        } catch (e) {
+            alert(JSON.stringify(e))
+        }
+    }
+
+    public async loadConfigs(){
         try {
 
             let config = new MusicalCompositionConfig()
 
             //set default values
-            config.relativePath = relativePath;
+            config.baseFileSystem = this.baseFileSystemComposition;
+            config.relativePath = this.relativePath;
             config.minTempo = this.CONFIG_DEFAULT_MIN_TEMPO;
             config.maxTempo = this.CONFIG_DEFAULT_MAX_TEMPO;
             config.stepTempo = this.CONFIG_DEFAULT_STEP_TEMPO;
             config.defaultTempo = this.CONFIG_DEFAULT_DEFAULT_TEMPO;
         
-            let stepDirectoriesList: string[] = await this.fileUtil.getListOfDirectories(devicePath, relativePath);
+            let stepDirectoriesList: string[] = await this.fileUtil.getListOfDirectories(config.baseFileSystem, config.relativePath);
             //steps
             for (let stepDirectory of stepDirectoriesList) {
                 let stepConfig: MusicalCompositionStepConfig = new MusicalCompositionStepConfig();
                 stepConfig.relativePath = stepDirectory; 
 
-                let stepPath: string = this.fileUtil.concatenatePath(relativePath, stepDirectory);
-                let lineDirectoriesList: string[] = await this.fileUtil.getListOfDirectories(devicePath, stepPath);
+                let stepPath: string = this.fileUtil.concatenatePath(config.relativePath, stepDirectory);
+                let lineDirectoriesList: string[] = await this.fileUtil.getListOfDirectories(config.baseFileSystem, stepPath);
 
                 //groups
                 for (let groupDirectory of lineDirectoriesList) {
@@ -58,7 +129,7 @@ export class MusicalCompositionConfigControl {
                     groupConfig.relativePath = groupDirectory;
 
                     let linePath: string = this.fileUtil.concatenatePath(stepPath, groupDirectory);
-                    let optionFilesList: string[] = await this.fileUtil.getListOfFiles(devicePath, linePath)
+                    let optionFilesList: string[] = await this.fileUtil.getListOfFiles(config.baseFileSystem, linePath)
 
                     //options
                     for (let optionFile of optionFilesList) {
@@ -89,14 +160,12 @@ export class MusicalCompositionConfigControl {
                 } 
             }
 
-            let actualConfigString = await this.getConfig(this.dataDirectory, relativePath);
+            let actualConfigString = await this.getConfig();
             if (actualConfigString) {
                 let actualConfig = JSON.parse(actualConfigString);
                 
                 if (this.validateSavedConfig(config, actualConfig)) {
                     
-                    alert('deu bom')
-
                     config.minTempo = +actualConfig._minTempo;
                     config.maxTempo = +actualConfig._maxTempo;
                     config.stepTempo = +actualConfig._stepTempo;
@@ -124,7 +193,6 @@ export class MusicalCompositionConfigControl {
                 }
 
             }
-
             this.config = config;
         } catch (e) {
             alert('error')
@@ -133,9 +201,9 @@ export class MusicalCompositionConfigControl {
 
     }
 
-    public validateSavedConfig(config: MusicalCompositionConfig, actualConfig: any): boolean{
+    private validateSavedConfig(config: MusicalCompositionConfig, actualConfig: any): boolean{
         
-        if (config.relativePath != actualConfig._relativePath) {
+        if (config.baseFileSystem != actualConfig._baseFileSystem || config.relativePath != actualConfig._relativePath) {
             return false;
         }
 
@@ -177,6 +245,9 @@ export class MusicalCompositionConfigControl {
     }
 
     public determinateMidiChannels(source: MusicalCompositionSource) {
+        if (!this.config) {
+            throw Error('As configurações não estão carregadas');
+        }
         for (let i = 0; i < this.config.stepsConfig.length; i++) {
             for (let j = 0; j < this.config.stepsConfig[i].groupsConfig.length; j++) {
                 for (let k = 0; k < this.config.stepsConfig[i].groupsConfig[j].optionsConfig.length; k++) {
@@ -207,21 +278,4 @@ export class MusicalCompositionConfigControl {
             }
         }
     }
-
-    public async persistConfig(devicePath: string, relativePath: string) {
-        try { 
-            await this.fileUtil.writeFile(devicePath, relativePath, 'config.json', JSON.stringify(this.config));
-        } catch (e) {
-            alert(JSON.stringify(e))
-        }
-    }
-
-    public async getConfig(devicePath: string, relativePath: string): Promise<string> {
-        try { 
-            return await this.fileUtil.getFileContentIfExists(devicePath, relativePath, 'config.json');
-        } catch (e) {
-            alert(JSON.stringify(e))
-        }
-    }
-
 }

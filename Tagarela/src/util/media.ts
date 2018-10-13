@@ -13,6 +13,22 @@ export class MediaUtil {
         const file = this._nativeMedia.create(FileUtil._tempAreaDir + uId + '.mid');
         try {
             file.play();
+            /*setTimeout(() => {
+                file.getCurrentPosition().then((a)=>{alert(JSON.stringify(a))
+                    file.getCurrentPosition().then((a)=>{alert(JSON.stringify(a))
+                        file.getCurrentPosition().then((a)=>{alert(JSON.stringify(a))
+                            file.getCurrentPosition().then((a)=>{alert(JSON.stringify(a))
+                                file.getCurrentPosition().then((a)=>{alert(JSON.stringify(a))
+                                    file.getCurrentPosition().then((a)=>{alert(JSON.stringify(a))
+                                        file.getCurrentPosition().then((a)=>{alert(JSON.stringify(a))})
+                                    })
+                                })
+                            })
+                        })
+                    })
+                })
+            }, 200)*/
+
         } catch (e) {
             alert(JSON.stringify(e))
         }

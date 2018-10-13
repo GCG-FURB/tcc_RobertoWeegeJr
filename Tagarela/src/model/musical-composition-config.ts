@@ -1,6 +1,7 @@
 export class MusicalCompositionConfig {
 
     // General Config
+    private _baseFileSystem: string;           //Caminho relativo raiz da composição 
     private _relativePath: string;           //Caminho relativo raiz da composição 
     private _minTempo: number;               //Tempo minimo permitido para a composição (parâmatro utilizado em xxx)
     private _maxTempo: number;               //Tempo minimo permitido para a composição (parâmatro utilizado em xxx)
@@ -16,6 +17,17 @@ export class MusicalCompositionConfig {
     constructor(){
         this.stepsConfig = [];
         this.linesConfig = [];
+    }
+
+    get baseFileSystem(): string {
+        return this._baseFileSystem;
+    }
+    
+    set baseFileSystem(baseFileSystem:string) {
+        /*if (!relativePath || relativePath.length <= 0){
+            throw new Error("O caminho relativo não pode ser nulo ou vazio");
+        }*/
+        this._baseFileSystem = baseFileSystem;
     }
 
     get relativePath(): string {
