@@ -4,8 +4,6 @@ import { MusicalCompositionSource } from '../model/musical-composition-source';
 
 export class MusicalCompositionControl {
 
-    private KEY_SIGNATURES: string[] = ['Dó', 'Dó#', 'Ré', 'Ré#', 'Mi', 'Fá', 'Fá#', 'Sol', 'Sol#', 'Lá', 'Lá#', 'Si'];
-
     public composition: MusicalComposition;
     
     public optionsMap: Map<number, Map<number, MusicalCompositionOption[]>>;
@@ -16,8 +14,7 @@ export class MusicalCompositionControl {
         this.composition.source = source;
         
         //key signature
-        this.composition.keySignatures = this.KEY_SIGNATURES;
-        this.composition.keySignatureIndex = 0;
+        this.composition.keySignature = 0;
     
         //tempo
         this.composition.minTempo = config.minTempo;

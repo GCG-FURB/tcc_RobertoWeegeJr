@@ -12,8 +12,7 @@ export class MusicalComposition {
     private _stepTempo: number;              //Passo a passo utilizado na composição
     private _tempo: number;                  //Tempo padrão aplicado no inicio da composição
 
-    private _keySignatures: string[];
-    private _keySignatureIndex: number
+    private _keySignature: number
 
     //key signature;
 
@@ -107,20 +106,12 @@ export class MusicalComposition {
         this._tempo = tempo;
     }
     
-    get keySignatures(): string[] {
-        return this._keySignatures;
+    get keySignature(): number {
+        return this._keySignature;
     }
     
-    set keySignatures(keySignatures:string[]) {
-        this._keySignatures = keySignatures;
-    }
-    
-    get keySignatureIndex(): number {
-        return this._keySignatureIndex;
-    }
-    
-    set keySignatureIndex(keySignatureIndex:number) {
-        this._keySignatureIndex = keySignatureIndex;
+    set keySignature(keySignature:number) {
+        this._keySignature = keySignature;
     }
 
     get stepIndex(): number {
@@ -196,10 +187,9 @@ export class MusicalComposition {
         }
         this.midi.generateMidiType1(midiLines);
     }
-
     
     public applyMidiChanges(midi: Midi){
-        midi.applyNoteTranspose(this.getSignatureKey());
+        midi.applyNoteTranspose(this.keySignature);
         midi.applyTempoChange(this.getTempo());
     }
 
@@ -211,10 +201,6 @@ export class MusicalComposition {
     public applyLineChanges(line: MusicalCompositionLine) {
         line.applyMidiChanges();
         this.applyMidiChanges(line.midi);
-    }
-
-    public getSignatureKey(): number {
-        return MidiConstants.KEY_SIGNATURE_CONVERSION_VECTOR[this.keySignatureIndex];
     }
 
     public getTempo(): number {

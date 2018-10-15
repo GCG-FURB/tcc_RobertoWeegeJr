@@ -2,9 +2,11 @@
     <ion-navbar>
         <ion-title>CompositionPage</ion-title>
     </ion-navbar>
+    <ion-toolbar>
+        <general-control [compositionControl]="compositionControl"></general-control>
+    </ion-toolbar>
 </ion-header>
 
 <ion-content padding>
-    <general-control [compositionControl]="compositionControl"></general-control>
     <composition-control [compositionControl]="compositionControl"></composition-control>
 </ion-content>

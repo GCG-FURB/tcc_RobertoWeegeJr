@@ -7,7 +7,7 @@ import { Media } from '@ionic-native/media';
 import { MediaUtil } from '../../util/media';
 import { MusicalCompositionControl } from '../../control/musical-composition';
 import { MusicalCompositionOption } from '../../model/musical-composition';
-import { MusicalInstrumentChoiceComponent } from '../musical-instrument-choice/musical-instrument-choice';
+import { ListPopoverComponent } from '../list-popover/list-popover';
 
 @Component({
   selector: 'choice-component',
@@ -37,10 +37,13 @@ export class ChoiceComponent {
     }
 
     public goToMusicalInstrumentChoice(){
-        const popover = this.popoverCtrl.create(MusicalInstrumentChoiceComponent, 
+        const popover = this.popoverCtrl.create(ListPopoverComponent, 
             {
+                title: 'Escolha o instrumento',
+                list: this.midiChoice.musicalInstrumentsAllowed,
                 callback: this.changeInstrumentMidiNumber.bind(this),
-                musicalInstruments: this.midiChoice.musicalInstrumentsAllowed 
+                iconFunction: this.visualMidi.getIonIconToMidiNumber,
+                nameFunction: this.visualMidi.getInstrumentNameToMidiNumber,
             });
         popover.present();
     }

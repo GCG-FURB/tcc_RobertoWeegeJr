@@ -54,7 +54,7 @@ export class VolumeComponent {
         const popover = this.popoverCtrl.create(SlidePopoverComponent, 
             {
                 callback: this.changeVolume.bind(this),
-                color: 'string',
+                color: 'secondary',
                 description: 'Volume',
                 value: this.compositionLine.volume,
                 minRangeValue: this.compositionLine.minVolume,
@@ -69,15 +69,14 @@ export class VolumeComponent {
         this.compositionLine.volume = volume;
     }
 
-/*
-    color: string;
-    description: string;
-    value: number;
-    minRangeValue: number;
-    maxRangeValue: number;
-    stepRangeValue: number;
-    snapsRange: boolean;
-*/
-
+    private getVolumeIcon(){
+        if (this.compositionLine.volume == 0) {
+            return 'volume-mute'
+        }
+        if (this.compositionLine.volume <= this.compositionLine.maxVolume/2) {
+            return 'volume-down'
+        }
+        return 'volume-up'
+    }
 
 }

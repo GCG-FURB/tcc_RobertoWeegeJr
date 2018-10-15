@@ -8,8 +8,6 @@ import { ChoiceCompositionSourcePage } from '../pages/choice-composition-source/
   templateUrl: 'app.html'
 })
 export class Tagarela {
-  //rootPage:any = HomePage;
-  //rootPage:any = CompositionPage;
   rootPage:any = ChoiceCompositionSourcePage;
 
   constructor(platform: Platform, statusBar: StatusBar, splashScreen: SplashScreen) {

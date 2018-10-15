@@ -77,4 +77,45 @@ export class VisualMidiUtil {
         return 'Desconhecido'
     }
 
+
+    public getInstrumentNameToMayorKeySignatureNumber(keySignatureNumber: number): string {
+        switch (keySignatureNumber) {
+            case -7:
+                return 'Dób Maior';
+            case -6:
+                return 'Solb Maior';
+            case -5:
+                return 'Réb Maior';
+            case -4:
+                return 'Láb Maior';
+            case -3:
+                return 'Mib Maior';
+            case -2:
+                return 'Sib Maior';
+            case -1:
+                return 'Fá Maior';
+            case 0:
+                return 'Dó Maior';
+            case 1:
+                return 'Sol Maior';
+            case 2:
+                return 'Ré Maior';
+            case 3:
+                return 'Lá Maior';
+            case 4:
+                return 'Mi Maior';
+            case 5:
+                return 'Si Maior';
+            case 6:
+                return 'Fá# Maior';
+            case 7:
+                return 'Dó# Maior';
+        }
+        return ''
+    }
+
+    public getIonIconToMayorKeySignatureNumber(keySignatureNumber: number): string {
+        return 'key_signature_' + keySignatureNumber;
+    }
+
 }

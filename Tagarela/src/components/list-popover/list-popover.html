@@ -1,0 +1,14 @@
+<ion-header>
+  <ion-navbar>
+      <ion-title>{{title}}</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+  <ion-list *ngIf="list">
+      <ion-item *ngFor="let element of list" (click)="goBack(element)" >
+          <ion-icon [name]="iconFunction(element)" item-start></ion-icon>
+          {{nameFunction(element)}}
+      </ion-item>
+  </ion-list>
+</ion-content>

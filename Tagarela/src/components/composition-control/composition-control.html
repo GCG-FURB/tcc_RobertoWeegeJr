@@ -1,38 +1,34 @@
-<ion-card>
-    
+
+<ion-card class="overflow-drag" *ngIf="compositionControl">
     <ion-card-content class="overflow-drag">
-        <ion-card class="overflow-drag" *ngIf="compositionControl">
-            <ion-card-content class="overflow-drag">
-                <div class="teste overflow-drag">
-                    <ion-scroll id="scroll1" scrollX="true" class="scroll-1"> 
-                        <div class="choice-margin float-left-child top-z-index" *ngFor="let item of getOptionsList()">
-                            <choice-component [midiChoice]="item" [composition]="compositionControl" [toChoice]="true" ></choice-component> 
-                        </div>
-                    </ion-scroll> 
+        <div class="teste overflow-drag">
+            <ion-scroll id="scroll1" scrollX="true" class="scroll-1"> 
+                <div class="choice-margin float-left-child top-z-index" *ngFor="let item of getOptionsList()">
+                    <choice-component [midiChoice]="item" [composition]="compositionControl" [toChoice]="true" ></choice-component> 
                 </div>
-            </ion-card-content>
-        </ion-card>
-        <ion-card *ngIf="compositionControl">
-            <ion-card-content>
-                <div class="flex-parent">
-                    <div class="flex-child-control">
-                        <ion-scroll scrollX="true" class="scroll-2">
-                            <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
-                                <volume-component class="float-left-child" [composition]="compositionControl" [compositionLine]="compositionLine"></volume-component>
-                            </div>
-                        </ion-scroll>
+            </ion-scroll> 
+        </div>
+    </ion-card-content>
+</ion-card>
+<ion-card *ngIf="compositionControl">
+    <ion-card-content>
+        <div class="flex-parent">
+            <div class="flex-child-control">
+                <ion-scroll scrollX="true" class="scroll-2">
+                    <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
+                        <volume-component [composition]="compositionControl" [compositionLine]="compositionLine"></volume-component>
                     </div>
-                    <div class="flex-child-lines">
-                        <ion-scroll scrollX="true" class="scroll-2">
-                            <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
-                                <choice-component class="float-left-child" *ngFor="let compositionOption of compositionLine.options"
-                                [midiChoice]="compositionOption" [composition]="compositionControl">
-                                </choice-component>
-                            </div>
-                        </ion-scroll>
+                </ion-scroll>
+            </div>
+            <div class="flex-child-lines">
+                <ion-scroll scrollX="true" class="scroll-2">
+                    <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
+                        <choice-component class="float-left-child" *ngFor="let compositionOption of compositionLine.options"
+                        [midiChoice]="compositionOption" [composition]="compositionControl">
+                        </choice-component>
                     </div>
-                </div>
-            </ion-card-content>
-        </ion-card>
+                </ion-scroll>
+            </div>
+        </div>
     </ion-card-content>
 </ion-card>

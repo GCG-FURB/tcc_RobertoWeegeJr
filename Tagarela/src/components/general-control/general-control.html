@@ -1,46 +1,24 @@
-<ion-card>
-    <ion-card-content>
-        <div class="flex-parent">
-            <div class="flex-child-play">
-                <button ion-button large class="center" (click)="teste()">
-                    <ion-icon name="play"></ion-icon>
-                </button>
-            </div>
-            <div class="flex-child-controls">
-                <ion-list *ngIf="compositionControl && compositionControl.composition ">
-                    <ion-item>
-                        <ion-label item-start color="secondary">Tonalidade</ion-label>
-                        <ion-badge item-end color="secondary">{{compositionControl.composition.keySignatures[compositionControl.composition.keySignatureIndex]}}</ion-badge>
-                    </ion-item>
-                    <ion-item>
-                        <ion-range min="0" 
-                                   [max]="compositionControl.composition.keySignatures.length - 1" 
-                                   step="1" 
-                                   snaps="true" 
-                                   [(ngModel)]="compositionControl.composition.keySignatureIndex"
-                                   color="secondary">
-                        <ion-label range-left >{{compositionControl.composition.keySignatures[0]}}</ion-label>
-                        <ion-label range-right>{{compositionControl.composition.keySignatures[compositionControl.composition.keySignatures.length - 1]}}</ion-label>
 
-                        </ion-range>
-                    </ion-item>
-                    <ion-item>
-                        <ion-label item-start color="danger">Tempo</ion-label>
-                        <ion-badge item-end color="danger">{{compositionControl.composition.tempo}}</ion-badge>
-                    </ion-item>
-                    <ion-item>
-                        <ion-range [min]="compositionControl.composition.minTempo" 
-                                   [max]="compositionControl.composition.maxTempo" 
-                                   pin="true" 
-                                   [(ngModel)]="compositionControl.composition.tempo" 
-                                   color="danger"
-                                   [step]="compositionControl.composition.stepTempo" >
-                        <ion-label range-left >{{compositionControl.composition.minTempo}}</ion-label>
-                        <ion-label range-right>{{compositionControl.composition.maxTempo}}</ion-label>
-                        </ion-range>
-                    </ion-item>
-                </ion-list>
-            </div>
-        </div>
-    </ion-card-content>
-</ion-card>
+<div class="flex-parent" *ngIf="compositionControl && compositionControl.composition">
+        <button ion-button icon-only large class="flex-child" (click)="teste()">
+            <ion-icon name="play"></ion-icon>
+        </button>
+
+        <button ion-button icon-only large class="flex-child" color="secondary" (click)="changeKeySignature()">
+            <ion-icon [name]="visualMidi.getIonIconToMayorKeySignatureNumber(compositionControl.composition.keySignature)"></ion-icon>
+        </button>
+
+        <button ion-button large class="flex-child" color="danger" (click)="changeTempo()">
+            <ion-icon name="tempo"></ion-icon>
+            = {{compositionControl.composition.tempo}}
+        </button>
+
+        <button ion-button icon-only large class="flex-child" color="secondary">
+            <ion-icon name="undo"></ion-icon>
+        </button>
+
+        <button ion-button icon-only large class="flex-child">
+            <ion-icon name="download"></ion-icon>
+        </button>
+
+</div>

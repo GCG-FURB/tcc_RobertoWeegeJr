@@ -87,7 +87,7 @@ export class ChoiceCompositionSourcePage {
     }
 
     private async loadCompositionOptions() {
-        let loading = await this.loadingController.create({content: 'Buscando dados de composição'});
+        let loading = await this.loadingController.create({content: 'Buscando Dados de Composição'});
         loading.present();
         try {
             //load default composition sources

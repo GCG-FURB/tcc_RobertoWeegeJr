@@ -30,7 +30,7 @@ export class CompositionPage {
     }
 
     private async setupComposition(){
-        let loading = await this.loadingController.create({content: 'Iniciando composição'});
+        let loading = await this.loadingController.create({content: 'Iniciando Composição'});
         loading.present();
         try {
             this.compositionControl = new MusicalCompositionControl(this.navParams.get('compositionConfig'), this.navParams.get('compositionSource'));

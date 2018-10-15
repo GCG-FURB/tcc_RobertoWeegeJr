@@ -16,9 +16,9 @@ import { File } from '@ionic-native/file';
 import { FilePath } from '@ionic-native/file-path';
 import { Media } from '@ionic-native/media';
 import { SetupCompositionSourcePage } from '../pages/setup-composition-source/setup-composition-source';
-import { MusicalInstrumentChoiceComponent } from '../components/musical-instrument-choice/musical-instrument-choice';
 import { ChoiceCompositionSourcePage } from '../pages/choice-composition-source/choice-composition-source';
 import { SlidePopoverComponent } from '../components/slide-popover/slide-popover';
+import { ListPopoverComponent } from '../components/list-popover/list-popover';
 
 @NgModule({
   declarations: [
@@ -30,8 +30,8 @@ import { SlidePopoverComponent } from '../components/slide-popover/slide-popover
     CompositionControlComponent,
     ChoiceComponent, 
     VolumeComponent,
-    MusicalInstrumentChoiceComponent,
     SlidePopoverComponent,
+    ListPopoverComponent,
     DragComponentDirective
   ],
   imports: [
@@ -44,8 +44,8 @@ import { SlidePopoverComponent } from '../components/slide-popover/slide-popover
     CompositionPage,
     SetupCompositionSourcePage,
     ChoiceCompositionSourcePage,
-    MusicalInstrumentChoiceComponent,
-    SlidePopoverComponent
+    SlidePopoverComponent,
+    ListPopoverComponent
   ],
   providers: [
     StatusBar,

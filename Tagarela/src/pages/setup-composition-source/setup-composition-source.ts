@@ -63,7 +63,7 @@ export class SetupCompositionSourcePage {
     }
 
     private async loadConfigs(){
-        let loading = await this.loadingController.create({content: 'Carregando dados de composição'});
+        let loading = await this.loadingController.create({content: 'Carregando Dados de Composição'});
         loading.present();
         try {
             
