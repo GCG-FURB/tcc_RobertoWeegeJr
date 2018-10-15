@@ -4,6 +4,9 @@ import { FileUtil } from '../../util/file';
 import { Media } from '@ionic-native/media';
 import { MediaUtil } from '../../util/media';
 import { MusicalCompositionLine, MusicalComposition } from '../../model/musical-composition';
+import { PopoverController } from 'ionic-angular';
+import { SlidePopoverComponent } from '../slide-popover/slide-popover';
+import { noComponentFactoryError } from '@angular/core/src/linker/component_factory_resolver';
 
 @Component({
     selector: 'volume-component',
@@ -20,7 +23,7 @@ export class VolumeComponent {
     private fileUtil: FileUtil;
     private mediaUtil: MediaUtil;
 
-    constructor(private file: File, private media: Media) {        
+    constructor(private file: File, private media: Media, private popoverCtrl: PopoverController) {        
         this.fileUtil = new FileUtil(file);
         this.mediaUtil = new MediaUtil(media);
     }
@@ -45,5 +48,36 @@ export class VolumeComponent {
     volumeUp(){
         this.compositionLine.volumeUp();
     }
+
+
+    public goToVolumePopover(){
+        const popover = this.popoverCtrl.create(SlidePopoverComponent, 
+            {
+                callback: this.changeVolume.bind(this),
+                color: 'string',
+                description: 'Volume',
+                value: this.compositionLine.volume,
+                minRangeValue: this.compositionLine.minVolume,
+                maxRangeValue: this.compositionLine.maxVolume,
+                stepRangeValue: this.compositionLine.stepVolume,
+                snapsRange: false
+            });
+        popover.present();
+    }
+
+    public changeVolume(volume: number) {
+        this.compositionLine.volume = volume;
+    }
+
+/*
+    color: string;
+    description: string;
+    value: number;
+    minRangeValue: number;
+    maxRangeValue: number;
+    stepRangeValue: number;
+    snapsRange: boolean;
+*/
+
 
 }

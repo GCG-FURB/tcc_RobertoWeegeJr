@@ -238,7 +238,7 @@ export class MusicalCompositionLine {
     private _minVolume: number;               //Tempo minimo permitido para a composição (parâmatro utilizado em xxx)
     private _maxVolume: number;               //Tempo minimo permitido para a composição (parâmatro utilizado em xxx)
     private _stepVolume: number;              //Passo a passo utilizado na composição
-    private _volume: number;            //Tempo padrão aplicado no inicio da composição
+    private _volume: number;                  //Tempo padrão aplicado no inicio da composição
 
     //midi
     private _midiId: string;
