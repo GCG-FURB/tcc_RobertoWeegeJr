@@ -1,4 +1,5 @@
 import { ConvertionUtil } from "../util/hexa";
+import { MidiSpectrum, MidiSpectrumLine, MidiSpectrumNote } from "../model/midi-spectrum";
 
 export class Midi {
 
@@ -226,6 +227,68 @@ export class Midi {
         return channels;
     }
 
+    public generateMidiSpectrum(): MidiSpectrum {
+        
+        let midiSpectrum: MidiSpectrum = new MidiSpectrum();
+
+        let midiTotalDeltaTime: number = 0;
+        let midiMinNote: number = 128;
+        let midiMaxNote: number = 0;
+
+        let spectrumLineMap: Map<number, MidiSpectrumLine> = new Map();
+        let spectrumNoteMap: Map<number, number> = new Map();
+
+        for (let midiEvent of this.midiTracks[0].midiEvents) {
+            midiTotalDeltaTime += ConvertionUtil.convertHexStringToNumber(midiEvent.deltaTime); 
+            if (midiEvent.midiEventData.length >= 1 && midiEvent.midiEventData.substr(0, 1) == '9') {
+                let note: number = ConvertionUtil.convertHexStringToNumber(midiEvent.midiEventData.substr(2, 2));
+                if (note < midiMinNote) {
+                    midiMinNote = note;
+                }
+                if (note > midiMaxNote) {
+                    midiMaxNote = note;
+                }
+                spectrumNoteMap.set(note, midiTotalDeltaTime);
+            } else {
+                if (midiEvent.midiEventData.length >= 1 && midiEvent.midiEventData.substr(0, 1) == '8') {
+                    
+                    let note: number = ConvertionUtil.convertHexStringToNumber(midiEvent.midiEventData.substr(2, 2));
+                    
+                    if (!spectrumLineMap.has(note)){
+                        let spectrumLine: MidiSpectrumLine = new MidiSpectrumLine();
+                        spectrumLine.noteValue = note;
+                        spectrumLineMap.set(note, spectrumLine);
+                    }
+
+                    let spectrumNote: MidiSpectrumNote = new MidiSpectrumNote();
+                    spectrumNote.x = spectrumNoteMap.get(note);
+                    spectrumNote.width = midiTotalDeltaTime - spectrumNote.x;
+                    spectrumLineMap.get(note).notes.push(spectrumNote);
+                    
+                }
+            }
+        }
+
+        //tamanho em x
+        midiSpectrum.width = midiTotalDeltaTime;
+        //tamanho em y
+        midiSpectrum.height = midiMaxNote - midiMinNote;
+
+        for (let i = midiMinNote; i <= midiMaxNote; i++) {
+            
+            if (spectrumLineMap.has(i)) {
+                midiSpectrum.lines.push(spectrumLineMap.get(i));
+            } else {
+                let spectrumLine: MidiSpectrumLine = new MidiSpectrumLine();
+                spectrumLine.noteValue = i;
+                midiSpectrum.lines.push(spectrumLine);
+            }
+            
+        }
+
+        return midiSpectrum;
+
+    }
 
 }
 

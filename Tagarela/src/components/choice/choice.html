@@ -1,4 +1,4 @@
-<div class="flex-parent image" >
+<div [ngStyle]="{'background-image':'url('+ this.getBackgroundImage() +')'}" class="flex-parent image">
     <div class="flex-child">
         <button ion-button icon-only class="center" (click)="playMidi()">
             <ion-icon name="play"></ion-icon>

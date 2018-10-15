@@ -5,6 +5,7 @@ import { SetupCompositionSourcePage } from '../setup-composition-source/setup-co
 import { MusicalCompositionConfigControl } from '../../control/musical-composition-config';
 import { Platform } from 'ionic-angular';
 import { FileUtil } from '../../util/file';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
     selector: 'page-choice-composition-source',
@@ -23,7 +24,7 @@ export class ChoiceCompositionSourcePage {
                 public navCtrl: NavController, 
                 public navParams: NavParams, 
                 public loadingController: LoadingController,
-                private file: File, ) {}
+                private file: File, private sanitizer: DomSanitizer ) {}
 
     get fileUtil(): FileUtil {
         return this._fileUtil;
@@ -80,7 +81,7 @@ export class ChoiceCompositionSourcePage {
         } else if (this.plataform.is('ios')) {
             this.customCompositionSystemFileSystem = this.file.documentsDirectory;
         } else {
-            alert('plataforma não suportada')
+            throw new Error('plataforma não suportada')
         }
         this.loadCompositionOptions();
     }
@@ -103,5 +104,6 @@ export class ChoiceCompositionSourcePage {
             alert(JSON.stringify(e))
         }
     }
+
 
 }

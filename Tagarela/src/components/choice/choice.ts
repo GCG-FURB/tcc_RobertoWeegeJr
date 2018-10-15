@@ -19,6 +19,8 @@ export class ChoiceComponent {
     private fileUtil: FileUtil;
     private mediaUtil: MediaUtil;
 
+    private backgroundSVGImageURL: string;
+
     @Input()
     private composition: MusicalCompositionControl;
     
@@ -59,5 +61,18 @@ export class ChoiceComponent {
     public teste() {
         this.composition.applyChoice(this.midiChoice);
     }
- 
+
+    getBackgroundImage(): string {
+        if (!this.backgroundSVGImageURL) {
+            this.generateBackgroundImageSVG();
+        }
+        return this.backgroundSVGImageURL;
+    }
+
+    generateBackgroundImageSVG(){
+        if (this.midiChoice && this.midiChoice.midi) {
+            this.backgroundSVGImageURL = encodeURI('data:image/svg+xml;utf8,' + this.midiChoice.midi.generateMidiSpectrum().getSVG());
+        }
+    }
+
 }
