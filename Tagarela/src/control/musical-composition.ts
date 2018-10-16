@@ -73,4 +73,16 @@ export class MusicalCompositionControl {
         this.composition.applyChoice(option);
     }
 
+    public undoChoice() {
+        this.composition.undoChoice();
+    }
+
+    public compositionHasStarted(): boolean {
+        return this.composition.stepIndex > 0 || this.composition.lineIndex > 0;
+    }
+
+    public compositionHasEnded(): boolean {
+        return this.composition.stepIndex > this.composition.source.stepsSource.length -1
+    }
+
 }

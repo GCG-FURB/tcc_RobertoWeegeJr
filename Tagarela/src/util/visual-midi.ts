@@ -1,6 +1,9 @@
 
 export class VisualMidiUtil {
     
+
+
+
     public getIonIconToMidiNumber(midiNumber: number): string {
         switch (midiNumber) {
             case 0:
@@ -117,5 +120,51 @@ export class VisualMidiUtil {
     public getIonIconToMayorKeySignatureNumber(keySignatureNumber: number): string {
         return 'key_signature_' + keySignatureNumber;
     }
+
+    public getSpectrumPaleteByInstrumentType(instrumentType: string){
+
+        switch(instrumentType){
+            case 'instrument_type_keys':
+                return ['#F44336', '#D32F2F', '#B71C1C'];
+            case 'instrument_type_strings':
+                return ['#4CAF50', '#388E3C', '#1B5E20'];
+            case 'instrument_type_brass':
+                return ['#2196F3', '#1976D2', '#0D47A1'];
+            case 'instrument_type_woods':
+                return ['#FFEB3B', '#FBC02D', '#F57F17'];
+            case 'instrument_type_percussion':
+                return ['#FFC107', '#FFA000', '#FF6F00'];
+        }
+        return ['#000000', '#888888', '#FFFFFF'];
+    }
+
+    public getInstrumentType(midiNumber: number): string {
+        switch (midiNumber) {
+            case 0:
+            case 21:
+                return 'instrument_type_keys';
+            case 24:
+            case 26:
+            case 33:
+            case 41:
+            case 46:
+            case 105:
+				return 'instrument_type_strings';
+	        case 56:
+            case 57:
+            case 58:		
+				return 'instrument_type_brass';
+			case 65:
+            case 73:			
+				return 'instrument_type_woods';
+			case 11:
+            case 13:
+			case 999:
+				return 'instrument_type_percussion';
+
+        }
+        return 'none'
+    }
+
 
 }

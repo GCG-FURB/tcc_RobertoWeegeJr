@@ -26,8 +26,6 @@ export class ConvertionUtil {
     public static calculateDeltaTime(binaryString: string) : number {
         let binaryDeltaTime: string = '';
         for (let str of binaryString) {
-            let aaa = str.charCodeAt(0);
-            let bbb = str.charCodeAt(0).toString(2);
             binaryDeltaTime += this.completeBits(str.charCodeAt(0).toString(2), 7);
         }
         return parseInt(binaryDeltaTime, 2);

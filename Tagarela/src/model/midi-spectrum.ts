@@ -43,15 +43,15 @@ export class MidiSpectrum {
     }
 
 
-    public getSVG(): string {
+    public getSVG(backgroundColor: string, noteColor: string, borderColor: string): string {
 
         this.generateLinesY();
 
         let svg: string = `<svg width="${this.width / 50000.0}cm" height="${this.lines.length / 2.0}cm" version="1.1" xmlns="http://www.w3.org/2000/svg">`;
-        svg += `<rect x="0cm" y="0cm" width="${this.width / 50000.0}cm" height="${this.lines.length / 2.0}cm" fill="blue"/>`;
+        svg += `<rect x="0cm" y="0cm" width="${this.width / 50000.0}cm" height="${this.lines.length / 2.0}cm" fill="${backgroundColor}"/>`;
         for (let line of this.lines) {
             for (let note of line.notes) {
-                svg += `<rect x="${note.x / 50000.0}cm" y="${line.y / 2.0}cm" width="${note.width / 50000.0}cm" height="${0.5}cm" fill="green"/>`;
+                svg += `<rect x="${note.x / 50000.0}cm" y="${line.y / 2.0}cm" width="${note.width / 50000.0}cm" height="${0.5}cm" fill="${noteColor}" stroke="${borderColor}"/>`;
             }
         }
         svg += `</svg>`; 

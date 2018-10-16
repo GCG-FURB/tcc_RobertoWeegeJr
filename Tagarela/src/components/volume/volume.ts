@@ -6,13 +6,17 @@ import { MediaUtil } from '../../util/media';
 import { MusicalCompositionLine, MusicalComposition } from '../../model/musical-composition';
 import { PopoverController } from 'ionic-angular';
 import { SlidePopoverComponent } from '../slide-popover/slide-popover';
-import { noComponentFactoryError } from '@angular/core/src/linker/component_factory_resolver';
+import { PlayMidiSpectrums, PlayMidiSpectrum } from '../../model/play-midi';
+import { PlayMidiComponent } from '../play-midi/play-midi';
+import { VisualMidiUtil } from '../../util/visual-midi';
 
 @Component({
     selector: 'volume-component',
     templateUrl: 'volume.html'
 })
 export class VolumeComponent {
+
+    private visualMidi: VisualMidiUtil = new VisualMidiUtil();
 
     @Input()
     private compositionLine: MusicalCompositionLine;
@@ -30,14 +34,36 @@ export class VolumeComponent {
 
     teste() {
         this.composition.applyLineChanges(this.compositionLine)
-        this.playMidi();
+        
+        let midi: PlayMidiSpectrums = new PlayMidiSpectrums();
+        midi.midi = this.compositionLine.midi;
+        midi.midiId = this.compositionLine.midiId;
+
+        let spt: PlayMidiSpectrum = new PlayMidiSpectrum();
+
+        for (let option of this.compositionLine.options) {
+            let spectrumPalete = this.visualMidi.getSpectrumPaleteByInstrumentType(this.visualMidi.getInstrumentType(option.musicalInstrument));
+            let backgroundSVGImageURL = encodeURI('data:image/svg+xml;utf8,' + option.midi
+                                                                                .generateMidiSpectrum(this.compositionLine.maxNote, this.compositionLine.minNote)
+                                                                                .getSVG(spectrumPalete[0], spectrumPalete[1], spectrumPalete[2]));
+            spt.spectrumSVGs.push(backgroundSVGImageURL);
+        }
+        midi.spectrumLines.push(spt);
+        
+        const popover = this.popoverCtrl.create(PlayMidiComponent, 
+            {
+                spectrum: midi
+            });
+        popover.present();
+        
+        //this.playMidi();
     }
 
     public playMidi() {
         let midiString = this.compositionLine.midi.getBinaryString();
         this.fileUtil.writeBinaryStringToTempArea(this.compositionLine.midiId, midiString)
             .then(() => {
-                this.mediaUtil.playMidiFromTempArea(this.compositionLine.midiId);
+                this.mediaUtil.playMidiFromTempArea(this.compositionLine.midiId, null);
             });
     }
 

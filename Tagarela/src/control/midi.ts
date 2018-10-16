@@ -227,19 +227,24 @@ export class Midi {
         return channels;
     }
 
-    public generateMidiSpectrum(): MidiSpectrum {
+    public generateMidiSpectrum(externalMidiMinNote: number, externalMidiMaxNote: number): MidiSpectrum {
         
         let midiSpectrum: MidiSpectrum = new MidiSpectrum();
 
         let midiTotalDeltaTime: number = 0;
-        let midiMinNote: number = 128;
-        let midiMaxNote: number = 0;
+        let midiMinNote: number = +externalMidiMinNote < 0 ? 128 : +externalMidiMinNote;
+        let midiMaxNote: number = +externalMidiMaxNote < 0 ? 0 : +externalMidiMaxNote;
 
         let spectrumLineMap: Map<number, MidiSpectrumLine> = new Map();
         let spectrumNoteMap: Map<number, number> = new Map();
 
+        //alert('timeDivision')
+        //alert(this.timeDivision)
         for (let midiEvent of this.midiTracks[0].midiEvents) {
-            midiTotalDeltaTime += ConvertionUtil.convertHexStringToNumber(midiEvent.deltaTime); 
+            midiTotalDeltaTime += ConvertionUtil.calculateDeltaTime(midiEvent.deltaTime); 
+            //ConvertionUtil.convertHexStringToNumber(midiEvent.deltaTime)
+            //alert(midiEvent.midiEventData)
+            
             if (midiEvent.midiEventData.length >= 1 && midiEvent.midiEventData.substr(0, 1) == '9') {
                 let note: number = ConvertionUtil.convertHexStringToNumber(midiEvent.midiEventData.substr(2, 2));
                 if (note < midiMinNote) {
@@ -268,11 +273,14 @@ export class Midi {
                 }
             }
         }
+       
+        //alert(midiTotalDeltaTime)
 
         //tamanho em x
         midiSpectrum.width = midiTotalDeltaTime;
         //tamanho em y
         midiSpectrum.height = midiMaxNote - midiMinNote;
+
 
         for (let i = midiMinNote; i <= midiMaxNote; i++) {
             
@@ -287,6 +295,27 @@ export class Midi {
         }
 
         return midiSpectrum;
+
+    }
+
+
+    public getNoteLimits(): number[] {
+        let midiMinNote: number = 128;
+        let midiMaxNote: number = 0;
+
+        for (let midiEvent of this.midiTracks[0].midiEvents) {
+            if (midiEvent.midiEventData.length >= 1 && midiEvent.midiEventData.substr(0, 1) == '9') {
+                let note: number = ConvertionUtil.convertHexStringToNumber(midiEvent.midiEventData.substr(2, 2));
+                if (note < midiMinNote) {
+                    midiMinNote = note;
+                }
+                if (note > midiMaxNote) {
+                    midiMaxNote = note;
+                }
+            }
+        }
+
+        return [midiMinNote, midiMaxNote]
 
     }
 

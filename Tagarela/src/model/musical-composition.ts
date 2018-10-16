@@ -182,8 +182,10 @@ export class MusicalComposition {
         let midiLines: Midi[] = [];
         for (let line of this.lines) {
             line.applyMidiChanges();
-            this.applyMidiChanges(line.midi);
-            midiLines.push(line.midi);
+            if (line.midi) {
+                this.applyMidiChanges(line.midi);
+                midiLines.push(line.midi);
+            }
         }
         this.midi.generateMidiType1(midiLines);
     }
@@ -209,10 +211,24 @@ export class MusicalComposition {
 
     public applyChoice(option: MusicalCompositionOption){
         this.lines[this.lineIndex].options.push(option);
+        this.lines[this.lineIndex].applyMidiChanges();
+        this.lines[this.lineIndex].setNoteLimits();
+
         this.lineIndex++;
         if (this.lineIndex >= this.lines.length) {
             this.lineIndex = 0;
             this.stepIndex++;
+        }
+    }
+
+    public undoChoice() {
+        if (this.lineIndex > 0 || this.stepIndex > 0) {
+            this.lineIndex--;
+            if (this.lineIndex < 0) {
+                this.lineIndex = this.lines.length -1;
+                this.stepIndex--;
+            }
+            this.lines[this.lineIndex].options.pop();
         }
     }
 
@@ -334,12 +350,16 @@ export class MusicalCompositionLine {
         if (this.options.length > 0) {
             this.options[0].applyMidiChanges();
             this.midi = this.options[0].midi.cloneMidi();
+        } else {
+            this.midi = null;
         }
         for (let i = 1; i < this.options.length; i++) {
             this.options[i].applyMidiChanges();
             this.midi.concatenateMidi(this.options[i].midi);
         }        
-        this.midi.applyVolumeChange(this.volume);
+        if (this.midi) {
+            this.midi.applyVolumeChange(this.volume);
+        }
     }
 
     public volumeDown(){
@@ -353,6 +373,16 @@ export class MusicalCompositionLine {
             this.volume = this.volume + this.stepVolume;
         }
     }
+
+    maxNote
+    minNote
+
+    public setNoteLimits() {
+        let limits: number[] = this.midi.getNoteLimits();
+        this.maxNote = limits[0]
+        this.minNote = limits[1]
+    }
+
 
 }
 

@@ -4,17 +4,22 @@ import { ChoiceComponent } from './choice/choice';
 import { VolumeComponent } from './volume/volume';
 import { SlidePopoverComponent } from './slide-popover/slide-popover';
 import { ListPopoverComponent } from './list-popover/list-popover';
+import { PlayMidiComponent } from './play-midi/play-midi';
 @NgModule({
 	declarations: [CompositionControlComponent,
     ChoiceComponent,
     VolumeComponent,
     SlidePopoverComponent,
-    ListPopoverComponent],
+    ListPopoverComponent,
+    PlayMidiComponent,
+    PlayMidiComponent],
 	imports: [],
 	exports: [CompositionControlComponent,
     ChoiceComponent,
     VolumeComponent,
     SlidePopoverComponent,
-    ListPopoverComponent]
+    ListPopoverComponent,
+    PlayMidiComponent,
+    PlayMidiComponent]
 })
 export class ComponentsModule {}

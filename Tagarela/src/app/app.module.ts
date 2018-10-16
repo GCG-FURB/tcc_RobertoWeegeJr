@@ -19,6 +19,8 @@ import { SetupCompositionSourcePage } from '../pages/setup-composition-source/se
 import { ChoiceCompositionSourcePage } from '../pages/choice-composition-source/choice-composition-source';
 import { SlidePopoverComponent } from '../components/slide-popover/slide-popover';
 import { ListPopoverComponent } from '../components/list-popover/list-popover';
+import { FileTransfer } from '@ionic-native/file-transfer';
+import { PlayMidiComponent } from '../components/play-midi/play-midi';
 
 @NgModule({
   declarations: [
@@ -32,6 +34,7 @@ import { ListPopoverComponent } from '../components/list-popover/list-popover';
     VolumeComponent,
     SlidePopoverComponent,
     ListPopoverComponent,
+    PlayMidiComponent,
     DragComponentDirective
   ],
   imports: [
@@ -45,7 +48,8 @@ import { ListPopoverComponent } from '../components/list-popover/list-popover';
     SetupCompositionSourcePage,
     ChoiceCompositionSourcePage,
     SlidePopoverComponent,
-    ListPopoverComponent
+    ListPopoverComponent,
+    PlayMidiComponent
   ],
   providers: [
     StatusBar,
@@ -53,6 +57,7 @@ import { ListPopoverComponent } from '../components/list-popover/list-popover';
     File,
     FilePath,
     Media,
+    FileTransfer,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })

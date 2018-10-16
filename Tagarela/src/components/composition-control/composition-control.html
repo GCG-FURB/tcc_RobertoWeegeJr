@@ -1,5 +1,5 @@
 
-<ion-card class="overflow-drag" *ngIf="compositionControl">
+<ion-card class="overflow-drag" *ngIf="compositionControl && getOptionsList().length > 0">
     <ion-card-content class="overflow-drag">
         <div class="teste overflow-drag">
             <ion-scroll id="scroll1" scrollX="true" class="scroll-1"> 
@@ -10,7 +10,7 @@
         </div>
     </ion-card-content>
 </ion-card>
-<ion-card *ngIf="compositionControl">
+<ion-card *ngIf="compositionControl && getCompositionLinesList().length > 0 && getCompositionLinesList()[0].options.length > 0">
     <ion-card-content>
         <div class="flex-parent">
             <div class="flex-child-control">
@@ -24,7 +24,7 @@
                 <ion-scroll scrollX="true" class="scroll-2">
                     <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
                         <choice-component class="float-left-child" *ngFor="let compositionOption of compositionLine.options"
-                        [midiChoice]="compositionOption" [composition]="compositionControl">
+                        [midiChoice]="compositionOption" [composition]="compositionControl" [minNote]="compositionLine.minNote" [maxNote]="compositionLine.maxNote">
                         </choice-component>
                     </div>
                 </ion-scroll>
