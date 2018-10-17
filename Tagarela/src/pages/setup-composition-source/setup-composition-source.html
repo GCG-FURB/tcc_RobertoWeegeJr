@@ -1,24 +1,27 @@
 <ion-header>
 
     <ion-navbar>
-        <ion-title>Configure a composição</ion-title>
+        <ion-title>Configuração de Composição</ion-title>
     </ion-navbar>
     <ion-toolbar>
-
-        <button ion-button (click)="saveConfigAndStartComposition()" *ngIf="configControl && sourceControl">Pronto!</button>
-    
+        <button ion-button full (click)="saveConfigAndStartComposition()" *ngIf="configControl && sourceControl">
+            Começar composição
+        </button>
     </ion-toolbar>
     <ion-toolbar>
     
-        <ion-segment [(ngModel)]="configSegment" *ngIf="configControl && sourceControl">
+        <ion-segment [(ngModel)]="configSegment" *ngIf="configControl && sourceControl && generalForm && lineForms && stepForms && optionForms">
             <ion-segment-button value="general">
-                Geral
+                <p [class.invalid]="!generalForm.valid">Geral</p>
             </ion-segment-button>
             <ion-segment-button value="lines">
-                Linhas
+                <p>Linhas</p>
+            </ion-segment-button>
+            <ion-segment-button value="steps">
+                <p>Passos</p>
             </ion-segment-button>
             <ion-segment-button value="options">
-                Opções
+                <p>Opções</p>
             </ion-segment-button>
         </ion-segment>
 
@@ -28,80 +31,148 @@
 
 <ion-content>
 
-    <div [ngSwitch]="configSegment" *ngIf="configControl && sourceControl">
-        <ion-list *ngSwitchCase="'general'">
+    <div [ngSwitch]="configSegment" *ngIf="configControl && sourceControl && generalForm && lineForms && stepForms && optionForms">
+        
+        <div *ngSwitchCase="'general'">
             <ion-label>Escolha os parâmetros gerais de composição:</ion-label>
-            <ion-item>
-                <ion-label floating>Valor mínimo de tempo (BPM)</ion-label>
-                <ion-input type="number" [(ngModel)]="configControl.config.minTempo" ></ion-input>
-            </ion-item>
-            <ion-item>
-                <ion-label floating>Valor maximo de tempo (BPM)</ion-label>
-                <ion-input type="number" [(ngModel)]="configControl.config.maxTempo" ></ion-input>
-            </ion-item>
-            <ion-item>
-                <ion-label floating>Quantidade de números incrementados</ion-label>
-                <ion-input type="number" [(ngModel)]="configControl.config.stepTempo" ></ion-input>
-            </ion-item>
-            <ion-item>
-                <ion-label floating>Valor inicial de tempo</ion-label>
-                <ion-input type="number" [(ngModel)]="configControl.config.defaultTempo" ></ion-input>
-            </ion-item>
-        </ion-list>
-      
-        <ion-list *ngSwitchCase="'lines'">
-            <ion-label>Escolha os parâmetros das linhas de composição:</ion-label>
-            <div *ngFor="let lineConfig of configControl.config.linesConfig">
-                <ion-label>{{lineConfig.name}}</ion-label>
-                <ion-item>
-                    <ion-label floating>Valor mínimo de volume</ion-label>
-                    <ion-input type="number" [(ngModel)]="lineConfig.minVolume" ></ion-input>
+           
+            <form [formGroup]="generalForm">
+                
+                <ion-item [class.input-invalid]="!generalForm.controls.minTempo.valid" >
+                    <ion-label [class.invalid]="!generalForm.controls.minTempo.valid" floating>Valor mínimo de tempo (BPM) 
+                        <p class="invalid" *ngIf="!generalForm.controls.minTempo.valid && generalForm.controls.minTempo.errors.required">Valor requerido</p>
+                        <p class="invalid" *ngIf="!generalForm.controls.minTempo.valid && generalForm.controls.minTempo.errors.min_tempo_midi">O valor deve ser superior a 0</p>
+                        <p class="invalid" *ngIf="!generalForm.controls.minTempo.valid && generalForm.controls.minTempo.errors.max_tempo_midi">O valor deve ser inferior a 500</p>
+                        <p class="invalid" *ngIf="!generalForm.controls.minTempo.valid && generalForm.controls.minTempo.errors.min_tempo">O valor mínimo deve ser menor ou igual ao valor máximo</p>
+                    </ion-label>
+                    <ion-input [formControl]="generalForm.controls.minTempo" type="number" [(ngModel)]="configControl.config.minTempo" (change)="updateGeneralFormControl()"></ion-input>
                 </ion-item>
-                <ion-item>
-                    <ion-label floating>Valor maximo de volume</ion-label>
-                    <ion-input type="number" [(ngModel)]="lineConfig.maxVolume" ></ion-input>
+                
+                <ion-item [class.input-invalid]="!generalForm.controls.maxTempo.valid">
+                    <ion-label [class.invalid]="!generalForm.controls.maxTempo.valid" floating>Valor maximo de tempo (BPM)
+                        <p class="invalid" *ngIf="!generalForm.controls.maxTempo.valid && generalForm.controls.maxTempo.errors.required">Valor requerido</p>
+                        <p class="invalid" *ngIf="!generalForm.controls.maxTempo.valid && generalForm.controls.maxTempo.errors.min_tempo_midi">O valor deve ser superior a 0</p>
+                        <p class="invalid" *ngIf="!generalForm.controls.maxTempo.valid && generalForm.controls.maxTempo.errors.max_tempo_midi">O valor deve ser inferior a 500</p>
+                        <p class="invalid" *ngIf="!generalForm.controls.maxTempo.valid && generalForm.controls.maxTempo.errors.max_tempo">O valor máximo deve ser maior ou igual ao valor mínimo</p>
+                    </ion-label>
+                    <ion-input [formControl]="generalForm.controls.maxTempo" type="number" [(ngModel)]="configControl.config.maxTempo" (change)="updateGeneralFormControl()"></ion-input>
                 </ion-item>
-                <ion-item>
-                    <ion-label floating>Quantidade de números incrementados</ion-label>
-                    <ion-input type="number" [(ngModel)]="lineConfig.stepVolume" ></ion-input>
-                </ion-item>
-                <ion-item>
-                    <ion-label floating>Valor inicial de volume</ion-label>
-                    <ion-input type="number" [(ngModel)]="lineConfig.defaultVolume" ></ion-input>
-                </ion-item>
-            </div>
-        </ion-list>
 
-        <ion-list *ngSwitchCase="'options'">
+                <ion-item [class.input-invalid]="!generalForm.controls.stepTempo.valid">
+                    <ion-label [class.invalid]="!generalForm.controls.stepTempo.valid" floating>Quantidade de números incrementados
+                        <p class="invalid" *ngIf="!generalForm.controls.stepTempo.valid && generalForm.controls.stepTempo.errors.required">Valor requerido</p>
+                        <p class="invalid" *ngIf="!generalForm.controls.stepTempo.valid && generalForm.controls.stepTempo.errors.step_tempo">O valor de incremento deve ser menor que a diferença entre os valores máximo e mínimo</p>
+                    </ion-label>
+                    <ion-input [formControl]="generalForm.controls.stepTempo" type="number" [(ngModel)]="configControl.config.stepTempo" (change)="updateGeneralFormControl()"></ion-input>
+                </ion-item>
+
+                <ion-item [class.input-invalid]="!generalForm.controls.defaultTempo.valid">
+                    <ion-label [class.invalid]="!generalForm.controls.defaultTempo.valid" floating>Valor inicial de tempo
+                        <p class="invalid" *ngIf="!generalForm.controls.defaultTempo.valid && generalForm.controls.defaultTempo.errors.required">Valor requerido</p>
+                        <p class="invalid" *ngIf="!generalForm.controls.defaultTempo.valid && generalForm.controls.defaultTempo.errors.default_tempo">O valor padrão deve entar entre os valores mínimo e máximo</p>
+                    </ion-label>
+                    <ion-input [formControl]="generalForm.controls.defaultTempo" type="number" [(ngModel)]="configControl.config.defaultTempo" (change)="updateGeneralFormControl()"></ion-input>
+                </ion-item>
+            </form>
+        </div>
+      
+        <div *ngSwitchCase="'lines'">
+            <ion-label>Escolha os parâmetros das linhas de composição:</ion-label>
+            <div *ngFor="let lineConfig of configControl.config.linesConfig; let i = index">
+                <form [formGroup]="lineForms[i]">
+                    <ion-label>{{lineConfig.name}}</ion-label>
+                    <ion-item [class.input-invalid]="!lineForms[i].controls.minVolume.valid">
+                        <ion-label [class.invalid]="!lineForms[i].controls.minVolume.valid" floating>Valor mínimo de volume
+                            <p class="invalid" *ngIf="!lineForms[i].controls.minVolume.valid && lineForms[i].controls.minVolume.errors.required">Valor requerido</p>
+                            <p class="invalid" *ngIf="!lineForms[i].controls.minVolume.valid && lineForms[i].controls.minVolume.errors.min_volume_midi">O valor deve ser superior a 0</p>
+                            <p class="invalid" *ngIf="!lineForms[i].controls.minVolume.valid && lineForms[i].controls.minVolume.errors.max_volume_midi">O valor deve ser inferior a 500</p>
+                            <p class="invalid" *ngIf="!lineForms[i].controls.minVolume.valid && lineForms[i].controls.minVolume.errors.min_volume">O valor mínimo deve ser menor ou igual ao valor máximo</p>
+                        </ion-label>
+                        <ion-input [formControl]="lineForms[i].controls.minVolume" type="number" [(ngModel)]="lineConfig.minVolume" (change)="updateLineFormControl(i)"></ion-input>
+                    </ion-item>
+                    <ion-item [class.input-invalid]="!lineForms[i].controls.maxVolume.valid">
+                        <ion-label [class.invalid]="!lineForms[i].controls.maxVolume.valid" floating>Valor maximo de volume
+                            <p class="invalid" *ngIf="!lineForms[i].controls.maxVolume.valid && lineForms[i].controls.maxVolume.errors.required">Valor requerido</p>
+                            <p class="invalid" *ngIf="!lineForms[i].controls.maxVolume.valid && lineForms[i].controls.maxVolume.errors.min_volume_midi">O valor deve ser superior a 0</p>
+                            <p class="invalid" *ngIf="!lineForms[i].controls.maxVolume.valid && lineForms[i].controls.maxVolume.errors.max_volume_midi">O valor deve ser inferior a 500</p>
+                            <p class="invalid" *ngIf="!lineForms[i].controls.maxVolume.valid && lineForms[i].controls.maxVolume.errors.max_volume">O valor máximo deve ser maior ou igual ao valor mínimo</p>
+                        </ion-label>
+                        <ion-input [formControl]="lineForms[i].controls.maxVolume" type="number" [(ngModel)]="lineConfig.maxVolume" (change)="updateLineFormControl(i)"></ion-input>
+                    </ion-item>
+                    <ion-item [class.input-invalid]="!lineForms[i].controls.stepVolume.valid">
+                        <ion-label [class.invalid]="!lineForms[i].controls.stepVolume.valid" floating>Quantidade de números incrementados
+                            <p class="invalid" *ngIf="!lineForms[i].controls.stepVolume.valid && lineForms[i].controls.stepVolume.errors.required">Valor requerido</p>
+                            <p class="invalid" *ngIf="!lineForms[i].controls.stepVolume.valid && lineForms[i].controls.stepVolume.errors.step_volume">O valor de incremento deve ser menor que a diferença entre os valores máximo e mínimo</p>
+                        </ion-label>
+                        <ion-input [formControl]="lineForms[i].controls.stepVolume" type="number" [(ngModel)]="lineConfig.stepVolume" (change)="updateLineFormControl(i)"></ion-input>
+                    </ion-item>
+                    <ion-item [class.input-invalid]="!lineForms[i].controls.defaultVolume.valid">
+                        <ion-label [class.invalid]="!lineForms[i].controls.defaultVolume.valid" floating>Valor inicial de volume
+                            <p class="invalid" *ngIf="!lineForms[i].controls.defaultVolume.valid && lineForms[i].controls.defaultVolume.errors.required">Valor requerido</p>
+                            <p class="invalid" *ngIf="!lineForms[i].controls.defaultVolume.valid && lineForms[i].controls.defaultVolume.errors.default_volume">O valor padrão deve entar entre os valores mínimo e máximo</p>
+                        </ion-label>
+                        <ion-input [formControl]="lineForms[i].controls.defaultVolume" type="number" [(ngModel)]="lineConfig.defaultVolume" (change)="updateLineFormControl(i)"></ion-input>
+                    </ion-item>
+                </form>
+            </div>
+        </div>
+
+        <div *ngSwitchCase="'steps'">
+            <ion-label>Escolha os parâmetros de passos de composição:</ion-label>
+            <div *ngFor="let stepConfig of configControl.config.stepsConfig; let i = index">
+                <form [formGroup]="stepForms[i]">
+                    <ion-label>{{stepConfig.relativePath}}</ion-label>
+                    <ion-item [class.input-invalid]= "!stepForms[i].controls.quantityOfQuarterNote.valid">
+                        <ion-label [class.invalid]=  "!stepForms[i].controls.quantityOfQuarterNote.valid" floating>Valor mínimo de volume
+                            <p class="invalid" *ngIf="!stepForms[i].controls.quantityOfQuarterNote.valid && stepForms[i].controls.quantityOfQuarterNote.errors.required">Valor requerido</p>
+                            <p class="invalid" *ngIf="!stepForms[i].controls.quantityOfQuarterNote.valid && stepForms[i].controls.quantityOfQuarterNote.errors.min_quantity_of_quarter_note">O valor deve ser superior a 0</p>
+                            <p class="invalid" *ngIf="!stepForms[i].controls.quantityOfQuarterNote.valid && stepForms[i].controls.quantityOfQuarterNote.errors.max_quantity_of_quarter_note">O valor deve ser inferior a 500</p>
+                        </ion-label>
+                        <ion-input [formControl]="stepForms[i].controls.quantityOfQuarterNote" type="number" [(ngModel)]="stepConfig.quantityOfQuarterNote"></ion-input>
+                    </ion-item>
+                </form>
+            </div>
+        </div>
+
+        <div *ngSwitchCase="'options'">
             <ion-label>Escolha os parâmetros das opções de composição:</ion-label>
-            <div *ngFor="let stepConfig of configControl.config.stepsConfig">
+            <div *ngFor="let stepConfig of configControl.config.stepsConfig; let i = index">
                 <ion-label>Passo: {{stepConfig.relativePath}}</ion-label>
                 
-                <div *ngFor="let groupConfig of stepConfig.groupsConfig">
+                <div *ngFor="let groupConfig of stepConfig.groupsConfig; let j = index">
                     <ion-label>Grupo: {{groupConfig.relativePath}}</ion-label>
                 
-                    <div *ngFor="let optionConfig of groupConfig.optionsConfig">
+                    <div *ngFor="let optionConfig of groupConfig.optionsConfig; let k = index">
                         <ion-label>Option: {{optionConfig.fileName}}</ion-label>
-                        <ion-item>
-                            <ion-label>Instrumentos para escolha:</ion-label>
-                            <ion-select [(ngModel)]="optionConfig.musicalInstrumentsAllowed" multiple="true">
-                                <ion-option *ngFor=" let instrument of optionConfig.baseMusicalInstrumentsAllowed" [value]="instrument">
-                                        {{visualMidi.getInstrumentNameToMidiNumber(instrument)}}
-                                </ion-option> 
-                            </ion-select>
-                        </ion-item>
-                        <ion-item>
-                            <ion-label>Instrumento padrão:</ion-label>
-                            <ion-select [(ngModel)]="optionConfig.defaultMusicalInstrument" multiple="false">
-                                <ion-option *ngFor="let instrument of optionConfig.baseMusicalInstrumentsAllowed" [value]="instrument">
-                                        {{visualMidi.getInstrumentNameToMidiNumber(instrument)}}
-                                </ion-option>
-                            </ion-select>
-                        </ion-item>
+                        
+                        <form [formGroup]="optionForms[i][j][k]">
+
+                            <ion-item [class.input-invalid]="!optionForms[i][j][k].controls.musicalInstrumentsAllowed.valid">
+                                <ion-label [class.invalid]="!optionForms[i][j][k].controls.musicalInstrumentsAllowed.valid">Instrumentos para escolha:
+                                    <p *ngIf="!optionForms[i][j][k].controls.musicalInstrumentsAllowed.valid && optionForms[i][j][k].controls.musicalInstrumentsAllowed.errors.required" class="invalid" >Valor requerido</p>
+                                </ion-label>
+                                <ion-select [formControl]="optionForms[i][j][k].controls.musicalInstrumentsAllowed" [(ngModel)]="optionConfig.musicalInstrumentsAllowed" multiple="true">
+                                    <ion-option *ngFor=" let instrument of optionConfig.baseMusicalInstrumentsAllowed" [value]="instrument">
+                                            {{visualMidi.getInstrumentNameToMidiNumber(instrument)}}
+                                    </ion-option> 
+                                </ion-select>
+                            </ion-item>
+                            <ion-item [class.input-invalid]="!optionForms[i][j][k].controls.defaultMusicalInstrument.valid">
+                                <ion-label [class.invalid]="!optionForms[i][j][k].controls.defaultMusicalInstrument.valid">Instrumento padrão:
+                                    <p class="invalid" *ngIf="!optionForms[i][j][k].controls.defaultMusicalInstrument.valid && optionForms[i][j][k].controls.defaultMusicalInstrument.errors.required">Valor requerido</p>
+                                </ion-label>
+                                <ion-select [formControl]="optionForms[i][j][k].controls.defaultMusicalInstrument" [(ngModel)]="optionConfig.defaultMusicalInstrument" multiple="false">
+                                    <ion-option *ngFor="let instrument of optionConfig.baseMusicalInstrumentsAllowed" [value]="instrument">
+                                            {{visualMidi.getInstrumentNameToMidiNumber(instrument)}}
+                                    </ion-option>
+                                </ion-select>
+                            </ion-item>
+
+                        </form>
                     </div>
                 </div>
             </div>
-        </ion-list>
+        </div>
     </div>
     
 </ion-content>

@@ -31,6 +31,14 @@ export class ConvertionUtil {
         return parseInt(binaryDeltaTime, 2);
     }
 
+    public static calculateDeltaTimeFromHexa(hexaString: string) : number {
+        let binaryDeltaTime: string = '';
+        for (let i = 0; i < hexaString.length/2; i++) {
+            binaryDeltaTime += this.completeBits(parseInt(hexaString.substr(0, 2), 16).toString(2), 7);
+        }
+        return parseInt(binaryDeltaTime, 2);
+    }
+
     public static getDeltaTimeStringFromNumber(deltaTime: number){
         let tempDeltaTimeBinary: string = deltaTime.toString(2);
         let deltaTimeBinary: string = '';

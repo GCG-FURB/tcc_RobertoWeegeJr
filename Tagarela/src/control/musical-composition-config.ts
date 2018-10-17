@@ -18,6 +18,8 @@ export class MusicalCompositionConfigControl {
     private CONFIG_DEFAULT_STEP_TEMPO: number = 1
     private CONFIG_DEFAULT_DEFAULT_TEMPO: number = 120
 
+    private CONFIG_DEFAULT_QUANTITY_OF_QUARTER_NOTE: number = 8
+
     private CONFIG_DEFAULT_MUSICAL_INSTRUMENTS_ALLOWED: number[] = [0, 11, 13, 21, 24, 26, 33, 41, 46, 56, 57, 58, 65, 73, 105]
     private CONFIG_DEFAULT_DRUMS_MUSICAL_INSTRUMENTS_ALLOWED: number[] = [999]
 
@@ -120,6 +122,8 @@ export class MusicalCompositionConfigControl {
                 let stepConfig: MusicalCompositionStepConfig = new MusicalCompositionStepConfig();
                 stepConfig.relativePath = stepDirectory; 
 
+                stepConfig.quantityOfQuarterNote = this.CONFIG_DEFAULT_QUANTITY_OF_QUARTER_NOTE;
+
                 let stepPath: string = this.fileUtil.concatenatePath(config.relativePath, stepDirectory);
                 let lineDirectoriesList: string[] = await this.fileUtil.getListOfDirectories(config.baseFileSystem, stepPath);
 
@@ -172,6 +176,7 @@ export class MusicalCompositionConfigControl {
                     config.defaultTempo = +actualConfig._defaultTempo;
 
                     for (let i = 0; i < config.stepsConfig.length; i++) {
+                        config.stepsConfig[i].quantityOfQuarterNote = +actualConfig._stepsConfig[i]._quantityOfQuarterNote;
                         for (let j = 0; j < config.stepsConfig[i].groupsConfig.length; j++) {
                             for (let k = 0; k < config.stepsConfig[i].groupsConfig[j].optionsConfig.length; k++) {
                                 config.stepsConfig[i].groupsConfig[j].optionsConfig[k].baseMusicalInstrumentsAllowed = actualConfig._stepsConfig[i]._groupsConfig[j]._optionsConfig[k]._baseMusicalInstrumentsAllowed.map((item) => {return parseInt(item, 10);});

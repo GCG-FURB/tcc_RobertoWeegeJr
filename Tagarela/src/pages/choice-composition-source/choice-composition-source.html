@@ -1,6 +1,6 @@
 <ion-header>
 
-    <ion-navbar>
+    <ion-navbar color="primary">
         <ion-title>Bem vindo ao Tagarela!</ion-title>
     </ion-navbar>
 
@@ -10,30 +10,14 @@
 
     <p>Bem vindo ao módulo de composição musical do Tagarela.</p>
     <br>
+    <p>Para começar, escolha uma opção: </p> 
     <br>
-    <p>Para começar, selecione o conjunto de dados de composição que deseja manupular:</p> 
+    <button ion-button full (click)="chooseDefaultCompositionSource()">
+        Dados de Composição Padrão
+    </button>
     <br>
-    <br>
-    <ion-item *ngIf="defaultCompositionSources">
-        <ion-label>Dados de Composição</ion-label>
-        <ion-select [(ngModel)]="chosedDefaultCompositionSource" interface="popover">
-            <ion-option *ngFor="let compositionSource of defaultCompositionSources" [value]="compositionSource">{{compositionSource}}</ion-option>
-        </ion-select>
-    </ion-item>
-    <br>
-    <br>
-    <br>
-    <p>Ou</p>
-    <br>
-    <br>
-    <p>Selecione os dados personalizados de composição:</p>
-    <br>
-    <br>
-    <ion-item *ngIf="defaultCompositionSources">
-        <ion-label>Dados Customizados de Composição</ion-label>
-        <ion-select [(ngModel)]="chosedCustomCompositionSource" interface="popover">
-            <ion-option *ngFor="let compositionSource of customCompositionSources" [value]="compositionSource">{{compositionSource}}</ion-option>
-        </ion-select>
-    </ion-item>
+    <button ion-button full (click)="chooseCustomCompositionSource()">
+        Dados de Composição Personalizados
+    </button>
 
 </ion-content>

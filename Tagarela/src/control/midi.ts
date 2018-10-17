@@ -241,7 +241,7 @@ export class Midi {
         //alert('timeDivision')
         //alert(this.timeDivision)
         for (let midiEvent of this.midiTracks[0].midiEvents) {
-            midiTotalDeltaTime += ConvertionUtil.calculateDeltaTime(midiEvent.deltaTime); 
+            midiTotalDeltaTime += midiEvent.deltaTimeNumber; 
             //ConvertionUtil.convertHexStringToNumber(midiEvent.deltaTime)
             //alert(midiEvent.midiEventData)
             
@@ -432,7 +432,7 @@ export class MidiTrack {
         this.removeAllInstrumentEvents();
         for (let channel of this.getAllUsedChannels()) {
             if (channel != '9') {
-                this.midiEvents.unshift(new MidiEvent('00', MidiEventType.MIDI_EVENT, 'c' + channel + 
+                this.midiEvents.unshift(new MidiEvent('00', 0, MidiEventType.MIDI_EVENT, 'c' + channel + 
                                                                                     ConvertionUtil.convertNumberToHexString(instrumentNumber, 1), false));
             }
         }
@@ -512,13 +512,15 @@ export class MidiTrack {
 
 export class MidiEvent {
     private _deltaTime: string;
+    private _deltaTimeNumber: number;
     private _midiEventType: MidiEventType;
     private _midiEventData: string;
     private _midiOriginalEventData: string;
     private _loadEvent: boolean;
 
-    constructor(deltaTime: string, midiEventType: MidiEventType, midiEventData: string, loadEvent: boolean){
+    constructor(deltaTime: string, deltaTimeNumber: number, midiEventType: MidiEventType, midiEventData: string, loadEvent: boolean){
         this.deltaTime = deltaTime;
+        this.deltaTimeNumber = deltaTimeNumber;
         this.midiEventType = midiEventType;
         this.midiEventData = midiEventData;
         this._midiOriginalEventData = midiEventData;
@@ -531,6 +533,14 @@ export class MidiEvent {
     
     set deltaTime(deltaTime: string){
         this._deltaTime = deltaTime;
+    }
+
+    get deltaTimeNumber(): number{
+        return this._deltaTimeNumber;
+    }
+    
+    set deltaTimeNumber(deltaTimeNumber: number){
+        this._deltaTimeNumber = deltaTimeNumber;
     }
 
     get midiEventType(): MidiEventType{
@@ -574,42 +584,50 @@ export class MidiEvent {
         switch (firstEventByte.charAt(0)) {
             case '8':
                 return new MidiEvent(ConvertionUtil.getDeltaTimeStringFromNumber(deltaTime)
+                                    ,deltaTime
                                     ,MidiEventType.MIDI_EVENT
                                     ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 3))
                                     ,true);
             case '9':
                 return new MidiEvent(ConvertionUtil.getDeltaTimeStringFromNumber(deltaTime)
+                                    ,deltaTime
                                     ,MidiEventType.MIDI_EVENT
                                     ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 3))
                                     ,true);
             case 'a':
                 return new MidiEvent(''
+                                    ,0
                                     ,MidiEventType.MIDI_EVENT
                                     ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 3))
                                     ,false);    
             case 'b':
                 return new MidiEvent(''
+                                    ,0
                                     ,MidiEventType.MIDI_EVENT
                                     ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 3))
                                     ,false); 
             case 'c':
                 return new MidiEvent(''
+                                    ,0
                                     ,MidiEventType.MIDI_EVENT
                                     ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 2))
                                     ,false); 
             case 'd':
                 return new MidiEvent(''
+                                    ,0
                                     ,MidiEventType.MIDI_EVENT
                                     ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 2))
                                     ,false); 
             case 'e':
                 return new MidiEvent(''
+                                    ,0
                                     ,MidiEventType.MIDI_EVENT
                                     ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 3))
                                     ,false); 
             case 'f':
                 if (firstEventByte == 'f0' || firstEventByte == 'f7') {
                     return new MidiEvent(''
+                                        ,0
                                         ,MidiEventType.SYSEX_EVENT
                                         ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 2 + ConvertionUtil.convertBinaryStringToNumber(midiData.charAt(1))))
                                         ,false);
@@ -618,6 +636,7 @@ export class MidiEvent {
                 if (firstEventByte == 'ff') {
                     let eventTypeByte: string = ConvertionUtil.convertBinaryStringToHexString(midiData.charAt(1)); 
                     return new MidiEvent(ConvertionUtil.getDeltaTimeStringFromNumber(deltaTime)
+                                        ,deltaTime
                                         ,MidiEventType.META_EVENT
                                         ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 3 + ConvertionUtil.convertBinaryStringToNumber(midiData.charAt(2))))
                                         ,eventTypeByte == '51' || eventTypeByte == '58' || eventTypeByte == '59' || eventTypeByte == '2f');

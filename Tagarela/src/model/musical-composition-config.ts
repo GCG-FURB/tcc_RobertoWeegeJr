@@ -24,9 +24,6 @@ export class MusicalCompositionConfig {
     }
     
     set baseFileSystem(baseFileSystem:string) {
-        /*if (!relativePath || relativePath.length <= 0){
-            throw new Error("O caminho relativo não pode ser nulo ou vazio");
-        }*/
         this._baseFileSystem = baseFileSystem;
     }
 
@@ -35,9 +32,6 @@ export class MusicalCompositionConfig {
     }
     
     set relativePath(relativePath:string) {
-        /*if (!relativePath || relativePath.length <= 0){
-            throw new Error("O caminho relativo não pode ser nulo ou vazio");
-        }*/
         this._relativePath = relativePath;
     }
     
@@ -46,15 +40,6 @@ export class MusicalCompositionConfig {
     }
     
     set minTempo(minTempo:number) {
-        /*if (!minTempo || minTempo < 1) {
-            throw new Error("O tempo mínimo não pode ser nulo ou menor que 1");
-        }
-        if (this.maxTempo && minTempo > this.maxTempo) {
-            throw new Error("O tempo mínimo não pode ser maior que o tempo máximo");
-        }
-        if (this.defaultTempo && minTempo > this.defaultTempo) {
-            throw new Error("O tempo mínimo não pode ser maior que o tempo padrão");
-        }*/
         this._minTempo = minTempo;
     }
     
@@ -63,15 +48,6 @@ export class MusicalCompositionConfig {
     }
     
     set maxTempo(maxTempo:number) {
-        /*if (!maxTempo || maxTempo < 1) {
-            throw new Error("O tempo máximo não pode ser nulo ou menor que 1");
-        }
-        if (this.minTempo && maxTempo < this.minTempo) {
-            throw new Error("O tempo máximo não pode ser menor que o tempo mínimo");
-        }
-        if (this.defaultTempo && maxTempo < this.defaultTempo) {
-            throw new Error("O tempo máximo não pode ser menor que o tempo padrão");
-        }*/
         this._maxTempo = maxTempo;
     }
     
@@ -80,9 +56,6 @@ export class MusicalCompositionConfig {
     }
     
     set stepTempo(stepTempo:number) {
-        /*if (!stepTempo || stepTempo < 1) {
-            throw new Error("O intervalo de escolha de tempo não pode ser nulo ou menor que 1");
-        }*/
         this._stepTempo = stepTempo;
     }
     
@@ -91,15 +64,6 @@ export class MusicalCompositionConfig {
     }
     
     set defaultTempo(defaultTempo:number) {
-        /*if (!defaultTempo || defaultTempo < 1) {
-            throw new Error("O tempo padrão não pode ser nulo ou menor que 1");
-        }
-        if (this.minTempo && defaultTempo < this.minTempo) {
-            throw new Error("O tempo padrão não pode ser menor que o tempo mínimo");
-        }
-        if (this.maxTempo && defaultTempo > this.maxTempo) {
-            throw new Error("O tempo padrão não pode ser maior que o tempo máximo");
-        }*/
         this._defaultTempo = defaultTempo;
     }
 
@@ -108,9 +72,6 @@ export class MusicalCompositionConfig {
     }
     
     set stepsConfig(stepsConfig:MusicalCompositionStepConfig[]) {
-        /*if (!stepsConfig) {
-            throw new Error("As configurações de passos não podem ser nulas");
-        }*/
         this._stepsConfig = stepsConfig;
     }
     
@@ -119,16 +80,11 @@ export class MusicalCompositionConfig {
     }
     
     set linesConfig(linesConfig:MusicalCompositionLineConfig[]) {
-        /*if (!linesConfig) {
-            throw new Error("As configurações de linhas não podem ser nulas");
-        }*/
         this._linesConfig = linesConfig;
     }
 
 }
 
-/*
-*/
 export class MusicalCompositionStepConfig {
 
     //Step Config
@@ -136,6 +92,8 @@ export class MusicalCompositionStepConfig {
     
     //Group Config
     private _groupsConfig: MusicalCompositionGroupConfig[];           // 
+
+    private _quantityOfQuarterNote: number;
 
     constructor(){
         this.groupsConfig = [];
@@ -157,10 +115,15 @@ export class MusicalCompositionStepConfig {
     }
     
     set groupsConfig(groupsConfig:MusicalCompositionGroupConfig[]) {
-        if (!groupsConfig) {
-            throw new Error("As configurações de grupos não podem ser nulas");
-        }
         this._groupsConfig = groupsConfig;
+    }
+
+    get quantityOfQuarterNote(): number {
+        return this._quantityOfQuarterNote;
+    }
+
+    set quantityOfQuarterNote(quantityOfQuarterNote: number) {
+        this._quantityOfQuarterNote = quantityOfQuarterNote;
     }
 }
 
@@ -181,9 +144,6 @@ export class MusicalCompositionGroupConfig {
     }
     
     set relativePath(relativePath:string) {
-        /*if (!relativePath || relativePath.length <= 0){
-            throw new Error("O caminho relativo não pode ser nulo ou vazio");
-        }*/
         this._relativePath = relativePath;
     }
     
@@ -192,9 +152,6 @@ export class MusicalCompositionGroupConfig {
     }
     
     set optionsConfig(optionsConfig:MusicalCompositionOptionConfig[]) {
-        /*if (!optionsConfig) {
-            throw new Error("As configurações de opções não podem ser nulas");
-        }*/
         this._optionsConfig = optionsConfig;
     }
 
@@ -224,9 +181,6 @@ export class MusicalCompositionOptionConfig {
     }
     
     set baseMusicalInstrumentsAllowed(baseMusicalInstrumentsAllowed:number[]) {
-        /*if (!baseMusicalInstrumentsAllowed) {
-            throw new Error("Os instrumentos musicais permitidos não podem ser nulos");
-        }*/
         this._baseMusicalInstrumentsAllowed = baseMusicalInstrumentsAllowed;
     }
 
@@ -235,9 +189,6 @@ export class MusicalCompositionOptionConfig {
     }
     
     set musicalInstrumentsAllowed(musicalInstrumentsAllowed:number[]) {
-        /*if (!musicalInstrumentsAllowed) {
-            throw new Error("Os instrumentos musicais permitidos não podem ser nulos");
-        }*/
         this._musicalInstrumentsAllowed = musicalInstrumentsAllowed;
     }
     
@@ -246,9 +197,6 @@ export class MusicalCompositionOptionConfig {
     }
     
     set defaultMusicalInstrument(defaultMusicalInstrument:number) {
-        /*if (!defaultMusicalInstrument && defaultMusicalInstrument !== 0) {
-            throw new Error("O instrumento musical padrão não pode ser nulo");
-        }*/
         this._defaultMusicalInstrument = defaultMusicalInstrument;
     }
 
@@ -278,15 +226,6 @@ export class MusicalCompositionLineConfig {
     }
     
     set minVolume(minVolume:number) {
-        /*if ((!minVolume && minVolume !== 0) || minVolume < 0) {
-            throw new Error("O volume mínimo não pode ser nulo ou menor que 0");
-        }
-        if (this.maxVolume && minVolume > this.maxVolume) {
-            throw new Error("O volume mínimo não pode ser maior que o volume máximo");
-        }
-        if (this.defaultVolume && minVolume > this.defaultVolume) {
-            throw new Error("O volume mínimo não pode ser maior que o volume padrão");
-        }*/
         this._minVolume = minVolume;
     }
     
@@ -295,15 +234,6 @@ export class MusicalCompositionLineConfig {
     }
     
     set maxVolume(maxVolume:number) {
-        /*if ((!maxVolume && maxVolume !== 0) || maxVolume < 0) {
-            throw new Error("O volume máximo não pode ser nulo ou menor que 0");
-        }
-        if (this.minVolume && maxVolume < this.minVolume) {
-            throw new Error("O volume máximo não pode ser menor que o volume mínimo");
-        }
-        if (this.defaultVolume && maxVolume < this.defaultVolume) {
-            throw new Error("O volume máximo não pode ser menor que o volume padrão");
-        }*/
         this._maxVolume = maxVolume;
     }
     
@@ -312,9 +242,6 @@ export class MusicalCompositionLineConfig {
     }
     
     set stepVolume(stepVolume:number) {
-        /*if (!stepVolume || stepVolume < 1) {
-            throw new Error("O intervalo de escolha de volume não pode ser nulo ou menor que 1");
-        }*/
         this._stepVolume = stepVolume;
     }
     
@@ -323,15 +250,6 @@ export class MusicalCompositionLineConfig {
     }
     
     set defaultVolume(defaultVolume:number) {
-        /*if ((!defaultVolume && defaultVolume !== 0) || defaultVolume < 0) {
-            throw new Error("O volume padrão não pode ser nulo ou menor que 0");
-        }
-        if (this.minVolume && defaultVolume < this.minVolume) {
-            throw new Error("O volume padrão não pode ser menor que o volume mínimo");
-        }
-        if (this.maxVolume && defaultVolume > this.maxVolume) {
-            throw new Error("O volume padrão não pode ser maior que o volume máximo");
-        }*/
         this._defaultVolume = defaultVolume;
     }
 

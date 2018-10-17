@@ -10,6 +10,7 @@ import { MusicalCompositionOption } from '../../model/musical-composition';
 import { ListPopoverComponent } from '../list-popover/list-popover';
 import { PlayMidiSpectrums, PlayMidiSpectrum } from '../../model/play-midi';
 import { PlayMidiComponent } from '../play-midi/play-midi';
+import { ConvertionUtil } from '../../util/hexa';
 
 @Component({
   selector: 'choice-component',
@@ -41,7 +42,7 @@ export class ChoiceComponent {
     public goToMusicalInstrumentChoice(){
         const popover = this.popoverCtrl.create(ListPopoverComponent, 
             {
-                title: 'Escolha o instrumento',
+                title: 'Instrumento',
                 list: this.midiChoice.musicalInstrumentsAllowed,
                 callback: this.changeInstrumentMidiNumber.bind(this),
                 iconFunction: this.visualMidi.getIonIconToMidiNumber,
@@ -61,6 +62,19 @@ export class ChoiceComponent {
         let midi: PlayMidiSpectrums = new PlayMidiSpectrums();
         midi.midi = this.midiChoice.midi;
         midi.midiId = this.midiChoice.midiId;
+
+        /*
+        let aa = []
+
+         for (let aaa of this.midiChoice.midi.midiTracks[0].midiEvents) {
+            aa.push({delta_time_hexa: aaa.deltaTime,
+                     delta_time_int: ConvertionUtil.calculateDeltaTimeFromHexa(aaa.deltaTime),
+                     event_data: aaa.midiEventData
+                    })
+        }
+        
+
+        let aaaa = JSON.stringify(aa)*/
 
         let spt: PlayMidiSpectrum = new PlayMidiSpectrum();
         spt.spectrumSVGs.push(this.getBackgroundImage());

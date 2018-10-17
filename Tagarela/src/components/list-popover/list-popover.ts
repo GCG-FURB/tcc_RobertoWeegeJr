@@ -14,7 +14,7 @@ import { NavController, NavParams } from 'ionic-angular';
 export class ListPopoverComponent {
 
     private title: string;
-    private list: number[];
+    private list: string[];
     private callback: Function;
     private iconFunction: Function;
     private nameFunction: Function;
@@ -23,16 +23,25 @@ export class ListPopoverComponent {
     }
 
     ionViewDidLoad() {
+
         this.title = this.navParams.get("title");
         this.list = this.navParams.get("list");
         this.callback = this.navParams.get("callback");
         this.iconFunction = this.navParams.get("iconFunction");
         this.nameFunction = this.navParams.get("nameFunction");
+        
+        if (!this.nameFunction) 
+            this.nameFunction = this.defaultNameFunction;
+        
     }
 
-    public goBack(value: number){
+    private goBack(value: string){
         this.callback(value);
         this.navCtrl.pop();
+    }
+
+    private defaultNameFunction(element: string){
+        return element;
     }
 
 }
