@@ -7,17 +7,14 @@
 </ion-header>
 
 <ion-content padding>
-
-    <p>Bem vindo ao módulo de composição musical do Tagarela.</p>
-    <br>
-    <p>Para começar, escolha uma opção: </p> 
-    <br>
-    <button ion-button full (click)="chooseDefaultCompositionSource()">
-        Dados de Composição Padrão
-    </button>
-    <br>
-    <button ion-button full (click)="chooseCustomCompositionSource()">
-        Dados de Composição Personalizados
-    </button>
-
+    <div *ngIf="customCompositionSystemFileSystem">
+        <p>Bem vindo ao módulo de composição musical do Tagarela.</p>
+        <p>Para começar, escolha uma opção: </p> 
+        <button ion-button full (click)="chooseDefaultCompositionSource()">
+            Dados de Composição Padrão
+        </button>
+        <button ion-button full (click)="chooseCustomCompositionSource()">
+            Dados de Composição Personalizados
+        </button>
+    </div>
 </ion-content>

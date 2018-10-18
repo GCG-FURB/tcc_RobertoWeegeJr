@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams, LoadingController } from 'ionic-angular';
-import { File } from '@ionic-native/file';
 import { MusicalCompositionConfigControl } from '../../control/musical-composition-config';
 import { MusicalCompositionSourceControl } from '../../control/musical-composition-source';
 import { CompositionPage } from '../composition/composition';
-import { VisualMidiUtil } from '../../util/visual-midi';
-import { FormControl, Validators, FormGroup, FormBuilder, ValidatorFn } from '@angular/forms';
+import { FormControl, Validators, FormGroup, FormBuilder } from '@angular/forms';
 import { MusicalCompositionConfig, MusicalCompositionLineConfig } from '../../model/musical-composition-config';
+import { VisualMidiProvider } from '../../providers/visual-midi/visual-midi';
 
 @Component({
     selector: 'page-setup-composition-source',
@@ -17,8 +16,6 @@ export class SetupCompositionSourcePage {
     private _configControl: MusicalCompositionConfigControl;
     private _sourceControl: MusicalCompositionSourceControl;
 
-    private _visualMidi: VisualMidiUtil;
-    
     private _configSegment: string;
 
     private generalForm: FormGroup;
@@ -29,8 +26,8 @@ export class SetupCompositionSourcePage {
     constructor(public navCtrl: NavController, 
                 public navParams: NavParams,
                 public loadingController: LoadingController,
-                private file: File,
-                public formBuilder: FormBuilder) {}
+                public formBuilder: FormBuilder,
+                public visualMidiProvider: VisualMidiProvider) {}
 
     get configControl(): MusicalCompositionConfigControl {
         return this._configControl;
@@ -47,14 +44,6 @@ export class SetupCompositionSourcePage {
     set sourceControl(sourceControl:MusicalCompositionSourceControl) {
         this._sourceControl = sourceControl;
     }
-    
-    get visualMidi(): VisualMidiUtil {
-        return this._visualMidi;
-    }
-    
-    set visualMidi(visualMidi:VisualMidiUtil) {
-        this._visualMidi = visualMidi;
-    }
          
     get configSegment(): string {
         return this._configSegment;
@@ -66,7 +55,6 @@ export class SetupCompositionSourcePage {
     
     
     ngOnInit(){
-        this.visualMidi = new VisualMidiUtil();
         this.configSegment = 'general';
         let configControl = this.navParams.get('configControl');
         this.loadForms(configControl);

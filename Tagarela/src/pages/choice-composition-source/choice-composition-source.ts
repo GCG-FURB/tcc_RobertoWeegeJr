@@ -1,41 +1,37 @@
 import { Component } from '@angular/core';
-import { NavController, LoadingController, AlertController, PopoverController } from 'ionic-angular';
-import { File } from '@ionic-native/file';
+import { NavController, LoadingController, AlertController, PopoverController, Loading } from 'ionic-angular';
 import { SetupCompositionSourcePage } from '../setup-composition-source/setup-composition-source';
 import { MusicalCompositionConfigControl } from '../../control/musical-composition-config';
 import { Platform } from 'ionic-angular';
-import { FileUtil } from '../../util/file';
 import { ListPopoverComponent } from '../../components/list-popover/list-popover';
 import { MusicalCompositionSourceControl } from '../../control/musical-composition-source';
+import { GenericComponent } from '../../control/generic-component';
+import { FileProvider } from '../../providers/file/file';
 
 @Component({
     selector: 'page-choice-composition-source',
     templateUrl: 'choice-composition-source.html',
 })
-export class ChoiceCompositionSourcePage {
-
-    private _fileUtil: FileUtil;
+export class ChoiceCompositionSourcePage extends GenericComponent {
     
+    //variaveis locais
     private _defaultCompositionSources: string[]; 
     private _customCompositionSources: string[]; 
-
     private _customCompositionSystemFileSystem: string;
 
     constructor(private plataform: Platform, 
                 private navCtrl: NavController, 
-                private loadingController: LoadingController,
-                private file: File,
+                private loadingCtrl: LoadingController,
                 private alertCtrl: AlertController,
-                private popoverCtrl: PopoverController) {}
-
-    get fileUtil(): FileUtil {
-        return this._fileUtil;
+                private popoverCtrl: PopoverController,
+                private fileProvider: FileProvider) {
+        
+        super(loadingCtrl,
+              alertCtrl,
+              popoverCtrl);
     }
 
-    set fileUtil(fileUtil: FileUtil) {
-        this._fileUtil = fileUtil; 
-    }
-
+    //gets e sets - variaveis locais
     get defaultCompositionSources(): string[] {
         return this._defaultCompositionSources;
     }
@@ -60,148 +56,146 @@ export class ChoiceCompositionSourcePage {
         this._customCompositionSystemFileSystem = customCompositionSystemFileSystem; 
     }
 
-    ionViewDidLoad() {
-        this.fileUtil = new FileUtil(this.file);
-        if (this.plataform.is('android')) {
-            this.customCompositionSystemFileSystem = this.file.externalRootDirectory;
-        } else if (this.plataform.is('ios')) {
-            this.customCompositionSystemFileSystem = this.file.documentsDirectory;
-        } else {
-            throw new Error('plataforma não suportada')
+    private ngOnInit(): void {
+        try {
+            if (this.plataform.is('android')) {
+                this.customCompositionSystemFileSystem = this.fileProvider.file.externalRootDirectory;
+            } else if (this.plataform.is('ios')) {
+                this.customCompositionSystemFileSystem = this.fileProvider.file.documentsDirectory;
+            } else {
+                throw new Error('plataforma não suportada')
+                //this.customCompositionSystemFileSystem ='-'
+            }
+        } catch (e) {
+            this.errorHandler(e);
         }
-        //this.loadCompositionOptions();
     }
 
     private async chooseDefaultCompositionSource() {
-        let loading = await this.loadingController.create({content: 'Buscando Dados de Composição'});
-        loading.present();
         try {
-            
-            this.defaultCompositionSources = null;
 
+            await this.createLoading('Buscando Dados de Composição');
+
+            this.defaultCompositionSources = null;
             //load default composition sources
-            this.defaultCompositionSources = await this.fileUtil.getListOfDirectories(this.file.applicationDirectory, MusicalCompositionConfigControl.DEFAULT_COMPOSITION_SOURCES_RELATIVE_PATH);
+
+            this.defaultCompositionSources = await this.fileProvider.getListOfDirectories(
+                                                        this.fileProvider.file.applicationDirectory, 
+                                                        MusicalCompositionConfigControl.DEFAULT_COMPOSITION_SOURCES_RELATIVE_PATH
+                                                   );
             
-            loading.dismiss();
+            let callbackFunction = this.getCompositionSetupFunction (
+                                        false, 
+                                        this.fileProvider.file.applicationDirectory, 
+                                        MusicalCompositionConfigControl.DEFAULT_COMPOSITION_SOURCES_RELATIVE_PATH
+                                   );
+
+            await this.dismissLoading();
 
             if (this.defaultCompositionSources && this.defaultCompositionSources.length > 0) {
-                const popover = this.popoverCtrl.create(ListPopoverComponent, 
+                this.startPopover(
+                    ListPopoverComponent, 
                     {
                         title: 'Dados de Composição',
                         list: this.defaultCompositionSources,
-                        callback: this.startDefaultCompositionSetup.bind(this)
-                    });
-                popover.present();
+                        callback: callbackFunction.bind(this)
+                    }
+                );
             } else {
-                let alert = this.alertCtrl.create({
-                    title: 'Nenhum Dado Encontrado',
-                    subTitle: 'Nenhum dado padrão de composição foi encontrado.',
-                    buttons: ['OK']
-                });
-                alert.present();
+                await this.startAlert(
+                    {
+                        title: 'Nenhum Dado Encontrado',
+                        subTitle: 'Nenhum dado padrão de composição foi encontrado.',
+                        buttons: ['OK']
+                    }
+                );
             }
         } catch (e) {
-            loading.dismiss();
-            alert('error')
-            alert(JSON.stringify(e))
+            this.errorHandler(e);
         }
     }
 
     private async chooseCustomCompositionSource() {
-        let loading = await this.loadingController.create({content: 'Buscando Dados de Composição'});
-        loading.present();
         try {
+
+            await this.createLoading('Buscando Dados de Composição');
+
             this.customCompositionSources = null;
         
             //load custom composition sources
-            if (await this.fileUtil.verifyDir(this.customCompositionSystemFileSystem, MusicalCompositionConfigControl.CUSTOM_COMPOSITION_SOURCES_RELATIVE_PATH)) {
-                //await this.fileUtil.verifyAndCreateDirs(this.customCompositionSystemFileSystem, MusicalCompositionConfigControl.CUSTOM_COMPOSITION_SOURCES_RELATIVE_PATH)
-                this.customCompositionSources = await this.fileUtil.getListOfDirectories(this.customCompositionSystemFileSystem, MusicalCompositionConfigControl.CUSTOM_COMPOSITION_SOURCES_RELATIVE_PATH);
+            if (await this.fileProvider.verifyDir(this.customCompositionSystemFileSystem, MusicalCompositionConfigControl.CUSTOM_COMPOSITION_SOURCES_RELATIVE_PATH)) {
+                this.customCompositionSources = await this.fileProvider.getListOfDirectories(this.customCompositionSystemFileSystem, MusicalCompositionConfigControl.CUSTOM_COMPOSITION_SOURCES_RELATIVE_PATH);
             } 
-            this.customCompositionSources = null;
-            
-            loading.dismiss();
+
+            let callbackFunction = this.getCompositionSetupFunction(true, this.customCompositionSystemFileSystem, MusicalCompositionConfigControl.CUSTOM_COMPOSITION_SOURCES_RELATIVE_PATH);
+
+            await this.dismissLoading();
 
             if (this.customCompositionSources && this.customCompositionSources.length > 0) {
-                const popover = this.popoverCtrl.create(ListPopoverComponent, 
-                            {
-                                title: 'Dados de Composição',
-                                list: this.customCompositionSources,
-                                callback: this.startCustomCompositionSetup.bind(this)
-                            });
-                popover.present();
-                
+                this.startPopover(
+                    ListPopoverComponent, 
+                    {
+                        title: 'Dados de Composição',
+                        list: this.customCompositionSources,
+                        callback: callbackFunction.bind(this)
+                    }
+                );
             } else {
-                const alert = this.alertCtrl.create({
-                    title: 'Nenhum Dado Encontrado',
-                    subTitle: 'Nenhum dado personalizado de composição foi encontrado.',
-                    buttons: ['OK']
-                });
-                alert.present();
+                await this.startAlert(
+                    {
+                        title: 'Nenhum Dado Encontrado',
+                        subTitle: 'Nenhum dado personalizado de composição foi encontrado.',
+                        buttons: ['OK']
+                    }
+                );
             }
-            
+
         } catch (e) {
-            loading.dismiss();
-            alert('error')
-            alert(JSON.stringify(e))
+            this.errorHandler(e);
         }
     }
 
-    private async startDefaultCompositionSetup(chosedDefaultCompositionSource: string) {
-        let loading = await this.loadingController.create({content: 'Carregando Dados de Composição'});
-        loading.present();
-        try {
-            
-            let configControl: MusicalCompositionConfigControl = new MusicalCompositionConfigControl(this.file, this.file.applicationDirectory, MusicalCompositionConfigControl.DEFAULT_COMPOSITION_SOURCES_RELATIVE_PATH + chosedDefaultCompositionSource, false);
-            await configControl.loadConfigs();
-
-            let sourceControl: MusicalCompositionSourceControl = new MusicalCompositionSourceControl(this.file, this.file.applicationDirectory);
-            await sourceControl.loadSources(configControl.config);
-
-            await configControl.determinateMidiChannels(sourceControl.source);
-            loading.dismiss();
-
-            this.navCtrl.setRoot(SetupCompositionSourcePage, {
-                isCustomSource: false,
-                baseFileSystem: this.file.applicationDirectory,
-                relativePath: MusicalCompositionConfigControl.DEFAULT_COMPOSITION_SOURCES_RELATIVE_PATH + chosedDefaultCompositionSource,
-                configControl: configControl,
-                sourceControl: sourceControl
-            });
-
-        } catch (e) {
-            loading.dismiss();
-            alert('aqui')
-            alert(JSON.stringify(e))
+    private getCompositionSetupFunction(isCustomSource: boolean,
+                                          baseFileSystem: string, 
+                                          relativePath: string): Function {
+        return (chosedCompositionSource: string) => {
+            try {
+                this.startCompositionSetup(chosedCompositionSource, isCustomSource, baseFileSystem, relativePath);
+            } catch (e) {
+                this.errorHandler(e);
+            }
         }
-
     }
 
-    private async startCustomCompositionSetup(chosedDefaultCompositionSource: string) {
-        let loading = await this.loadingController.create({content: 'Carregando Dados de Composição'});
-        loading.present();
-        try {
+    private async startCompositionSetup(chosedDefaultCompositionSource: string, 
+                                        isCustomSource: boolean,
+                                        baseFileSystem: string, 
+                                        relativePath: string) {
             
-            let configControl: MusicalCompositionConfigControl = new MusicalCompositionConfigControl(this.file, this.customCompositionSystemFileSystem, MusicalCompositionConfigControl.CUSTOM_COMPOSITION_SOURCES_RELATIVE_PATH + chosedDefaultCompositionSource, true);
-            await configControl.loadConfigs();
+        await this.createLoading('Carregando dados de composição');
 
-            let sourceControl: MusicalCompositionSourceControl = new MusicalCompositionSourceControl(this.file, this.customCompositionSystemFileSystem);
-            await sourceControl.loadSources(configControl.config);
+        let configControl: MusicalCompositionConfigControl = new MusicalCompositionConfigControl(
+                                                                    this.fileProvider, 
+                                                                    baseFileSystem, 
+                                                                    relativePath + chosedDefaultCompositionSource, 
+                                                                    isCustomSource
+                                                                );
+        await configControl.loadConfigs();
 
-            await configControl.determinateMidiChannels(sourceControl.source);
-            loading.dismiss();
-            this.navCtrl.setRoot(SetupCompositionSourcePage, {
-                isCustomSource: true,
-                baseFileSystem: this.customCompositionSystemFileSystem,
-                relativePath: MusicalCompositionConfigControl.CUSTOM_COMPOSITION_SOURCES_RELATIVE_PATH + chosedDefaultCompositionSource,
-                configControl: configControl,
-                sourceControl: sourceControl
-            });
-        } catch (e) {
-            loading.dismiss();
-            alert('aqui')
-            alert(JSON.stringify(e))
-        }
+        let sourceControl: MusicalCompositionSourceControl = new MusicalCompositionSourceControl(this.fileProvider, baseFileSystem);
+        await sourceControl.loadSources(configControl.config);
+
+        await configControl.determinateMidiChannels(sourceControl.source);
+        
+        await this.dismissLoading();
+
+        this.navCtrl.setRoot(SetupCompositionSourcePage, {
+            isCustomSource: isCustomSource,
+            baseFileSystem: baseFileSystem,
+            relativePath: relativePath,
+            configControl: configControl,
+            sourceControl: sourceControl
+        });
     }
 
 }

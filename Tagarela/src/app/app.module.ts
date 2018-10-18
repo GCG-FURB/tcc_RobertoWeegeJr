@@ -21,6 +21,9 @@ import { SlidePopoverComponent } from '../components/slide-popover/slide-popover
 import { ListPopoverComponent } from '../components/list-popover/list-popover';
 import { FileTransfer } from '@ionic-native/file-transfer';
 import { PlayMidiComponent } from '../components/play-midi/play-midi';
+import { FileProvider } from '../providers/file/file';
+import { MediaProvider } from '../providers/media/media';
+import { VisualMidiProvider } from '../providers/visual-midi/visual-midi';
 
 @NgModule({
   declarations: [
@@ -58,7 +61,10 @@ import { PlayMidiComponent } from '../components/play-midi/play-midi';
     FilePath,
     Media,
     FileTransfer,
-    {provide: ErrorHandler, useClass: IonicErrorHandler}
+    {provide: ErrorHandler, useClass: IonicErrorHandler},
+    FileProvider,
+    MediaProvider,
+    VisualMidiProvider
   ]
 })
 export class AppModule {}

@@ -1,26 +1,17 @@
 import { Component, Input } from '@angular/core';
 import { NavController, PopoverController } from 'ionic-angular';
-import { VisualMidiUtil } from '../../util/visual-midi';
-import { File } from '@ionic-native/file';
-import { FileUtil } from '../../util/file';
-import { Media } from '@ionic-native/media';
-import { MediaUtil } from '../../util/media';
 import { MusicalCompositionControl } from '../../control/musical-composition';
 import { MusicalCompositionOption } from '../../model/musical-composition';
 import { ListPopoverComponent } from '../list-popover/list-popover';
 import { PlayMidiSpectrums, PlayMidiSpectrum } from '../../model/play-midi';
 import { PlayMidiComponent } from '../play-midi/play-midi';
-import { ConvertionUtil } from '../../util/hexa';
+import { VisualMidiProvider } from '../../providers/visual-midi/visual-midi';
 
 @Component({
   selector: 'choice-component',
   templateUrl: 'choice.html'
 })
 export class ChoiceComponent {
-
-    private visualMidi: VisualMidiUtil = new VisualMidiUtil();
-    private fileUtil: FileUtil;
-    private mediaUtil: MediaUtil;
 
     private backgroundSVGImageURL: string;
 
@@ -33,11 +24,7 @@ export class ChoiceComponent {
     @Input()
     private toChoice: boolean;
 
-
-    constructor(public navCtrl: NavController, private file: File, private media: Media, public popoverCtrl: PopoverController) {
-        this.fileUtil = new FileUtil(file);
-        this.mediaUtil = new MediaUtil(media)
-    }
+    constructor(public navCtrl: NavController, public popoverCtrl: PopoverController, private visualMidiProvider: VisualMidiProvider) {}
 
     public goToMusicalInstrumentChoice(){
         const popover = this.popoverCtrl.create(ListPopoverComponent, 
@@ -45,8 +32,8 @@ export class ChoiceComponent {
                 title: 'Instrumento',
                 list: this.midiChoice.musicalInstrumentsAllowed,
                 callback: this.changeInstrumentMidiNumber.bind(this),
-                iconFunction: this.visualMidi.getIonIconToMidiNumber,
-                nameFunction: this.visualMidi.getInstrumentNameToMidiNumber,
+                iconFunction: this.visualMidiProvider.getIonIconToMidiNumber,
+                nameFunction: this.visualMidiProvider.getInstrumentNameToMidiNumber,
             });
         popover.present();
     }
@@ -133,7 +120,7 @@ export class ChoiceComponent {
     
     generateBackgroundImageSVG(){
         if (this.midiChoice && this.midiChoice.midi) {
-            let spectrumPalete = this.visualMidi.getSpectrumPaleteByInstrumentType(this.visualMidi.getInstrumentType(this.midiChoice.musicalInstrument));
+            let spectrumPalete = this.visualMidiProvider.getSpectrumPaleteByInstrumentType(this.visualMidiProvider.getInstrumentType(this.midiChoice.musicalInstrument));
             this.backgroundSVGImageURL = encodeURI('data:image/svg+xml;utf8,' + this.midiChoice.midi
                                                                                     .generateMidiSpectrum(this.maxNote, this.minNote)
                                                                                     .getSVG(spectrumPalete[0], spectrumPalete[1], spectrumPalete[2]));
@@ -141,7 +128,7 @@ export class ChoiceComponent {
     }
 
     getColor(): string{
-        return this.visualMidi.getInstrumentType(this.midiChoice.musicalInstrument);
+        return this.visualMidiProvider.getInstrumentType(this.midiChoice.musicalInstrument);
     }
 
 }

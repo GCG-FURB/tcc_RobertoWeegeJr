@@ -153,7 +153,7 @@
                                 </ion-label>
                                 <ion-select [formControl]="optionForms[i][j][k].controls.musicalInstrumentsAllowed" [(ngModel)]="optionConfig.musicalInstrumentsAllowed" multiple="true">
                                     <ion-option *ngFor=" let instrument of optionConfig.baseMusicalInstrumentsAllowed" [value]="instrument">
-                                            {{visualMidi.getInstrumentNameToMidiNumber(instrument)}}
+                                            {{visualMidiProvider.getInstrumentNameToMidiNumber(instrument)}}
                                     </ion-option> 
                                 </ion-select>
                             </ion-item>
@@ -163,7 +163,7 @@
                                 </ion-label>
                                 <ion-select [formControl]="optionForms[i][j][k].controls.defaultMusicalInstrument" [(ngModel)]="optionConfig.defaultMusicalInstrument" multiple="false">
                                     <ion-option *ngFor="let instrument of optionConfig.baseMusicalInstrumentsAllowed" [value]="instrument">
-                                            {{visualMidi.getInstrumentNameToMidiNumber(instrument)}}
+                                            {{visualMidiProvider.getInstrumentNameToMidiNumber(instrument)}}
                                     </ion-option>
                                 </ion-select>
                             </ion-item>

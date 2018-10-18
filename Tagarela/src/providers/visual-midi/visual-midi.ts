@@ -1,8 +1,9 @@
+import { Injectable } from '@angular/core';
 
-export class VisualMidiUtil {
-    
+@Injectable()
+export class VisualMidiProvider {
 
-
+    constructor() {}
 
     public getIonIconToMidiNumber(midiNumber: number): string {
         switch (midiNumber) {
@@ -79,7 +80,6 @@ export class VisualMidiUtil {
         }
         return 'Desconhecido'
     }
-
 
     public getInstrumentNameToMayorKeySignatureNumber(keySignatureNumber: number): string {
         switch (keySignatureNumber) {

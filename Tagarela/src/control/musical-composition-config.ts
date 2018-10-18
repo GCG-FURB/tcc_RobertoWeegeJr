@@ -1,8 +1,7 @@
 import { MusicalCompositionConfig, MusicalCompositionStepConfig, MusicalCompositionGroupConfig, MusicalCompositionOptionConfig, MusicalCompositionLineConfig } from "../model/musical-composition-config";
-import { File } from '@ionic-native/file';
-import { FileUtil } from "../util/file";
 import { MusicalCompositionSource } from "../model/musical-composition-source";
 import { MidiConstants } from "./midi";
+import { FileProvider } from "../providers/file/file";
 
 export class MusicalCompositionConfigControl {
 
@@ -29,7 +28,7 @@ export class MusicalCompositionConfigControl {
     private CONFIG_DEFAULT_DEFAULT_VOLUME: number = 100
 
     //variables
-    private _fileUtil: FileUtil;
+    private _fileProvider: FileProvider;
 
     private _config: MusicalCompositionConfig;
 
@@ -37,19 +36,19 @@ export class MusicalCompositionConfigControl {
     private _baseFileSystemConfig: string;
     private _relativePath: string;
 
-    constructor(file: File, baseFileSystem: string, relativePath: string, isCustomSource: boolean){
-        this.fileUtil = new FileUtil(file);
+    constructor(file: FileProvider, baseFileSystem: string, relativePath: string, isCustomSource: boolean){
+        this.fileProvider = file;
         this.baseFileSystemComposition = baseFileSystem;
-        this.baseFileSystemConfig = (isCustomSource ? baseFileSystem : file.dataDirectory);
+        this.baseFileSystemConfig = (isCustomSource ? baseFileSystem : file.file.dataDirectory);
         this.relativePath = relativePath;
     }
 
-    get fileUtil(): FileUtil {
-        return this._fileUtil;
+    get fileProvider(): FileProvider {
+        return this._fileProvider;
     }
     
-    set fileUtil(fileUtil:FileUtil) {
-        this._fileUtil = fileUtil;
+    set fileProvider(fileProvider:FileProvider) {
+        this._fileProvider = fileProvider;
     }
     
     get config(): MusicalCompositionConfig {
@@ -88,93 +87,114 @@ export class MusicalCompositionConfigControl {
         if (!this.config) {
             throw Error('As configurações não estão carregadas');
         }
-        try { 
-            await this.fileUtil.writeFile(this.baseFileSystemConfig, this.relativePath, this.CONFIG_FILE_NAME, JSON.stringify(this.config));
-        } catch (e) {
-            alert(JSON.stringify(e))
-        }
+        await this.fileProvider.writeFile(this.baseFileSystemConfig, this.relativePath, this.CONFIG_FILE_NAME, JSON.stringify(this.config));
     }
 
     public async getConfig(): Promise<string> {
-        try { 
-            return await this.fileUtil.getFileContentIfExists(this.baseFileSystemConfig, this.relativePath, this.CONFIG_FILE_NAME);
-        } catch (e) {
-            alert(JSON.stringify(e))
-        }
+        return await this.fileProvider.getFileContentIfExists(this.baseFileSystemConfig, this.relativePath, this.CONFIG_FILE_NAME);
+    }
+
+    public async removeConfig(){
+        await this.fileProvider.removeFile(this.baseFileSystemConfig, this.relativePath, this.CONFIG_FILE_NAME);
     }
 
     public async loadConfigs(){
-        try {
 
-            let config = new MusicalCompositionConfig()
+        let config = new MusicalCompositionConfig();
+        let groupQuantity: number;
 
-            //set default values
-            config.baseFileSystem = this.baseFileSystemComposition;
-            config.relativePath = this.relativePath;
-            config.minTempo = this.CONFIG_DEFAULT_MIN_TEMPO;
-            config.maxTempo = this.CONFIG_DEFAULT_MAX_TEMPO;
-            config.stepTempo = this.CONFIG_DEFAULT_STEP_TEMPO;
-            config.defaultTempo = this.CONFIG_DEFAULT_DEFAULT_TEMPO;
+        //set default values
+        config.baseFileSystem = this.baseFileSystemComposition;
+        config.relativePath = this.relativePath;
+        config.minTempo = this.CONFIG_DEFAULT_MIN_TEMPO;
+        config.maxTempo = this.CONFIG_DEFAULT_MAX_TEMPO;
+        config.stepTempo = this.CONFIG_DEFAULT_STEP_TEMPO;
+        config.defaultTempo = this.CONFIG_DEFAULT_DEFAULT_TEMPO;
+    
+        let stepDirectoriesList: string[] = await this.fileProvider.getListOfDirectories(config.baseFileSystem, config.relativePath);
         
-            let stepDirectoriesList: string[] = await this.fileUtil.getListOfDirectories(config.baseFileSystem, config.relativePath);
-            //steps
-            for (let stepDirectory of stepDirectoriesList) {
-                let stepConfig: MusicalCompositionStepConfig = new MusicalCompositionStepConfig();
-                stepConfig.relativePath = stepDirectory; 
+        //steps validation
+        if (stepDirectoriesList.length < 1) {
+            throw new Error('É necessário ao menos um passo para realizar a composição');
+        }
 
-                stepConfig.quantityOfQuarterNote = this.CONFIG_DEFAULT_QUANTITY_OF_QUARTER_NOTE;
+        //steps
+        for (let stepDirectory of stepDirectoriesList) {
+            let stepConfig: MusicalCompositionStepConfig = new MusicalCompositionStepConfig();
+            stepConfig.relativePath = stepDirectory; 
+            stepConfig.quantityOfQuarterNote = this.CONFIG_DEFAULT_QUANTITY_OF_QUARTER_NOTE;
 
-                let stepPath: string = this.fileUtil.concatenatePath(config.relativePath, stepDirectory);
-                let lineDirectoriesList: string[] = await this.fileUtil.getListOfDirectories(config.baseFileSystem, stepPath);
+            let stepPath: string = this.fileProvider.concatenatePath(config.relativePath, stepDirectory);
+            let groupDirectoriesList: string[] = await this.fileProvider.getListOfDirectories(config.baseFileSystem, stepPath);
 
-                //groups
-                for (let groupDirectory of lineDirectoriesList) {
-                    let groupConfig: MusicalCompositionGroupConfig = new MusicalCompositionGroupConfig();
-                    groupConfig.relativePath = groupDirectory;
-
-                    let linePath: string = this.fileUtil.concatenatePath(stepPath, groupDirectory);
-                    let optionFilesList: string[] = await this.fileUtil.getListOfFiles(config.baseFileSystem, linePath)
-
-                    //options
-                    for (let optionFile of optionFilesList) {
-                        let optionConfig: MusicalCompositionOptionConfig = new MusicalCompositionOptionConfig();
-                        optionConfig.fileName = optionFile;
-                        groupConfig.optionsConfig.push(optionConfig);
-                    }
-                    stepConfig.groupsConfig.push(groupConfig);
-                }
-                config.stepsConfig.push(stepConfig)
+            //groups validation
+            if (groupDirectoriesList.length < 1) {
+                throw new Error('É necessário ao menos um grupo para realizar a composição');
             }
-            for (let stepConfig of config.stepsConfig) {
-                for (let groupConfig of stepConfig.groupsConfig) {
-                    if (!(config.linesConfig.find((element) => {
-                        return element.name == groupConfig.relativePath
-                    }))) {
-                        let lineConfig: MusicalCompositionLineConfig = new MusicalCompositionLineConfig();
-                        lineConfig.name = groupConfig.relativePath;
-                        lineConfig.minVolume = this.CONFIG_DEFAULT_MIN_VOLUME;
-                        lineConfig.maxVolume = this.CONFIG_DEFAULT_MAX_VOLUME;
-                        lineConfig.stepVolume = this.CONFIG_DEFAULT_STEP_VOLUME;
-                        lineConfig.defaultVolume = this.CONFIG_DEFAULT_DEFAULT_VOLUME;
-                        config.linesConfig.push(lineConfig);
-                    }
-                }
-                if (config.linesConfig.length != stepConfig.groupsConfig.length) {
-                    throw Error("Exite inconsistência entre nome ou quantidade de grupos em cada etapa de composição")
-                } 
+            if (!groupQuantity) {
+                groupQuantity = groupDirectoriesList.length;
+            } else if (groupQuantity != groupDirectoriesList.length ){
+                throw new Error('O número de grupos de composição deve ser igual em todos os passos');
             }
 
-            let actualConfigString = await this.getConfig();
-            if (actualConfigString) {
+            //groups
+            for (let groupDirectory of groupDirectoriesList) {
+                let groupConfig: MusicalCompositionGroupConfig = new MusicalCompositionGroupConfig();
+                groupConfig.relativePath = groupDirectory;
+
+                let linePath: string = this.fileProvider.concatenatePath(stepPath, groupDirectory);
+                let optionFilesList: string[] = await this.fileProvider.getListOfFiles(config.baseFileSystem, linePath)
+
+                //options validation
+                if (optionFilesList.length < 1) {
+                    throw new Error('É necessário ao menos um grupo para realizar a composição');
+                }
+
+                //options
+                for (let optionFile of optionFilesList) {
+                    let optionConfig: MusicalCompositionOptionConfig = new MusicalCompositionOptionConfig();
+                    optionConfig.fileName = optionFile;
+                    groupConfig.optionsConfig.push(optionConfig);
+                }
+                stepConfig.groupsConfig.push(groupConfig);
+            }
+            config.stepsConfig.push(stepConfig)
+        }
+
+        //lines config
+        for (let stepConfig of config.stepsConfig) {
+            for (let groupConfig of stepConfig.groupsConfig) {
+                if (!(config.linesConfig.find((element) => {
+                    return element.name == groupConfig.relativePath
+                }))) {
+                    let lineConfig: MusicalCompositionLineConfig = new MusicalCompositionLineConfig();
+                    lineConfig.name = groupConfig.relativePath;
+                    lineConfig.minVolume = this.CONFIG_DEFAULT_MIN_VOLUME;
+                    lineConfig.maxVolume = this.CONFIG_DEFAULT_MAX_VOLUME;
+                    lineConfig.stepVolume = this.CONFIG_DEFAULT_STEP_VOLUME;
+                    lineConfig.defaultVolume = this.CONFIG_DEFAULT_DEFAULT_VOLUME;
+                    config.linesConfig.push(lineConfig);
+                }
+            }
+            if (config.linesConfig.length != stepConfig.groupsConfig.length) {
+                throw Error("Exite inconsistência entre nome ou quantidade de grupos em cada etapa de composição")
+            } 
+        }
+
+        let actualConfigString = await this.getConfig();
+
+        if (actualConfigString) {
+            try {
+
                 let actualConfig = JSON.parse(actualConfigString);
-                
+
                 if (this.validateSavedConfig(config, actualConfig)) {
-                    
+                
                     config.minTempo = +actualConfig._minTempo;
                     config.maxTempo = +actualConfig._maxTempo;
                     config.stepTempo = +actualConfig._stepTempo;
                     config.defaultTempo = +actualConfig._defaultTempo;
-
+    
                     for (let i = 0; i < config.stepsConfig.length; i++) {
                         config.stepsConfig[i].quantityOfQuarterNote = +actualConfig._stepsConfig[i]._quantityOfQuarterNote;
                         for (let j = 0; j < config.stepsConfig[i].groupsConfig.length; j++) {
@@ -185,25 +205,22 @@ export class MusicalCompositionConfigControl {
                             }
                         }
                     }
-
+    
                     for (let i = 0; i < config.linesConfig.length; i++) {
                         config.linesConfig[i].minVolume = +actualConfig._linesConfig[i]._minVolume;
                         config.linesConfig[i].maxVolume = +actualConfig._linesConfig[i]._maxVolume;
                         config.linesConfig[i].stepVolume = +actualConfig._linesConfig[i]._stepVolume;
                         config.linesConfig[i].defaultVolume = +actualConfig._linesConfig[i]._defaultVolume;
                     }
-
                 } else {
-                    alert('deu ruim')
+                    throw new Error('Arquivo em formato inválido');
                 }
-
+            } catch (e) {
+                this.removeConfig();
+                throw new Error('O arquivo de configuração continha inconsistências, portanto foi removido. Temte novamente.');
             }
-            this.config = config;
-        } catch (e) {
-            alert('error')
-            alert(JSON.stringify(e));
         }
-
+        this.config = config;
     }
 
     private validateSavedConfig(config: MusicalCompositionConfig, actualConfig: any): boolean{
@@ -252,6 +269,9 @@ export class MusicalCompositionConfigControl {
     public determinateMidiChannels(source: MusicalCompositionSource) {
         if (!this.config) {
             throw Error('As configurações não estão carregadas');
+        }
+        if (!source) {
+            throw Error('A fonte de composição não pode ser nula');
         }
         for (let i = 0; i < this.config.stepsConfig.length; i++) {
             for (let j = 0; j < this.config.stepsConfig[i].groupsConfig.length; j++) {

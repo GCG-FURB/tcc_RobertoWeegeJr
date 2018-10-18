@@ -1,17 +1,9 @@
 import { Component } from '@angular/core';
 import { PlayMidiSpectrums } from '../../model/play-midi';
 import { NavController, NavParams } from 'ionic-angular';
-import { File } from '@ionic-native/file';
-import { FileUtil } from '../../util/file';
-import { Media } from '@ionic-native/media';
-import { MediaUtil } from '../../util/media';
+import { FileProvider } from '../../providers/file/file';
+import { MediaProvider } from '../../providers/media/media';
 
-/**
- * Generated class for the PlayMidiComponent component.
- *
- * See https://angular.io/api/core/Component for more info on Angular
- * Components.
- */
 @Component({
   selector: 'play-midi',
   templateUrl: 'play-midi.html'
@@ -19,12 +11,8 @@ import { MediaUtil } from '../../util/media';
 export class PlayMidiComponent {
 
     spectrum: PlayMidiSpectrums;
-    private fileUtil: FileUtil;
-    private mediaUtil: MediaUtil;
 
-    constructor(public navCtrl: NavController, public navParams: NavParams, private file: File, private media: Media) {
-        this.fileUtil = new FileUtil(file);
-        this.mediaUtil = new MediaUtil(media)
+    constructor(public navCtrl: NavController, public navParams: NavParams, private fileProvider: FileProvider, private mediaProvider: MediaProvider) {
     }
 
     ionViewDidLoad() {
@@ -34,8 +22,8 @@ export class PlayMidiComponent {
 
     public async playMidi(){
         let midiString = this.spectrum.midi.getBinaryString();
-        await this.fileUtil.writeBinaryStringToTempArea(this.spectrum.midiId, midiString);
-        await this.mediaUtil.playMidiFromTempArea(this.spectrum.midiId, this.goBack.bind(this));
+        await this.fileProvider.writeBinaryStringToTempArea(this.spectrum.midiId, midiString);
+        await this.mediaProvider.playMidiFromTempArea(this.spectrum.midiId, this.goBack.bind(this));
         
     }
 
