@@ -4,7 +4,7 @@
         <ion-title>Configuração de Composição</ion-title>
     </ion-navbar>
     <ion-toolbar>
-        <button ion-button full (click)="saveConfigAndStartComposition()" *ngIf="configControl && sourceControl">
+        <button ion-button full (click)="saveConfigAndStartComposition()" [disabled]="!generalForm.valid || !lineFormsIsValid() || !stepFormsIsValid() || !optionFormsIsValid()">
             Começar composição
         </button>
     </ion-toolbar>
@@ -15,13 +15,13 @@
                 <p [class.invalid]="!generalForm.valid">Geral</p>
             </ion-segment-button>
             <ion-segment-button value="lines">
-                <p>Linhas</p>
+                <p [class.invalid]="!lineFormsIsValid()">Linhas</p>
             </ion-segment-button>
             <ion-segment-button value="steps">
-                <p>Passos</p>
+                <p [class.invalid]="!stepFormsIsValid()">Passos</p>
             </ion-segment-button>
             <ion-segment-button value="options">
-                <p>Opções</p>
+                <p [class.invalid]="!optionFormsIsValid()">Opções</p>
             </ion-segment-button>
         </ion-segment>
 

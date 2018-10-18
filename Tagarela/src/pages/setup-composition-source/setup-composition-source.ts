@@ -164,6 +164,38 @@ export class SetupCompositionSourcePage {
         }
     }
 
+    public lineFormsIsValid(): boolean {
+        for (let i = 0; i < this.lineForms.length; i++) {
+            if (!this.lineForms[i].valid) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public stepFormsIsValid(): boolean {
+        for (let i = 0; i < this.stepForms.length; i++) {
+            if (!this.stepForms[i].valid) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public optionFormsIsValid(): boolean {
+        for (let i = 0; i < this.optionForms.length; i++) {
+            for (let j = 0; j < this.optionForms[i].length; j++) {
+                for (let k = 0; k < this.optionForms[i][j].length; k++) {
+                    if (!this.optionForms[i][j][k].valid) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+
     updateoptionFormControl(iIndex: number, jIndex: number, kIndex: number) {
         this.optionForms[iIndex][jIndex][kIndex].controls.musicalInstrumentsAllowed.updateValueAndValidity(); 
         this.optionForms[iIndex][jIndex][kIndex].controls.defaultMusicalInstrument.updateValueAndValidity(); 
