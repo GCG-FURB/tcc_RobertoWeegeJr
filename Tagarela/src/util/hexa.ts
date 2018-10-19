@@ -23,6 +23,12 @@ export class ConvertionUtil {
         return !(binString.length == 8 && binString.charAt(0) == '1');
     }
 
+    public static getFistBit(binaryString: string): number {
+        let binString: string = binaryString.charCodeAt(0).toString(2);
+        return (binString.length == 8 ? +binString[0] : 0);
+    }
+
+
     public static calculateDeltaTime(binaryString: string) : number {
         let binaryDeltaTime: string = '';
         for (let str of binaryString) {

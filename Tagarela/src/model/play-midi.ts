@@ -1,4 +1,4 @@
-import { Midi } from "../control/midi";
+import { Midi } from "./midi";
 
 
 export class PlayMidiSpectrums {

@@ -47,6 +47,9 @@ export class GenericComponent {
         this.dismissLoading();
         alert('error handler')
         alert(JSON.stringify(e))
+        alert(e.message)
+        alert(e.stack)
+        alert(e.name)
     }
 
 

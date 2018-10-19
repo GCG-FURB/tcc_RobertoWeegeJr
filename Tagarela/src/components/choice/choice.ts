@@ -50,19 +50,6 @@ export class ChoiceComponent {
         midi.midi = this.midiChoice.midi;
         midi.midiId = this.midiChoice.midiId;
 
-        /*
-        let aa = []
-
-         for (let aaa of this.midiChoice.midi.midiTracks[0].midiEvents) {
-            aa.push({delta_time_hexa: aaa.deltaTime,
-                     delta_time_int: ConvertionUtil.calculateDeltaTimeFromHexa(aaa.deltaTime),
-                     event_data: aaa.midiEventData
-                    })
-        }
-        
-
-        let aaaa = JSON.stringify(aa)*/
-
         let spt: PlayMidiSpectrum = new PlayMidiSpectrum();
         spt.spectrumSVGs.push(this.getBackgroundImage());
         midi.spectrumLines.push(spt);

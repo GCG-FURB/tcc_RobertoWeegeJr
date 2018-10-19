@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { MusicalCompositionControl } from '../../control/musical-composition';
 import { PopoverController } from 'ionic-angular';
 import { ListPopoverComponent } from '../list-popover/list-popover';
-import { MidiConstants } from '../../control/midi';
+import { MidiConstants } from '../../model/midi';
 import { SlidePopoverComponent } from '../slide-popover/slide-popover';
 import { PlayMidiSpectrums, PlayMidiSpectrum } from '../../model/play-midi';
 import { PlayMidiComponent } from '../play-midi/play-midi';

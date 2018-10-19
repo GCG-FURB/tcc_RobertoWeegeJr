@@ -1,5 +1,5 @@
 import { ConvertionUtil } from "../util/hexa";
-import { MidiSpectrum, MidiSpectrumLine, MidiSpectrumNote } from "../model/midi-spectrum";
+import { MidiSpectrum, MidiSpectrumLine, MidiSpectrumNote } from "./midi-spectrum";
 
 export class Midi {
 
@@ -104,97 +104,8 @@ export class Midi {
         
     }
     
-    public setupMidiFromFile(binaryString: string) {
-        if (binaryString.substr(0, 4) != 'MThd') {
-            throw Error('Midi file must start with "MThd" header indication');
-        }
-        
-        let fileMidiType: number = ConvertionUtil.convertBinaryStringToNumber(binaryString.substr(8, 2));
-        if (fileMidiType > 0 || fileMidiType < 0) {
-            throw Error('Midi file type must be 0');
-        }
-        this.midiType = fileMidiType;
-
-        let fileNumberOfTracks: number = ConvertionUtil.convertBinaryStringToNumber(binaryString.substr(10, 2));
-        this.numberOfTracks = fileNumberOfTracks;
-
-        let fileTimeDividion: string = ConvertionUtil.convertBinaryStringToHexString(binaryString.substr(12, 2));
-        this.timeDivision = fileTimeDividion;
-
-        if (binaryString.substr(14, 4) != 'MTrk') {
-            throw Error('Midi file track must start with "MTrk" header indication');
-        }
-        this.midiTracks = [];
-
-        let midiTrack: MidiTrack = new MidiTrack();
-        this.midiTracks.push(midiTrack);
-        let deltaTime: number = 0;
-
-        for (let i = 22; i < binaryString.length;) {
-
-            //deltaTime
-            let deltaTimeStart: number = i;
-            let deltaTimeLength: number = 1;
-
-            while (!ConvertionUtil.isLastDeltaTimeByte(binaryString.charAt(deltaTimeStart + deltaTimeLength - 1))) {
-                deltaTimeLength++;
-                //lança exceção se passar de 4
-            }
-
-            //let teste = binaryString.substr(deltaTimeStart, deltaTimeLength);
-
-            //calcula delta time
-            deltaTime += ConvertionUtil.calculateDeltaTime(binaryString.substr(deltaTimeStart, deltaTimeLength));
-
-            i += deltaTimeLength;
-
-            //create event or sum delta time
-            let midiEvent: MidiEvent = MidiEvent.getMidiEventData(deltaTime, binaryString.substr(i));
-
-            //add event to track
-            if (midiEvent.loadEvent){
-                deltaTime = 0;
-                midiTrack.addMidiEvent(midiEvent);
-            } 
-            
-            i += midiEvent.getDataLength();
-
-        }
-    }
-
-    public getBinaryString(): string {
-        
-        let midiHeaderString: string;
-        let midiTracksString: string = '';
-        let midiEndBinaryString: string = '';
-
-        let midiType: string = this.midiType + '';
-        while(midiType.length < 4) {
-            midiType = '0' + midiType;
-        }
-
-        let trackQuantity: string = this.midiTracks.length + '';
-        while(trackQuantity.length < 4) {
-            trackQuantity = '0' + trackQuantity;
-        }
-
-        midiHeaderString = 'MThd' + ConvertionUtil.convertHexStringToBinararyString('00000006'       
-        + midiType + trackQuantity + this.timeDivision);
-
-        for (let midiTrack of this.midiTracks) {
-            midiTracksString += 'MTrk';
-            midiEndBinaryString = '';
-
-            for (let midiEvent of midiTrack.midiEvents) {
-                midiEndBinaryString += midiEvent.deltaTime + midiEvent.midiEventData;
-            }
-            midiEndBinaryString = ConvertionUtil.convertHexStringToBinararyString(midiEndBinaryString);
-            let midiSizeBinaryString: string = ConvertionUtil.convertNumberToBinararyString(midiEndBinaryString.length, 4);
-            midiTracksString += midiSizeBinaryString + midiEndBinaryString;
-        }
-       
-        return midiHeaderString + midiTracksString;
-    }
+    
+    
 
     public applyNoteTranspose(newKeySignatue: number){
         for (let midiTrack of this.midiTracks) {
@@ -238,12 +149,8 @@ export class Midi {
         let spectrumLineMap: Map<number, MidiSpectrumLine> = new Map();
         let spectrumNoteMap: Map<number, number> = new Map();
 
-        //alert('timeDivision')
-        //alert(this.timeDivision)
         for (let midiEvent of this.midiTracks[0].midiEvents) {
             midiTotalDeltaTime += midiEvent.deltaTimeNumber; 
-            //ConvertionUtil.convertHexStringToNumber(midiEvent.deltaTime)
-            //alert(midiEvent.midiEventData)
             
             if (midiEvent.midiEventData.length >= 1 && midiEvent.midiEventData.substr(0, 1) == '9') {
                 let note: number = ConvertionUtil.convertHexStringToNumber(midiEvent.midiEventData.substr(2, 2));
@@ -254,7 +161,9 @@ export class Midi {
                     midiMaxNote = note;
                 }
                 spectrumNoteMap.set(note, midiTotalDeltaTime);
+
             } else {
+
                 if (midiEvent.midiEventData.length >= 1 && midiEvent.midiEventData.substr(0, 1) == '8') {
                     
                     let note: number = ConvertionUtil.convertHexStringToNumber(midiEvent.midiEventData.substr(2, 2));
@@ -273,8 +182,6 @@ export class Midi {
                 }
             }
         }
-       
-        //alert(midiTotalDeltaTime)
 
         //tamanho em x
         midiSpectrum.width = midiTotalDeltaTime;
@@ -317,6 +224,14 @@ export class Midi {
 
         return [midiMinNote, midiMaxNote]
 
+    }
+
+    public getEventByType(dataType: MidiEventDataType){
+        let midiEvents: MidiEvent[] = []
+        for(let midTrack of this.midiTracks) {
+            midiEvents = midiEvents.concat(midTrack.getEventByType(dataType));
+        }
+        return midiEvents;
     }
 
 }
@@ -508,6 +423,15 @@ export class MidiTrack {
         return midiChannelChanged;    
     }
 
+    public getEventByType(dataType: MidiEventDataType){
+        let midiEvents: MidiEvent[] = []
+        for(let midiEvent of this.midiEvents) {
+            if (midiEvent.isOfType(dataType))
+                midiEvents.push(midiEvent);
+        }
+        return midiEvents;
+    }
+
 }
 
 export class MidiEvent {
@@ -579,78 +503,26 @@ export class MidiEvent {
         return this.midiEventData.length / 2;
     }
 
-    public static getMidiEventData(deltaTime: number, midiData: string): MidiEvent {
-        let firstEventByte: string = ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 1)); 
-        switch (firstEventByte.charAt(0)) {
-            case '8':
-                return new MidiEvent(ConvertionUtil.getDeltaTimeStringFromNumber(deltaTime)
-                                    ,deltaTime
-                                    ,MidiEventType.MIDI_EVENT
-                                    ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 3))
-                                    ,true);
-            case '9':
-                return new MidiEvent(ConvertionUtil.getDeltaTimeStringFromNumber(deltaTime)
-                                    ,deltaTime
-                                    ,MidiEventType.MIDI_EVENT
-                                    ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 3))
-                                    ,true);
-            case 'a':
-                return new MidiEvent(''
-                                    ,0
-                                    ,MidiEventType.MIDI_EVENT
-                                    ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 3))
-                                    ,false);    
-            case 'b':
-                return new MidiEvent(''
-                                    ,0
-                                    ,MidiEventType.MIDI_EVENT
-                                    ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 3))
-                                    ,false); 
-            case 'c':
-                return new MidiEvent(''
-                                    ,0
-                                    ,MidiEventType.MIDI_EVENT
-                                    ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 2))
-                                    ,false); 
-            case 'd':
-                return new MidiEvent(''
-                                    ,0
-                                    ,MidiEventType.MIDI_EVENT
-                                    ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 2))
-                                    ,false); 
-            case 'e':
-                return new MidiEvent(''
-                                    ,0
-                                    ,MidiEventType.MIDI_EVENT
-                                    ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 3))
-                                    ,false); 
-            case 'f':
-                if (firstEventByte == 'f0' || firstEventByte == 'f7') {
-                    return new MidiEvent(''
-                                        ,0
-                                        ,MidiEventType.SYSEX_EVENT
-                                        ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 2 + ConvertionUtil.convertBinaryStringToNumber(midiData.charAt(1))))
-                                        ,false);
-
-                }
-                if (firstEventByte == 'ff') {
-                    let eventTypeByte: string = ConvertionUtil.convertBinaryStringToHexString(midiData.charAt(1)); 
-                    return new MidiEvent(ConvertionUtil.getDeltaTimeStringFromNumber(deltaTime)
-                                        ,deltaTime
-                                        ,MidiEventType.META_EVENT
-                                        ,ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 3 + ConvertionUtil.convertBinaryStringToNumber(midiData.charAt(2))))
-                                        ,eventTypeByte == '51' || eventTypeByte == '58' || eventTypeByte == '59' || eventTypeByte == '2f');
-                }
-                throw Error('Não mapeado...')
-            default:
-                throw Error('Não mapeado...')
+    public isOfType(dataType: MidiEventDataType): boolean {
+        switch(dataType){
+            case MidiEventDataType.TEMPO:
+                return this.midiEventData.substr(0, 4) == 'ff51';
+            case MidiEventDataType.TIME_SIGNATURE:
+                return this.midiEventData.substr(0, 4) == 'ff58'; 
+            case MidiEventDataType.KEY_SIGNATURE:
+                return this.midiEventData.substr(0, 4) == 'ff59';
+            case MidiEventDataType.END_OF_TRACK:
+                return this.midiEventData.substr(0, 4) == 'ff2f';
         }
-       //return null;
+        return false;
     }
     
 }
 
 export class MidiConstants {
+    public static HEADER_START_INDICATION: string = 'MThd';
+    public static TRACK_START_INDICATION: string = "MTrk";
+
     public static NOTE_OFF_EVENT_PREFIX: string = "8";
     public static NOTE_ON_EVENT_PREFIX: string = "9";
     public static KEY_SIGNATURE_EVENT_PREFIX: string = "ff59";
@@ -674,10 +546,16 @@ export class MidiConstants {
 
 }
 
-enum MidiType {
+export enum MidiType {
     TYPE_0=0, TYPE_1=1, TYPE_2=2 
 }
 
-enum MidiEventType {
+export enum MidiEventType {
     MIDI_EVENT, SYSEX_EVENT, META_EVENT
 }
+
+export enum MidiEventDataType {
+    TEMPO, TIME_SIGNATURE, KEY_SIGNATURE, END_OF_TRACK
+}
+
+

@@ -1,7 +1,8 @@
 import { MusicalCompositionSource, MusicalCompositionStepSource, MusicalCompositionGroupSource, MusicalCompositionOptionSource } from "../model/musical-composition-source";
 import { MusicalCompositionConfig } from '../model/musical-composition-config';
-import { Midi } from './midi';
+import { Midi } from '../model/midi';
 import { FileProvider } from '../providers/file/file';
+import { MidiControl } from "./midi-control";
 
 export class MusicalCompositionSourceControl {
 
@@ -11,9 +12,12 @@ export class MusicalCompositionSourceControl {
 
     private _baseFileSystem: string;
 
+    private midiControl: MidiControl;
+
     constructor(fileProvider: FileProvider, baseFileSystem: string){
         this.fileProvider = fileProvider;
         this.baseFileSystem = baseFileSystem;
+        this.midiControl = new MidiControl();
     }
 
     get fileProvider(): FileProvider {
@@ -42,6 +46,7 @@ export class MusicalCompositionSourceControl {
     
     public async loadSources(config: MusicalCompositionConfig){
         let source = new MusicalCompositionSource();
+        let lastMidi: Midi;
         //steps
         for (let step of config.stepsConfig) {
             let stepSource: MusicalCompositionStepSource = new MusicalCompositionStepSource();
@@ -57,9 +62,8 @@ export class MusicalCompositionSourceControl {
 
                     let fullOptionPath: string = this.fileProvider.concatenatePaths([this.baseFileSystem, config.relativePath, step.relativePath, group.relativePath]);
                     let midiFile: string = await this.fileProvider.readFileAsBinaryString(fullOptionPath, option.fileName);
-                    let midi = new Midi();
-                    midi.setupMidiFromFile(midiFile);
-                    optionSource.midi = midi;
+                    optionSource.midi = this.midiControl.setupMidiFromFile(midiFile, lastMidi);
+                    lastMidi = optionSource.midi;
 
                     groupSource.optionsSource.push(optionSource);
                 }
@@ -69,4 +73,5 @@ export class MusicalCompositionSourceControl {
         }
         this.source = source;
     }
+    
 }

@@ -1,8 +1,5 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams, LoadingController } from 'ionic-angular';
-import { File } from '@ionic-native/file';
-import { FilePath } from '@ionic-native/file-path';
-import { Media } from '@ionic-native/media';
 import { MusicalCompositionControl } from '../../control/musical-composition';
 
 @Component({
@@ -13,8 +10,7 @@ export class CompositionPage {
 
     private _compositionControl: MusicalCompositionControl;
 
-    constructor(public navCtrl: NavController, public navParams: NavParams, public loadingController: LoadingController, 
-                private file: File,  private filePath: FilePath, private media: Media) {
+    constructor(public navCtrl: NavController, public navParams: NavParams, public loadingController: LoadingController) {
     }
 
     get compositionControl(): MusicalCompositionControl {

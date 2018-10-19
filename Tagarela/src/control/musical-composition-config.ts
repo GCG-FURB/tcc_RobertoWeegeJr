@@ -1,6 +1,6 @@
 import { MusicalCompositionConfig, MusicalCompositionStepConfig, MusicalCompositionGroupConfig, MusicalCompositionOptionConfig, MusicalCompositionLineConfig } from "../model/musical-composition-config";
 import { MusicalCompositionSource } from "../model/musical-composition-source";
-import { MidiConstants } from "./midi";
+import { MidiConstants } from "../model/midi";
 import { FileProvider } from "../providers/file/file";
 
 export class MusicalCompositionConfigControl {

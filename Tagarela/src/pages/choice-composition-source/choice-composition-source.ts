@@ -158,9 +158,9 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
     private getCompositionSetupFunction(isCustomSource: boolean,
                                           baseFileSystem: string, 
                                           relativePath: string): Function {
-        return (chosedCompositionSource: string) => {
+        return async (chosedCompositionSource: string) => {
             try {
-                this.startCompositionSetup(chosedCompositionSource, isCustomSource, baseFileSystem, relativePath);
+                await this.startCompositionSetup(chosedCompositionSource, isCustomSource, baseFileSystem, relativePath);
             } catch (e) {
                 this.errorHandler(e);
             }
