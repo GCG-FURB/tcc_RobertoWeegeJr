@@ -77,7 +77,6 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
             await this.createLoading('Buscando Dados de Composição');
 
             this.defaultCompositionSources = null;
-            //load default composition sources
 
             this.defaultCompositionSources = await this.fileProvider.getListOfDirectories(
                                                         this.fileProvider.file.applicationDirectory, 

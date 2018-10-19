@@ -1,7 +1,7 @@
-import { MusicalCompositionSource, MusicalCompositionOptionSource } from "./musical-composition-source";
-import { Midi, MidiConstants } from "./midi";
+import { Midi } from "./midi";
 import { v4 as uuid } from 'uuid';
 import { MusicalCompositionConfig, MusicalCompositionOptionConfig } from "./musical-composition-config";
+import { MusicalCompositionSource, MusicalCompositionOptionSource } from "./musical-composition-source";
 
 export class MusicalComposition {
 
@@ -14,11 +14,6 @@ export class MusicalComposition {
 
     private _keySignature: number
 
-    //key signature;
-
-    //composition control
-    private _stepIndex: number;
-    private _lineIndex: number;
 
     //midi
     private _midiId: string;
@@ -29,8 +24,6 @@ export class MusicalComposition {
     constructor() {
         this.lines = [];
         this.midiId = uuid();
-        this.stepIndex = 0;
-        this.lineIndex = 0;
     }
   
     get source(): MusicalCompositionSource {
@@ -114,21 +107,7 @@ export class MusicalComposition {
         this._keySignature = keySignature;
     }
 
-    get stepIndex(): number {
-        return this._stepIndex;
-    }
-    
-    set stepIndex(stepIndex:number) {
-        this._stepIndex = stepIndex;
-    }
-    
-    get lineIndex(): number {
-        return this._lineIndex;
-    }
-    
-    set lineIndex(lineIndex:number) {
-        this._lineIndex = lineIndex;
-    }
+
     
     get midiId(): string {
         return this._midiId;
@@ -209,28 +188,7 @@ export class MusicalComposition {
         return  Math.round(60000000 / this.tempo)
     }
 
-    public applyChoice(option: MusicalCompositionOption){
-        this.lines[this.lineIndex].options.push(option);
-        this.lines[this.lineIndex].applyMidiChanges();
-        this.lines[this.lineIndex].setNoteLimits();
 
-        this.lineIndex++;
-        if (this.lineIndex >= this.lines.length) {
-            this.lineIndex = 0;
-            this.stepIndex++;
-        }
-    }
-
-    public undoChoice() {
-        if (this.lineIndex > 0 || this.stepIndex > 0) {
-            this.lineIndex--;
-            if (this.lineIndex < 0) {
-                this.lineIndex = this.lines.length -1;
-                this.stepIndex--;
-            }
-            this.lines[this.lineIndex].options.pop();
-        }
-    }
 
 }
 

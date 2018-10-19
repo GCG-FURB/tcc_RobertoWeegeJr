@@ -1,16 +1,26 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams, LoadingController } from 'ionic-angular';
+import { NavController, NavParams, LoadingController, AlertController, PopoverController } from 'ionic-angular';
 import { MusicalCompositionControl } from '../../control/musical-composition';
+import { GenericComponent } from '../../control/generic-component';
 
 @Component({
   selector: 'page-composition',
   templateUrl: 'composition.html',
 })
-export class CompositionPage {
+export class CompositionPage extends GenericComponent{
 
     private _compositionControl: MusicalCompositionControl;
 
-    constructor(public navCtrl: NavController, public navParams: NavParams, public loadingController: LoadingController) {
+    constructor(private navCtrl: NavController, 
+                private navParams: NavParams, 
+                private loadingCtrl: LoadingController,
+                private alertCtrl: AlertController,
+                private popoverCtrl: PopoverController) {
+        
+        super(loadingCtrl,
+            alertCtrl,
+            popoverCtrl);
+            
     }
 
     get compositionControl(): MusicalCompositionControl {
@@ -21,22 +31,12 @@ export class CompositionPage {
         this._compositionControl = compositionControl;
     }
 
-    ionViewDidLoad() {
-        this.setupComposition();
-    }
-
-    private async setupComposition(){
-        let loading = await this.loadingController.create({content: 'Iniciando Composição'});
-        loading.present();
+    ngOnInit(){
         try {
-            this.compositionControl = new MusicalCompositionControl(this.navParams.get('compositionConfig'), this.navParams.get('compositionSource'));
-            loading.dismiss();
+            this.compositionControl = this.navParams.get('compositionControl');
         } catch (e) {
-            loading.dismiss();
-            alert('aqui')
-            alert(JSON.stringify(e))
+            this.errorHandler(e);
         }
-
     }
 
 }

@@ -278,7 +278,7 @@ export class MusicalCompositionConfigControl {
                 for (let k = 0; k < this.config.stepsConfig[i].groupsConfig[j].optionsConfig.length; k++) {
                     let channels: string[] = source.stepsSource[i].groupsSource[j].optionsSource[k].midi.getAllUsedChannels();
                     if (channels.length > 1 || channels.length == 0) {
-                        throw Error('Cada midi deve possuir somente um canal');
+                        throw Error('Cada midi deve possuir somente um canal.');
                     }
                     if (MidiConstants.DRUMS_MIDI_CHANNELS.indexOf(channels[0]) >= 0) {
                         if (!this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].musicalInstrumentsAllowed)

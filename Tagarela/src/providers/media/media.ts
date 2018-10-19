@@ -17,8 +17,9 @@ export class MediaProvider {
         });
 
         try {
-            file.play();
+            await file.play();
         } catch (e) {
+            alert('errro')
             alert(JSON.stringify(e))
         }
 

@@ -45,11 +45,11 @@ export class GenericComponent {
 
     public errorHandler(e){
         this.dismissLoading();
-        alert('error handler')
+        /*alert('error handler')
         alert(JSON.stringify(e))
         alert(e.message)
         alert(e.stack)
-        alert(e.name)
+        alert(e.name)*/
     }
 
 

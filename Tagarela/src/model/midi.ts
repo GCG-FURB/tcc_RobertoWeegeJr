@@ -3,9 +3,37 @@ import { MidiSpectrum, MidiSpectrumLine, MidiSpectrumNote } from "./midi-spectru
 
 export class Midi {
 
+    //constants
+    public static MIDI_HEADER_LENGTH: number = 14;
+    //
+    public static HEADER_START_VALUE: string = 'MThd';
+
+    public static MIDI_HEADER_LENGTH_VALUE: number = 6;
+    public static MIDI_HEADER_LENGTH_VALUE_LENGTH: number = 4;
+
+    public static MIDI_TYPE_VALUE_LENGTH: number = 2;
+    public static MIDI_TRACK_QUANTITY_VALUE_LENGTH: number = 2;
+    public static MIDI_TIME_DIVISION_VALUE_LENGTH: number = 2;
+
+    public static MIDI_TRACK_DESC_LENGTH: number = 8;
+
+    public static TRACK_START_VALUE: string = "MTrk";
+    public static MIDI_TRACK_LENGTH_VALUE_LENGTH: number = 4;
+    public static MIDI_DELTA_TIME_MAX_LENGTH: number = 4;
+
+    //validations 
+    public static LOWER_ALLOWED_TEMPO: number = 1;
+    public static HIGHEST_ALLOWED_TEMPO: number = 500;
+
+    public static LOWER_ALLOWED_VOLUME: number = 0;
+    public static HIGHEST_ALLOWED_VOLUME: number = 200;
+
+    public static LOWER_QUANTITY_OF_QUARTER_NOTE: number = 1;
+    public static HIGHEST_QUANTITY_OF_QUARTER_NOTE: number = 4000;
+
     private _midiType: MidiType;
     private _numberOfTracks: number;
-    private _timeDivision: string;
+    private _timeDivision: MidiTimeDivision;
     private _midiTracks: MidiTrack[];
 
     get midiType(): MidiType {
@@ -24,11 +52,11 @@ export class Midi {
         this._numberOfTracks = numberOfTracks;
     }
 
-    get timeDivision(): string {
+    get timeDivision(): MidiTimeDivision {
         return this._timeDivision;
     }
 
-    set timeDivision(timeDivision: string) {
+    set timeDivision(timeDivision: MidiTimeDivision) {
         this._timeDivision = timeDivision;
     }
 
@@ -62,7 +90,12 @@ export class Midi {
         if (this.numberOfTracks != midiToConcatenate.numberOfTracks) {
             throw Error('Erro');
         }        
-        if (this.timeDivision != midiToConcatenate.timeDivision) {
+
+        let aa = <MidiTimeDivisionMetrical> this.timeDivision
+        let bb = <MidiTimeDivisionMetrical>  midiToConcatenate.timeDivision
+
+        if (aa.timeDivisionType != bb.timeDivisionType || 
+            aa.metric != bb.metric) {
             throw Error('Erro');
         }        
         for (let i = 0; i < this.midiTracks.length; i++) {
@@ -232,6 +265,43 @@ export class Midi {
             midiEvents = midiEvents.concat(midTrack.getEventByType(dataType));
         }
         return midiEvents;
+    }
+
+}
+
+export class MidiTimeDivision {
+    
+    private _timeDivisionType: MidiTimeDivisionType;
+    
+    constructor(timeDivisionType: MidiTimeDivisionType){
+        this.timeDivisionType = timeDivisionType;
+    }
+
+    get timeDivisionType(): MidiTimeDivisionType {
+        return this._timeDivisionType;
+    }
+    
+    set timeDivisionType(timeDivisionType: MidiTimeDivisionType) {
+        this._timeDivisionType = timeDivisionType;
+    }
+
+}
+
+export class MidiTimeDivisionMetrical extends MidiTimeDivision {
+    
+    private _metric: number;
+
+    constructor(metric: number) {
+        super(MidiTimeDivisionType.METRICAL_TYPE);
+        this.metric = metric;
+    }
+
+    get metric(): number {
+        return this._metric;
+    }
+    
+    set metric(metric: number) {
+        this._metric = metric;
     }
 
 }
@@ -435,6 +505,31 @@ export class MidiTrack {
 }
 
 export class MidiEvent {
+
+    public static NOTE_OFF_FIRST_CHAR: string = '8'; 
+    public static NOTE_OFF_EVENT_LENGTH: number = 3;
+    public static NOTE_ON_FIRST_CHAR: string = '9';
+    public static NOTE_ON_EVENT_LENGTH: number = 3;
+    public static A_EVENT_FIRST_CHAR: string = 'a';
+    public static A_EVENT_EVENT_LENGTH: number = 3;
+    public static B_EVENT_FIRST_CHAR: string = 'b';
+    public static B_EVENT_EVENT_LENGTH: number = 3;
+    public static C_EVENT_FIRST_CHAR: string = 'c';
+    public static C_EVENT_EVENT_LENGTH: number = 2;
+    public static D_EVENT_FIRST_CHAR: string = 'd';
+    public static D_EVENT_EVENT_LENGTH: number = 2;
+    public static E_EVENT_FIRST_CHAR: string = 'e';
+    public static E_EVENT_EVENT_LENGTH: number = 3;
+    public static F_EVENT_FIRST_CHAR: string = 'f';
+    public static SYSTEM_EXCLUSIVE_EVENTS_FIRST_BYTE_F0: string = 'f0'; 
+    public static SYSTEM_EXCLUSIVE_EVENTS_FIRST_BYTE_F7: string = 'f7';
+    public static META_EVENT_FIRST_BYTE: string = 'ff';
+    public static META_EVENT_TEMPO_TYPE_BYTE: string = '51';
+    public static META_EVENT_TIME_SIGNATURE_TYPE_BYTE: string = '58';
+    public static META_EVENT_KEY_SIGNATURE_TYPE_BYTE: string = '59';
+    public static META_EVENT_END_OF_TRACK_TYPE_BYTE: string = '2f';
+
+
     private _deltaTime: string;
     private _deltaTimeNumber: number;
     private _midiEventType: MidiEventType;
@@ -513,15 +608,24 @@ export class MidiEvent {
                 return this.midiEventData.substr(0, 4) == 'ff59';
             case MidiEventDataType.END_OF_TRACK:
                 return this.midiEventData.substr(0, 4) == 'ff2f';
+            case MidiEventDataType.NOTE_ON_OR_OFF:
+                let firstChar: string = this.midiEventData.substr(0, 1) 
+                return firstChar == '8' || firstChar == '9'
         }
         return false;
+    }
+
+    public getMidiHexChannelOfNoteOnOrOff() {
+        if (this.isOfType(MidiEventDataType.NOTE_ON_OR_OFF)) {
+            return this.midiEventData.substr(1, 1);
+        }
+        return null; 
     }
     
 }
 
 export class MidiConstants {
-    public static HEADER_START_INDICATION: string = 'MThd';
-    public static TRACK_START_INDICATION: string = "MTrk";
+
 
     public static NOTE_OFF_EVENT_PREFIX: string = "8";
     public static NOTE_ON_EVENT_PREFIX: string = "9";
@@ -550,12 +654,17 @@ export enum MidiType {
     TYPE_0=0, TYPE_1=1, TYPE_2=2 
 }
 
+export enum MidiTimeDivisionType {
+    METRICAL_TYPE=0, TIME_CODE_BASED=1
+}
+
+
 export enum MidiEventType {
     MIDI_EVENT, SYSEX_EVENT, META_EVENT
 }
 
 export enum MidiEventDataType {
-    TEMPO, TIME_SIGNATURE, KEY_SIGNATURE, END_OF_TRACK
+    TEMPO, TIME_SIGNATURE, KEY_SIGNATURE, END_OF_TRACK, NOTE_ON_OR_OFF
 }
 
 

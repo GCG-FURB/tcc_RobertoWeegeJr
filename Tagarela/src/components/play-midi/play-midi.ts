@@ -12,7 +12,6 @@ import { MidiControl } from '../../control/midi-control';
 export class PlayMidiComponent {
 
     spectrum: PlayMidiSpectrums;
-
     midiControl: MidiControl;
 
     constructor(public navCtrl: NavController, public navParams: NavParams, private fileProvider: FileProvider, private mediaProvider: MediaProvider) {

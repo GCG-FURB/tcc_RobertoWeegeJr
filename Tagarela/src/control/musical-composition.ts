@@ -6,6 +6,10 @@ export class MusicalCompositionControl {
 
     public composition: MusicalComposition;
     
+    //composition control
+    private _stepIndex: number;
+    private _lineIndex: number;
+
     public optionsMap: Map<number, Map<number, MusicalCompositionOption[]>>;
 
     constructor(config: MusicalCompositionConfig, source: MusicalCompositionSource) {
@@ -13,6 +17,10 @@ export class MusicalCompositionControl {
         this.composition.config = config;
         this.composition.source = source;
         
+        //indexes
+        this.stepIndex = 0;
+        this.lineIndex = 0;
+
         //key signature
         this.composition.keySignature = 0;
     
@@ -51,8 +59,8 @@ export class MusicalCompositionControl {
     }
 
     public getOptionsToChoice(): MusicalCompositionOption[] {
-        if (this.optionsMap.has(this.composition.stepIndex) && this.optionsMap.get(this.composition.stepIndex).has(this.composition.lineIndex)) {
-            return this.optionsMap.get(this.composition.stepIndex).get(this.composition.lineIndex)
+        if (this.optionsMap.has(this.stepIndex) && this.optionsMap.get(this.stepIndex).has(this.lineIndex)) {
+            return this.optionsMap.get(this.stepIndex).get(this.lineIndex)
         }
         return [];
     }
@@ -60,6 +68,23 @@ export class MusicalCompositionControl {
     public generateCompositionMidi() {
         this.composition.generateCompositionMidi();
     }
+
+    get stepIndex(): number {
+        return this._stepIndex;
+    }
+    
+    set stepIndex(stepIndex:number) {
+        this._stepIndex = stepIndex;
+    }
+    
+    get lineIndex(): number {
+        return this._lineIndex;
+    }
+    
+    set lineIndex(lineIndex:number) {
+        this._lineIndex = lineIndex;
+    }
+
 
     public applyLineChanges(line: MusicalCompositionLine) {
         this.composition.applyLineChanges(line);
@@ -70,19 +95,34 @@ export class MusicalCompositionControl {
     }
 
     public applyChoice(option: MusicalCompositionOption){
-        this.composition.applyChoice(option);
+        this.composition.lines[this.lineIndex].options.push(option);
+        this.composition.lines[this.lineIndex].applyMidiChanges();
+        this.composition.lines[this.lineIndex].setNoteLimits();
+
+        this.lineIndex++;
+        if (this.lineIndex >= this.composition.lines.length) {
+            this.lineIndex = 0;
+            this.stepIndex++;
+        }
     }
 
     public undoChoice() {
-        this.composition.undoChoice();
+        if (this.lineIndex > 0 || this.stepIndex > 0) {
+            this.lineIndex--;
+            if (this.lineIndex < 0) {
+                this.lineIndex = this.composition.lines.length -1;
+                this.stepIndex--;
+            }
+            this.composition.lines[this.lineIndex].options.pop();
+        }
     }
 
     public compositionHasStarted(): boolean {
-        return this.composition.stepIndex > 0 || this.composition.lineIndex > 0;
+        return this.stepIndex > 0 || this.lineIndex > 0;
     }
 
     public compositionHasEnded(): boolean {
-        return this.composition.stepIndex > this.composition.source.stepsSource.length -1
+        return this.stepIndex > this.composition.source.stepsSource.length -1
     }
 
 }

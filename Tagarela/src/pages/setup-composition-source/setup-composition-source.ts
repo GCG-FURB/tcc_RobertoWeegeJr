@@ -1,33 +1,47 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams, LoadingController } from 'ionic-angular';
+import { NavController, NavParams, LoadingController, AlertController, PopoverController } from 'ionic-angular';
 import { MusicalCompositionConfigControl } from '../../control/musical-composition-config';
 import { MusicalCompositionSourceControl } from '../../control/musical-composition-source';
 import { CompositionPage } from '../composition/composition';
-import { FormControl, Validators, FormGroup, FormBuilder } from '@angular/forms';
+import { FormControl, Validators, FormGroup, FormBuilder, ValidatorFn } from '@angular/forms';
 import { MusicalCompositionConfig, MusicalCompositionLineConfig } from '../../model/musical-composition-config';
 import { VisualMidiProvider } from '../../providers/visual-midi/visual-midi';
+import { GenericComponent } from '../../control/generic-component';
+import { MusicalCompositionControl } from '../../control/musical-composition';
+import { Midi } from '../../model/midi';
 
 @Component({
     selector: 'page-setup-composition-source',
     templateUrl: 'setup-composition-source.html',
 })
-export class SetupCompositionSourcePage {
+export class SetupCompositionSourcePage extends GenericComponent {
 
     private _configControl: MusicalCompositionConfigControl;
     private _sourceControl: MusicalCompositionSourceControl;
 
     private _configSegment: string;
 
-    private generalForm: FormGroup;
-    private lineForms: FormGroup[];
-    private stepForms: FormGroup[];
-    private optionForms: FormGroup[][][];
+    private _generalForm: FormGroup;
+    private _lineForms: FormGroup[];
+    private _stepForms: FormGroup[];
+    private _optionForms: FormGroup[][][];
+
+    midi = Midi;
+
+    public aaa:string = "0";
     
-    constructor(public navCtrl: NavController, 
-                public navParams: NavParams,
-                public loadingController: LoadingController,
-                public formBuilder: FormBuilder,
-                public visualMidiProvider: VisualMidiProvider) {}
+    constructor(private navCtrl: NavController, 
+                private navParams: NavParams,
+                private formBuilder: FormBuilder,
+                private loadingCtrl: LoadingController,
+                private alertCtrl: AlertController,
+                private popoverCtrl: PopoverController,
+                private visualMidiProvider: VisualMidiProvider) {
+    
+        super(loadingCtrl,
+              alertCtrl,
+              popoverCtrl);
+    }
 
     get configControl(): MusicalCompositionConfigControl {
         return this._configControl;
@@ -52,35 +66,68 @@ export class SetupCompositionSourcePage {
     set configSegment(configSegment:string) {
         this._configSegment = configSegment;
     }
+
+    get generalForm(): FormGroup {
+        return this._generalForm;
+    }
     
+    set generalForm(generalForm:FormGroup) {
+        this._generalForm = generalForm;
+    }
+    
+    get lineForms(): FormGroup[] {
+        return this._lineForms;
+    }
+    
+    set lineForms(lineForms:FormGroup[]) {
+        this._lineForms = lineForms;
+    }
+    
+    get stepForms(): FormGroup[] {
+        return this._stepForms;
+    }
+    
+    set stepForms(stepForms:FormGroup[]) {
+        this._stepForms = stepForms;
+    }
+    
+    get optionForms(): FormGroup[][][] {
+        return this._optionForms;
+    }
+    
+    set optionForms(optionForms:FormGroup[][][]) {
+        this._optionForms = optionForms;
+    }
     
     ngOnInit(){
-        this.configSegment = 'general';
-        let configControl = this.navParams.get('configControl');
-        this.loadForms(configControl);
-        this.configControl = configControl
-        this.sourceControl = this.navParams.get('sourceControl')
+        try {
+            this.configSegment = 'general';
+            let configControl = this.navParams.get('configControl');
+            this.loadForms(configControl);
+            this.configControl = configControl
+            this.sourceControl = this.navParams.get('sourceControl');
+        } catch (e) {
+            this.errorHandler(e);
+        }
     }
-
-    ionViewDidLoad() {}
 
     private loadForms(configControl: MusicalCompositionConfigControl){
 
         let generalForm: FormGroup = this.formBuilder.group({
-            minTempo:     [configControl.config.minTempo,     Validators.compose([Validators.required, this.minTempoMidiFV, this.maxTempoMidiFV, this.minTempoFV(configControl.config)])],
-            maxTempo:     [configControl.config.maxTempo,     Validators.compose([Validators.required, this.minTempoMidiFV, this.maxTempoMidiFV, this.maxTempoFV(configControl.config)])],
-            stepTempo:    [configControl.config.stepTempo,    Validators.compose([Validators.required, this.stepTempoFV(configControl.config)])],
-            defaultTempo: [configControl.config.defaultTempo, Validators.compose([Validators.required, this.defaultTempoFV(configControl.config)])],
+            minTempo:     [configControl.config.minTempo,     Validators.compose([this.required(this.errorHandler.bind(this)), this.integerNumberValidationVF(this.errorHandler.bind(this)), this.minTempoMidiFV(this.errorHandler.bind(this)), this.maxTempoMidiFV(this.errorHandler.bind(this)), this.minTempoFV(this.errorHandler.bind(this), configControl.config)])],
+            maxTempo:     [configControl.config.maxTempo,     Validators.compose([this.required(this.errorHandler.bind(this)), this.integerNumberValidationVF(this.errorHandler.bind(this)), this.minTempoMidiFV(this.errorHandler.bind(this)), this.maxTempoMidiFV(this.errorHandler.bind(this)), this.maxTempoFV(this.errorHandler.bind(this), configControl.config)])],
+            stepTempo:    [configControl.config.stepTempo,    Validators.compose([this.required(this.errorHandler.bind(this)), this.integerNumberValidationVF(this.errorHandler.bind(this)), this.stepTempoFV(this.errorHandler.bind(this), configControl.config)])],
+            defaultTempo: [configControl.config.defaultTempo, Validators.compose([this.required(this.errorHandler.bind(this)), this.integerNumberValidationVF(this.errorHandler.bind(this)), this.defaultTempoFV(this.errorHandler.bind(this), configControl.config)])],
         });
 
         let lineForms: FormGroup[] = [];
 
         for (let lineConfig of configControl.config.linesConfig) {
             lineForms.push(this.formBuilder.group({
-                minVolume:     [lineConfig.minVolume    , Validators.compose([Validators.required, this.minVolumeMidiFV, this.maxVolumeMidiFV, this.minVolumeFV(lineConfig)])],
-                maxVolume:     [lineConfig.maxVolume    , Validators.compose([Validators.required, this.minVolumeMidiFV, this.maxVolumeMidiFV, this.maxVolumeFV(lineConfig)])],
-                stepVolume:    [lineConfig.stepVolume   , Validators.compose([Validators.required, this.stepVolumeFV(lineConfig)])],
-                defaultVolume: [lineConfig.defaultVolume, Validators.compose([Validators.required, this.defaultVolumeFV(lineConfig)])],
+                minVolume:     [lineConfig.minVolume    , Validators.compose([this.required(this.errorHandler.bind(this)), this.integerNumberValidationVF(this.errorHandler.bind(this)), this.minVolumeMidiFV(this.errorHandler.bind(this)), this.maxVolumeMidiFV(this.errorHandler.bind(this)), this.minVolumeFV(this.errorHandler.bind(this), lineConfig)])],
+                maxVolume:     [lineConfig.maxVolume    , Validators.compose([this.required(this.errorHandler.bind(this)), this.integerNumberValidationVF(this.errorHandler.bind(this)), this.minVolumeMidiFV(this.errorHandler.bind(this)), this.maxVolumeMidiFV(this.errorHandler.bind(this)), this.maxVolumeFV(this.errorHandler.bind(this), lineConfig)])],
+                stepVolume:    [lineConfig.stepVolume   , Validators.compose([this.required(this.errorHandler.bind(this)), this.integerNumberValidationVF(this.errorHandler.bind(this)), this.stepVolumeFV(this.errorHandler.bind(this), lineConfig)])],
+                defaultVolume: [lineConfig.defaultVolume, Validators.compose([this.required(this.errorHandler.bind(this)), this.integerNumberValidationVF(this.errorHandler.bind(this)), this.defaultVolumeFV(this.errorHandler.bind(this), lineConfig)])],
             }));
         }
 
@@ -88,10 +135,9 @@ export class SetupCompositionSourcePage {
 
         for (let stepConfig of configControl.config.stepsConfig) {
             stepForms.push(this.formBuilder.group({
-                quantityOfQuarterNote:     [stepConfig.quantityOfQuarterNote, Validators.compose([Validators.required, this.minQuantityOfQuarterNoteMidiFV, this.maxQuantityOfQuarterNoteMidiFV])],
+                quantityOfQuarterNote:     [stepConfig.quantityOfQuarterNote, Validators.compose([this.required(this.errorHandler.bind(this)), this.integerNumberValidationVF(this.errorHandler.bind(this)), this.minQuantityOfQuarterNoteMidiFV(this.errorHandler.bind(this)), this.maxQuantityOfQuarterNoteMidiFV(this.errorHandler.bind(this))])],
             }));
         }
-
 
         let optionForms: FormGroup[][][] = [];
 
@@ -107,8 +153,8 @@ export class SetupCompositionSourcePage {
                     }
                          
                     optionForms[i][j].push(this.formBuilder.group({
-                        musicalInstrumentsAllowed: [configControl.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].musicalInstrumentsAllowed, Validators.compose([Validators.required])],
-                        defaultMusicalInstrument:  [configControl.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].defaultMusicalInstrument,  Validators.compose([Validators.required])]
+                        musicalInstrumentsAllowed: [configControl.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].musicalInstrumentsAllowed, Validators.compose([this.required(this.errorHandler.bind(this))])],
+                        defaultMusicalInstrument:  [configControl.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].defaultMusicalInstrument,  Validators.compose([this.required(this.errorHandler.bind(this))])]
                     }));
 
                 }
@@ -122,223 +168,416 @@ export class SetupCompositionSourcePage {
         
     }
 
+    private async saveConfigAndStartComposition() {    
+        try {
+            this.createLoading('Iniciando Composição');
+            await this.configControl.persistConfig();
+            let compositionControl: MusicalCompositionControl = await new MusicalCompositionControl(this.configControl.config, this.sourceControl.source);
+            this.dismissLoading();
+            this.navCtrl.setRoot(CompositionPage, {
+                compositionControl: compositionControl
+            }); 
+        } catch (e) {
+            this.errorHandler(e);
+        }
+    }
+
+    //page values
+    private getLowerAllowedTempo():number {return Midi.LOWER_ALLOWED_TEMPO}
+	private getHighestAllowedTempo():number {return Midi.HIGHEST_ALLOWED_TEMPO} 
+	private getLowerAllowedVolume():number {return Midi.LOWER_ALLOWED_VOLUME}
+	private getHighestAllowedVolume():number {return Midi.HIGHEST_ALLOWED_VOLUME}
+	private getLowerQuantityOfQuarterNote():number {return Midi.LOWER_QUANTITY_OF_QUARTER_NOTE}
+	private getHighestQuantityOfQuarterNote():number {return Midi.HIGHEST_QUANTITY_OF_QUARTER_NOTE}
+
+    //page refresh
     updateGeneralFormControl() {
-        this.generalForm.controls.minTempo.updateValueAndValidity(); 
-        this.generalForm.controls.maxTempo.updateValueAndValidity(); 
-        this.generalForm.controls.stepTempo.updateValueAndValidity();
-        this.generalForm.controls.defaultTempo.updateValueAndValidity();
+        try {
+            this.generalForm.controls.minTempo.updateValueAndValidity(); 
+            this.generalForm.controls.maxTempo.updateValueAndValidity(); 
+            this.generalForm.controls.stepTempo.updateValueAndValidity();
+            this.generalForm.controls.defaultTempo.updateValueAndValidity();
+        } catch (e) {
+            this.errorHandler(e);
+        }
     }
 
     updateAllLineFormControl() {
-        for (let i = 0; i < this.lineForms.length; i++) {
-            this.updateLineFormControl(i);
+        try {
+            for (let i = 0; i < this.lineForms.length; i++) {
+                this.updateLineFormControl(i);
+            }
+        } catch (e) {
+            this.errorHandler(e);
         }
     }
  
     updateLineFormControl(lineIndex: number) {
-        this.lineForms[lineIndex].controls.minVolume.updateValueAndValidity(); 
-        this.lineForms[lineIndex].controls.maxVolume.updateValueAndValidity(); 
-        this.lineForms[lineIndex].controls.stepVolume.updateValueAndValidity();
-        this.lineForms[lineIndex].controls.defaultVolume.updateValueAndValidity();
+        try {
+            this.lineForms[lineIndex].controls.minVolume.updateValueAndValidity(); 
+            this.lineForms[lineIndex].controls.maxVolume.updateValueAndValidity(); 
+            this.lineForms[lineIndex].controls.stepVolume.updateValueAndValidity();
+            this.lineForms[lineIndex].controls.defaultVolume.updateValueAndValidity();
+        } catch (e) {
+            this.errorHandler(e);
+        }
     }
 
     updateAlloptionFormControl() {
-        for (let i = 0; i < this.optionForms.length; i++) {
-            for (let j = 0; j < this.optionForms[i].length; j++) {
-                for (let k = 0; k < this.optionForms[i][j].length; k++) {
-                    this.updateoptionFormControl(i, j ,k);
+        try {        
+            for (let i = 0; i < this.optionForms.length; i++) {
+                for (let j = 0; j < this.optionForms[i].length; j++) {
+                    for (let k = 0; k < this.optionForms[i][j].length; k++) {
+                        this.updateoptionFormControl(i, j ,k);
+                    }
                 }
             }
+        } catch (e) {
+            this.errorHandler(e);
         }
     }
 
     public lineFormsIsValid(): boolean {
-        for (let i = 0; i < this.lineForms.length; i++) {
-            if (!this.lineForms[i].valid) {
-                return false;
+        try {
+            for (let i = 0; i < this.lineForms.length; i++) {
+                if (!this.lineForms[i].valid) {
+                    return false;
+                }
             }
+            return true;
+        } catch (e) {
+            this.errorHandler(e);
         }
-        return true;
     }
     
     public stepFormsIsValid(): boolean {
-        for (let i = 0; i < this.stepForms.length; i++) {
-            if (!this.stepForms[i].valid) {
-                return false;
+        try {
+            for (let i = 0; i < this.stepForms.length; i++) {
+                if (!this.stepForms[i].valid) {
+                    return false;
+                }
             }
+            return true;
+        } catch (e) {
+            this.errorHandler(e);
         }
-        return true;
     }
     
     public optionFormsIsValid(): boolean {
-        for (let i = 0; i < this.optionForms.length; i++) {
-            for (let j = 0; j < this.optionForms[i].length; j++) {
-                for (let k = 0; k < this.optionForms[i][j].length; k++) {
-                    if (!this.optionForms[i][j][k].valid) {
-                        return false;
+        try {
+            for (let i = 0; i < this.optionForms.length; i++) {
+                for (let j = 0; j < this.optionForms[i].length; j++) {
+                    for (let k = 0; k < this.optionForms[i][j].length; k++) {
+                        if (!this.optionForms[i][j][k].valid) {
+                            return false;
+                        }
                     }
                 }
             }
+            return true;
+        } catch (e) {
+            this.errorHandler(e);
         }
-        return true;
     }
-
 
     updateoptionFormControl(iIndex: number, jIndex: number, kIndex: number) {
-        this.optionForms[iIndex][jIndex][kIndex].controls.musicalInstrumentsAllowed.updateValueAndValidity(); 
-        this.optionForms[iIndex][jIndex][kIndex].controls.defaultMusicalInstrument.updateValueAndValidity(); 
-    }
-
-    private async saveConfigAndStartComposition() {    
-        await this.configControl.persistConfig();
-        this.navCtrl.setRoot(CompositionPage, {
-            compositionConfig: this.configControl.config,
-            compositionSource: this.sourceControl.source
-        }); 
-    }
-    
-    private minTempoMidiFV(control: FormControl): any {
-        if (+control.value <= 0) {
-            return {
-                "min_tempo_midi": true
-            };
+        try {
+            this.optionForms[iIndex][jIndex][kIndex].controls.musicalInstrumentsAllowed.updateValueAndValidity(); 
+            this.optionForms[iIndex][jIndex][kIndex].controls.defaultMusicalInstrument.updateValueAndValidity(); 
+        } catch (e) {
+            this.errorHandler(e);
         }
-        return null;
     }
 
-    private maxTempoMidiFV(control: FormControl): any {
-        if (+control.value > 500) {
-            return {
-                "max_tempo_midi": true
-            };
-        }
-        return null;
-    }
-
-    private minTempoFV(config: MusicalCompositionConfig): any {
+    //validators
+    private required(errorHandlerFunction: Function): ValidatorFn {
         return (control: FormControl) => {
-            if (+control.value > config.maxTempo) {
+            try {
+               return Validators.required(control);
+            } catch (e) {
+                errorHandlerFunction(e);
                 return {
-                    "min_tempo": true
+                    "validation_error": true
                 };
             }
-            return null;
         }
     }
 
-    private maxTempoFV(config: MusicalCompositionConfig): any {
+    private integerNumberValidationVF(errorHandlerFunction: Function): ValidatorFn {
         return (control: FormControl) => {
-            if (+control.value < config.minTempo) {
+            try {
+                if (control.value) {
+                    if (isNaN(control.value)) {
+                        return {
+                            "not_number": true
+                        };
+                    } else if (+control.value % 1 != 0) {
+                        return {
+                            "not_integer": true
+                        };
+                    }
+                }
+                return null;
+            } catch (e) {
+                errorHandlerFunction(e);
                 return {
-                    "max_tempo": true
+                    "validation_error": true
                 };
             }
-            return null;
         }
     }
 
-    private stepTempoFV(config: MusicalCompositionConfig): any {
+    private minTempoMidiFV(errorHandlerFunction: Function): ValidatorFn {
         return (control: FormControl) => {
-            if (config.maxTempo >= config.minTempo && +control.value > config.maxTempo - config.minTempo) {
+            try {
+                if (!isNaN(control.value) && +control.value < this.getLowerAllowedTempo()) {
+                    return {
+                        "min_tempo_midi": true
+                    };
+                }
+                return null;
+            } catch (e) {
+                errorHandlerFunction(e);
                 return {
-                    "step_tempo": true
+                    "validation_error": true
                 };
             }
-            return null;
         }
     }
 
-    private defaultTempoFV(config: MusicalCompositionConfig): any {
+    private maxTempoMidiFV(errorHandlerFunction: Function): any {
         return (control: FormControl) => {
-            if (config.maxTempo >= config.minTempo && (+control.value > config.maxTempo || +control.value < config.minTempo)) {
+            try {
+                if (!isNaN(control.value) && +control.value > this.getHighestAllowedTempo()) {
+                    return {
+                        "max_tempo_midi": true
+                    };
+                }
+                return null;
+            } catch (e) {
+                errorHandlerFunction(e);
                 return {
-                    "default_tempo": true
+                    "validation_error": true
                 };
             }
-            return null;
+        }
+    }
+
+    private minTempoFV(errorHandlerFunction: Function, config: MusicalCompositionConfig): any {
+        return (control: FormControl) => {
+            try {
+                if (!isNaN(control.value) && +control.value > config.maxTempo) {
+                    return {
+                        "min_tempo": true
+                    };
+                }
+                return null;
+            } catch (e) {
+                errorHandlerFunction(e);
+                return {
+                    "validation_error": true
+                };
+            }
+        }
+    }
+
+    private maxTempoFV(errorHandlerFunction: Function, config: MusicalCompositionConfig): any {
+        return (control: FormControl) => {
+            try {
+                if (!isNaN(control.value) && +control.value < config.minTempo) {
+                    return {
+                        "max_tempo": true
+                    };
+                }
+                return null;
+            } catch (e) {
+                errorHandlerFunction(e);
+                return {
+                    "validation_error": true
+                };
+            }
+        }
+    }
+
+    private stepTempoFV(errorHandlerFunction: Function, config: MusicalCompositionConfig): any {
+        return (control: FormControl) => {
+            try {
+                if (!isNaN(control.value) && config.maxTempo >= config.minTempo && +control.value > config.maxTempo - config.minTempo) {
+                    return {
+                        "step_tempo": true
+                    };
+                }
+                return null;
+            } catch (e) {
+                errorHandlerFunction(e);
+                return {
+                    "validation_error": true
+                };
+            }
+        }
+    }
+
+    private defaultTempoFV(errorHandlerFunction: Function, config: MusicalCompositionConfig): any {
+        return (control: FormControl) => {
+            try {
+                if (!isNaN(control.value) && config.maxTempo >= config.minTempo && (+control.value > config.maxTempo || +control.value < config.minTempo)) {
+                    return {
+                        "default_tempo": true
+                    };
+                }
+                return null;
+            } catch (e) {
+                errorHandlerFunction(e);
+                return {
+                    "validation_error": true
+                };
+            }
         }
         
     }
 
-    private minVolumeMidiFV(control: FormControl): any {
-        if (+control.value <= 0) {
-            return {
-                "min_volume_midi": true
-            };
-        }
-        return null;
-    }
-
-    private maxVolumeMidiFV(control: FormControl): any {
-        if (+control.value > 500) {
-            return {
-                "max_volume_midi": true
-            };
-        }
-        return null;
-    }
-
-    private minVolumeFV(config: MusicalCompositionLineConfig): any {
+    private minVolumeMidiFV(errorHandlerFunction: Function): any {
         return (control: FormControl) => {
-            if (+control.value > config.maxVolume) {
+            try {
+                if (!isNaN(control.value) && +control.value < this.getLowerAllowedVolume()) {
+                    return {
+                        "min_volume_midi": true
+                    };
+                }
+                return null;
+            } catch (e) {
+                errorHandlerFunction(e);
                 return {
-                    "min_volume": true
+                    "validation_error": true
                 };
             }
-            return null;
         }
     }
 
-    private maxVolumeFV(config: MusicalCompositionLineConfig): any {
+    private maxVolumeMidiFV(errorHandlerFunction: Function): any {
         return (control: FormControl) => {
-            if (+control.value < config.minVolume) {
+            try {
+                if (!isNaN(control.value) && +control.value > this.getHighestAllowedVolume()) {
+                    return {
+                        "max_volume_midi": true
+                    };
+                }
+                return null;
+            } catch (e) {
+                errorHandlerFunction(e);
                 return {
-                    "max_volume": true
+                    "validation_error": true
                 };
             }
-            return null;
         }
     }
 
-    private stepVolumeFV(config: MusicalCompositionLineConfig): any {
+    private minVolumeFV(errorHandlerFunction: Function, config: MusicalCompositionLineConfig): any {
         return (control: FormControl) => {
-            if (config.maxVolume >= config.minVolume && +control.value > config.maxVolume - config.minVolume) {
+            try {
+                if (!isNaN(control.value) && +control.value > config.maxVolume) {
+                    return {
+                        "min_volume": true
+                    };
+                }
+                return null;
+            } catch (e) {
+                errorHandlerFunction(e);
                 return {
-                    "step_volume": true
+                    "validation_error": true
                 };
             }
-            return null;
         }
     }
 
-    private defaultVolumeFV(config: MusicalCompositionLineConfig): any {
+    private maxVolumeFV(errorHandlerFunction: Function, config: MusicalCompositionLineConfig): any {
         return (control: FormControl) => {
-            if (config.maxVolume >= config.minVolume && (+control.value > config.maxVolume || +control.value < config.minVolume)) {
+            try {
+                    if (!isNaN(control.value) && +control.value < config.minVolume) {
+                    return {
+                        "max_volume": true
+                    };
+                }
+                return null;
+            } catch (e) {
+                errorHandlerFunction(e);
                 return {
-                    "default_volume": true
+                    "validation_error": true
                 };
             }
-            return null;
+        }
+    }
+
+    private stepVolumeFV(errorHandlerFunction: Function, config: MusicalCompositionLineConfig): any {
+        return (control: FormControl) => {
+            try {
+                if (!isNaN(control.value) && config.maxVolume >= config.minVolume && +control.value > config.maxVolume - config.minVolume) {
+                    return {
+                        "step_volume": true
+                    };
+                }
+                return null;
+            } catch (e) {
+                errorHandlerFunction(e);
+                return {
+                    "validation_error": true
+                };
+            }
+        }
+    }
+
+    private defaultVolumeFV(errorHandlerFunction: Function, config: MusicalCompositionLineConfig): any {
+        return (control: FormControl) => {
+            try {
+                if (!isNaN(control.value) && config.maxVolume >= config.minVolume && (+control.value > config.maxVolume || +control.value < config.minVolume)) {
+                    return {
+                        "default_volume": true
+                    };
+                }
+                return null;
+            } catch (e) {
+                errorHandlerFunction(e);
+                return {
+                    "validation_error": true
+                };
+            }
         }
     }
     
-    private minQuantityOfQuarterNoteMidiFV(control: FormControl): any {
-        if (+control.value <= 0) {
-            return {
-                "min_quantity_of_quarter_note": true
-            };
+    private minQuantityOfQuarterNoteMidiFV(errorHandlerFunction: Function): any {
+        return (control: FormControl) => {
+            try {
+                if (!isNaN(control.value) && +control.value < this.getLowerQuantityOfQuarterNote()) {
+                    return {
+                        "min_quantity_of_quarter_note": true
+                    };
+                }
+                return null;
+            } catch (e) {
+                errorHandlerFunction(e);
+                return {
+                    "validation_error": true
+                };
+            }
         }
-        return null;
     }
 
-    private maxQuantityOfQuarterNoteMidiFV(control: FormControl): any {
-        if (+control.value > 500) {
-            return {
-                "max_quantity_of_quarter_note": true
-            };
+    private maxQuantityOfQuarterNoteMidiFV(errorHandlerFunction: Function): any {
+        return (control: FormControl) => {
+            try {
+                if (!isNaN(control.value) && +control.value > this.getHighestQuantityOfQuarterNote()) {
+                    return {
+                        "max_quantity_of_quarter_note": true
+                    };
+                }
+                return null;
+            } catch (e) {
+                errorHandlerFunction(e);
+                return {
+                    "validation_error": true
+                };
+            }
         }
-        return null;
     }    
-
 
 }

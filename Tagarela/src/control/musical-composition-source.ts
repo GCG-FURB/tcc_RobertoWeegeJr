@@ -62,9 +62,16 @@ export class MusicalCompositionSourceControl {
 
                     let fullOptionPath: string = this.fileProvider.concatenatePaths([this.baseFileSystem, config.relativePath, step.relativePath, group.relativePath]);
                     let midiFile: string = await this.fileProvider.readFileAsBinaryString(fullOptionPath, option.fileName);
-                    optionSource.midi = this.midiControl.setupMidiFromFile(midiFile, lastMidi);
-                    lastMidi = optionSource.midi;
+                    
+                    let midi: Midi;
+                    try {
+                        midi = this.midiControl.setupMidiFromFile(midiFile, lastMidi);
+                    } catch (e) {
+                        throw Error(`Ocorreu um erro ao criar o Midi. Caminho: ${fullOptionPath} Arquivo: ${option.fileName} { ${(e && e.message ? e.message : 'null' )}}.`);
+                    }
 
+                    optionSource.midi = midi
+                    lastMidi = midi;
                     groupSource.optionsSource.push(optionSource);
                 }
                 stepSource.groupsSource.push(groupSource);
