@@ -4,6 +4,29 @@ import { MidiSpectrumLine, MidiSpectrum, MidiSpectrumNote } from "../model/midi-
 
 export class MidiControl {
 
+    public ajustMidiSize(midi: Midi, trackIndex: number, targetDeltaTimeSize) {
+        let midiDeltaTimeSum: number = midi.getDeltaTimeSum(trackIndex);
+        if (midiDeltaTimeSum < targetDeltaTimeSize) {
+            midi.midiTracks[trackIndex].midiEvents[midi.midiTracks[trackIndex].midiEvents.length - 1].sumDeltaTime(targetDeltaTimeSize - midiDeltaTimeSum);            
+        }
+    }
+
+    public ajustMidiTimeDivision(midi: Midi, maxTimeDivicionMetric: number){
+        let midiTimeDivision: MidiTimeDivisionMetrical = <MidiTimeDivisionMetrical> midi.timeDivision;
+        let conversionFactor: number = (maxTimeDivicionMetric + 0.0) / midiTimeDivision.metric;
+
+        if (conversionFactor != 1) {
+            midiTimeDivision.metric = maxTimeDivicionMetric;
+            midi.timeDivision = midiTimeDivision;
+
+            for (let track of midi.midiTracks) {
+                for (let event of track.midiEvents) {
+                    event.deltaTime = event.deltaTime * conversionFactor
+                }
+            }
+        }
+    }
+
     public setupMidiFromFile(binaryString: string, midiToCompare: Midi): Midi {
         
         if (!binaryString || binaryString.length <= 0)
@@ -68,6 +91,7 @@ export class MidiControl {
             let timeSignatureEvent: TimeSignatureMidiEvent = null;
             let midiKeySignatureEvent: KeySignatureMidiEvent = null;
             let endOfTrackEvent: EndOfTrackMidiEvent = null;
+            let tempoEvent: TempoMidiEvent = null;
             let midiChannel: string;
 
             let midiTrack: MidiTrack = new MidiTrack();
@@ -141,6 +165,12 @@ export class MidiControl {
                             } 
                             midiKeySignatureEvent = keyEvent;
                         }
+                    } else if (midiEvent.event.isOfType(MidiEventDataType.TEMPO)) {
+                        if (tempoEvent) {
+                            midiEvent.event = null;
+                        } else {
+                            tempoEvent = midiEvent.event as TempoMidiEvent;
+                        }
                     } else if (midiEvent.event.isOfType(MidiEventDataType.END_OF_TRACK)) {
                         if (endOfTrackEvent)
                             throw Error(`Uma track deve ter somente um evento de finalização. Track: ${i} - Byte ${actualByte}`);
@@ -166,6 +196,9 @@ export class MidiControl {
             
             if (!midiKeySignatureEvent)
                 throw Error(`Não foi encontrado evento de tonalidade. Track: ${i}`);
+
+            if (!tempoEvent)
+                throw Error(`Não foi encontrado evento de Tempo. Track: ${i}`);
 
             if (!endOfTrackEvent)
                 throw Error(`Não foi encontrado evento de finalização de track. Track: ${i}`);
@@ -432,8 +465,8 @@ export class MidiControl {
 
         let actualKeySignatureValue: number[] = midi.getKeySignatureValues();
 
-        let conversionFactor = Midi.KEY_SIGNATURE_CONVERSION_VECTOR[0+7]
-                             - Midi.KEY_SIGNATURE_CONVERSION_VECTOR[actualKeySignatureValue[0] + 7];
+        let conversionFactor = Midi.KEY_SIGNATURE_CONVERSION_ARRAY[0+7]
+                             - Midi.KEY_SIGNATURE_CONVERSION_ARRAY[actualKeySignatureValue[0] + 7];
 
         let spectrum: MidiSpectrum = new MidiSpectrum();
 
@@ -510,6 +543,42 @@ export class MidiControl {
         return spectrum;
     }
 
+    public generateMidiType1(midis: Midi[]) {
+        let newMidi: Midi = new Midi(); 
+        
+        newMidi.midiType = MidiType.TYPE_1;
+        newMidi.midiTracks = [];
+        newMidi.timeDivision = midis[0].timeDivision;
+        newMidi.numberOfTracks = 0;
+        
+        let midiChannelIndex: number = 0 
+        let channelChanged: boolean;
+        let channel: string;
+
+        for (let midi of midis) {
+            for (let midiTrack of midi.midiTracks) {
+                channel = Midi.MIDI_CHANNELS_ARRAY[midiChannelIndex]
+                while(Midi.DRUMS_MIDI_CHANNELS.indexOf(channel) > 0) {
+                    midiChannelIndex++
+                    if (midiChannelIndex >= Midi.MIDI_CHANNELS_ARRAY.length){
+                        midiChannelIndex = 0;
+                    }
+                    channel = Midi.MIDI_CHANNELS_ARRAY[midiChannelIndex]
+                }                
+                channelChanged = midiTrack.changeMidiChannel(channel);
+                if (channelChanged) {
+                    midiChannelIndex++;
+                    if (midiChannelIndex >= Midi.MIDI_CHANNELS_ARRAY.length){
+                        midiChannelIndex = 0;
+                    }
+                }
+                newMidi.midiTracks.push(midiTrack);
+                newMidi.numberOfTracks++
+            }
+        }
+        return newMidi;
+    }
+
 }
 
 class MidiCreatedEventModel {
@@ -537,6 +606,7 @@ class MidiCreatedEventModel {
     public set eventLength(value: number) {
         this._eventLength = value;
     }
+
 }
 
 class MidiProtocolConstants {

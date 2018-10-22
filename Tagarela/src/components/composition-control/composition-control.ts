@@ -3,6 +3,7 @@ import { MusicalCompositionControl } from '../../control/musical-composition';
 import { MusicalCompositionOption } from '../../model/musical-composition';
 import { LoadingController, AlertController, PopoverController } from 'ionic-angular';
 import { GenericComponent } from '../../control/generic-component';
+import { VisualMidiProvider } from '../../providers/visual-midi/visual-midi';
 
 @Component({
   selector: 'composition-control',
@@ -14,7 +15,8 @@ export class CompositionControlComponent extends GenericComponent {
 
     constructor(private loadingCtrl: LoadingController,
                 private alertCtrl: AlertController,
-                private popoverCtrl: PopoverController){
+                private popoverCtrl: PopoverController,
+                private visualMidiProvider: VisualMidiProvider){
         
         super(loadingCtrl,
               alertCtrl,

@@ -2,8 +2,8 @@ export class Midi {
 
     //constants
     public static KEY_SIGNATURES_ARRAY: number[] = [-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7];
-    public static KEY_SIGNATURE_CONVERSION_VECTOR: number[] = [11, 6, 1, 8, 3, 10, 5, 0, 7, 2, 9, 4, 11, 6, 1]
-
+    public static KEY_SIGNATURE_CONVERSION_ARRAY: number[] = [11, 6, 1, 8, 3, 10, 5, 0, 7, 2, 9, 4, 11, 6, 1]
+    public static MIDI_CHANNELS_ARRAY: string[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
     public static DRUMS_MIDI_CHANNELS: string[] = ['9']
 
     //validations 
@@ -20,8 +20,11 @@ export class Midi {
     public static MAX_MUSICAL_INSTRUMENT_NUMBER: number = 127;
     public static DRUM_INSTRUMENT_NUMBER: number = -1;
 
-    public static MIN_KEY_SIGNATURE_NUMBER: number = -7;
-    public static MAX_KEY_SIGNATURE_NUMBER: number = 7;
+    public static MIN_KEY_SIGNATURE_TONE_NUMBER: number = -7;
+    public static MAX_KEY_SIGNATURE_TONE_NUMBER: number = 7;
+
+    public static MIN_KEY_SIGNATURE_MODE_NUMBER: number = 0;
+    public static MAX_KEY_SIGNATURE_MODE_NUMBER: number = 1;
 
     public static MIN_NOTE_NUMBER: number = 0;
     public static MAX_NOTE_NUMBER: number = 127;
@@ -29,10 +32,22 @@ export class Midi {
     public static MIN_TEMPO_NUMBER: number = 1;
     public static MAX_TEMPO_NUMBER: number = 16777215;
     
-    public static MIN_VOLUME_NUMBER: number = 0;
-    public static MAX_VOLUME_NUMBER: number = 127;
+    public static MIN_VELOCITY_NUMBER: number = 0;
+    public static MAX_VELOCITY_NUMBER: number = 127;
 
     public static OCTAVE_SEMI_TOM_QUANTITY: number = 12;
+
+    public static MIN_TIME_DIVISION_METRIC_VALUE: number = 1;
+    public static MAX_TIME_DIVISION_METRIC_VALUE: number = 32767;
+
+    public static MIN_DELTA_TIME_VALUE: number = 0;
+    public static MAX_DELTA_TIME_VALUE: number = 268435455;
+
+    public static MIN_GENERIC_BYTE_VALUE: number = 0;
+    public static MAX_GENERIC_BYTE_VALUE: number = 255;
+
+    public static MIN_NUMBER_OF_TRACKS: number = 0;
+    public static MAX_NUMBER_OF_TRACKS: number = 255;
 
     private _midiType: MidiType;
     private _numberOfTracks: number;
@@ -44,6 +59,11 @@ export class Midi {
     }
 
     set midiType(midiType: MidiType) {
+        if (!midiType && midiType != 0) {
+            throw new Error(`O tipo midi não pode ser nulo.`);
+        }
+        if (midiType != MidiType.TYPE_0 && midiType != MidiType.TYPE_1 && midiType != MidiType.TYPE_2) 
+            throw new Error(`O tipo midi ${midiType} não é suportado.`);
         this._midiType = midiType;
     }
 
@@ -52,6 +72,16 @@ export class Midi {
     }
 
     set numberOfTracks(numberOfTracks: number) {
+        if (!numberOfTracks && numberOfTracks != 0) 
+            throw new Error(`A quantidade de tracks não pode ser nula.`);
+        
+        if (numberOfTracks < Midi.MIN_NUMBER_OF_TRACKS) 
+            throw new Error(`A quantidade de tracks não pode menor que ${Midi.MIN_NUMBER_OF_TRACKS}.`);
+        
+        if (numberOfTracks > Midi.MAX_NUMBER_OF_TRACKS)
+            throw new Error(`A quantidade de tracks não pode maior que ${Midi.MAX_NUMBER_OF_TRACKS}.`);
+
+        
         this._numberOfTracks = numberOfTracks;
     }
 
@@ -60,6 +90,8 @@ export class Midi {
     }
 
     set timeDivision(timeDivision: MidiTimeDivision) {
+        if (!timeDivision)
+            throw new Error(`O time division não pode ser nulo.`);
         this._timeDivision = timeDivision;
     }
 
@@ -68,6 +100,8 @@ export class Midi {
     }
 
     set midiTracks(midiTracks: MidiTrack[]) {
+        if (!midiTracks)
+            throw new Error(`As tracks não podem ser nulas.`);
         this._midiTracks = midiTracks;
     }
 
@@ -94,9 +128,10 @@ export class Midi {
                 if (midiEvent.isOfType(MidiEventDataType.NOTE) || 
                     midiEvent.isOfType(MidiEventDataType.DETERMINATE_MUSICAL_INSTRUMENT) ||
                     midiEvent.isOfType(MidiEventDataType.END_OF_TRACK)) {
-                    midiEvent.sumDeltaTime(deltaTimeToSum);
+                    let newEvent: MidiEvent = midiEvent.cloneEvent();
+                    newEvent.sumDeltaTime(deltaTimeToSum);
                     deltaTimeToSum = 0;   
-                    this.midiTracks[i].midiEvents.push(midiEvent)
+                    this.midiTracks[i].midiEvents.push(newEvent.cloneEvent())
                 } else {
                     deltaTimeToSum += midiEvent.deltaTime;
                 }
@@ -104,20 +139,7 @@ export class Midi {
         }
     }
     
-    public cloneMidi(): Midi{
-        let midi = new Midi();
-        midi.midiType = this.midiType;
-        midi.numberOfTracks = this.numberOfTracks;
-        midi.timeDivision = this.timeDivision;
-        midi.midiTracks = []; 
-        
-        for (let midiTrack of this.midiTracks) {
-            let newMidiTrack: MidiTrack = new MidiTrack()
-            newMidiTrack.midiEvents = Object.assign([], midiTrack.midiEvents);
-            midi.midiTracks.push(newMidiTrack);
-        }
-        return midi;
-    }
+
 
     //meta data
     public getAllUsedChannels(): string[] {
@@ -170,35 +192,29 @@ export class Midi {
         }
     }
 
-    public generateMidiType1(midis: Midi[]) {
-        let newMidi: Midi = new Midi(); 
+    public cloneMidi(): Midi{
+        let midi = new Midi();
+        midi.midiType = this.midiType;
+        midi.numberOfTracks = this.numberOfTracks;
+        midi.timeDivision = this.timeDivision;
+        midi.midiTracks = []; 
         
-        newMidi.midiType = MidiType.TYPE_1;
-        newMidi.midiTracks = [];
-        newMidi.timeDivision = midis[0].timeDivision;
-        newMidi.numberOfTracks = 0;
-        
-        let midiChannels: string[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', 'a', 'b', 'c', 'd', 'e', 'f'];
-        let midiChannelIndex: number = 0 
-        let channelChanged: boolean;
-
-        for (let midi of midis) {
-            for (let midiTrack of midi.midiTracks) {
-                channelChanged = midiTrack.changeMidiChannel(midiChannels[midiChannelIndex]);
-                if (channelChanged) {
-                    midiChannelIndex++;
-                    if (midiChannelIndex >= midiChannels.length){
-                        midiChannelIndex = 0;
-                    }
-                }
-                newMidi.midiTracks.push(midiTrack);
-                newMidi.numberOfTracks++
-            }
+        for (let midiTrack of this.midiTracks) {
+            let newMidiTrack: MidiTrack = new MidiTrack()
+            newMidiTrack.midiEvents = Object.assign([], midiTrack.midiEvents);
+            midi.midiTracks.push(newMidiTrack);
         }
-
-        return newMidi;
-        
+        return midi;
     }
+
+    public getDeltaTimeSum(trackIndex: number): number {
+        let deltaTime: number = 0;
+        for(let event of this.midiTracks[0].midiEvents) {
+            deltaTime += event.deltaTime;
+        }
+        return deltaTime;
+    }
+   
 }
 
 export class MidiTimeDivision {
@@ -214,12 +230,21 @@ export class MidiTimeDivision {
     }
     
     set timeDivisionType(timeDivisionType: MidiTimeDivisionType) {
+        if (!timeDivisionType && timeDivisionType != 0) {
+            throw new Error(`O tipo de time division não pode ser nulo.`);
+        }
+        if (timeDivisionType != MidiTimeDivisionType.TIME_CODE_BASED && timeDivisionType != MidiTimeDivisionType.METRICAL_TYPE) 
+            throw new Error(`O tipo de time division ${timeDivisionType} não é suportado.`);
+
         this._timeDivisionType = timeDivisionType;
     }
 
     public compareTimeDivision(timeDivisionToCompare: MidiTimeDivision): boolean {
         return this.timeDivisionType == timeDivisionToCompare.timeDivisionType
     }
+
+
+
 }
 
 export class MidiTimeDivisionMetrical extends MidiTimeDivision {
@@ -236,6 +261,15 @@ export class MidiTimeDivisionMetrical extends MidiTimeDivision {
     }
     
     set metric(metric: number) {
+        if (!metric && metric != 0) 
+            throw new Error(`A metrica não pode ser nula.`);
+        
+        if (metric < Midi.MIN_TIME_DIVISION_METRIC_VALUE) 
+            throw new Error(`A metrica não pode menor que ${Midi.MIN_TIME_DIVISION_METRIC_VALUE}.`);
+        
+        if (metric > Midi.MAX_TIME_DIVISION_METRIC_VALUE)
+            throw new Error(`A metrica não pode maior que ${Midi.MAX_TIME_DIVISION_METRIC_VALUE}.`);
+
         this._metric = metric;
     }
 
@@ -254,14 +288,23 @@ export class MidiTrack {
     }
     
     set midiEvents(midiEvents: MidiEvent[]){
+        if (!midiEvents) 
+            throw new Error(`Os eventos Midi não podem ser nulos.`);
+
         this._midiEvents = midiEvents;
     }
 
     public addMidiEvent(midiEvent: MidiEvent){
+        if (!midiEvent) 
+            throw new Error(`O evento Midi não pode ser nulo.`);
+
         this.midiEvents.push(midiEvent);
     }
 
     private addStartEventToTrack(event){
+        if (!event) 
+            throw new Error(`O evento Midi não pode ser nulo.`);
+            
         this.midiEvents.unshift(event);
     }
 
@@ -270,11 +313,11 @@ export class MidiTrack {
         if (!newKeySignature && newKeySignature != 0) 
             throw new Error('A assinatura de clave não deve ser nula.')
         
-        if (newKeySignature < Midi.MIN_KEY_SIGNATURE_NUMBER) 
-            throw new Error(`A assinatura de clave deve ser maior ou igual a ${Midi.MIN_KEY_SIGNATURE_NUMBER}.`)
+        if (newKeySignature < Midi.MIN_KEY_SIGNATURE_TONE_NUMBER) 
+            throw new Error(`A assinatura de clave deve ser maior ou igual a ${Midi.MIN_KEY_SIGNATURE_TONE_NUMBER}.`)
 
-        if (newKeySignature > Midi.MAX_KEY_SIGNATURE_NUMBER) 
-            throw new Error(`A assinatura de clave deve ser menor ou igual a ${Midi.MAX_KEY_SIGNATURE_NUMBER}.`)
+        if (newKeySignature > Midi.MAX_KEY_SIGNATURE_TONE_NUMBER) 
+            throw new Error(`A assinatura de clave deve ser menor ou igual a ${Midi.MAX_KEY_SIGNATURE_TONE_NUMBER}.`)
 
         let keySignatureEvents: KeySignatureMidiEvent[] = <KeySignatureMidiEvent[]> this.getEventsByType(MidiEventDataType.KEY_SIGNATURE); 
 
@@ -286,8 +329,8 @@ export class MidiTrack {
 
         let actualKeySignature: number = keySignatureEvents[0].tone;
 
-        let conversionFactor = Midi.KEY_SIGNATURE_CONVERSION_VECTOR[newKeySignature + 7]
-                             - Midi.KEY_SIGNATURE_CONVERSION_VECTOR[actualKeySignature + 7];
+        let conversionFactor = Midi.KEY_SIGNATURE_CONVERSION_ARRAY[newKeySignature + 7]
+                             - Midi.KEY_SIGNATURE_CONVERSION_ARRAY[actualKeySignature + 7];
 
         if (conversionFactor != 0) {
             let noteEvent: NoteMidiEvent;
@@ -398,11 +441,18 @@ export abstract class MidiEvent {
         this.deltaTime = deltaTime;
     }
 
-    public get midiEventType(): MidiEventType {
+    get midiEventType(): MidiEventType {
         return this._midiEventType;
     }
 
-    public set midiEventType(midiEventType: MidiEventType) {
+    set midiEventType(midiEventType: MidiEventType) {
+        if (!midiEventType && midiEventType != 0) 
+            throw new Error(`O tipo de evento não pode ser nulo.`);
+
+        if (midiEventType != MidiEventType.META_EVENT  && midiEventType != MidiEventType.SYSEX_EVENT
+            && midiEventType != MidiEventType.MIDI_EVENT) 
+            throw new Error(`O tipo de evento ${midiEventType} não é suportado.`);
+
         this._midiEventType = midiEventType;
     }
 
@@ -410,19 +460,32 @@ export abstract class MidiEvent {
         return this._deltaTime;
     }
     
-    set deltaTime(deltaTime: number){
+    set deltaTime(deltaTime: number) {
+        if (!deltaTime && deltaTime != 0) 
+            throw new Error(`O delta time não pode ser nulo.`);
+        
+        if (deltaTime < Midi.MIN_DELTA_TIME_VALUE) 
+            throw new Error(`O delta time não pode menor que ${Midi.MIN_DELTA_TIME_VALUE}.`);
+        
+        if (deltaTime > Midi.MAX_DELTA_TIME_VALUE)
+            throw new Error(`O delta time não pode maior que ${Midi.MAX_DELTA_TIME_VALUE}.`);
+
         this._deltaTime = deltaTime;
     }
 
     public sumDeltaTime(deltaTimeToSum: number){
+        if (!deltaTimeToSum && deltaTimeToSum != 0) 
+            throw new Error(`O delta time não pode ser nulo.`);
         this.deltaTime += deltaTimeToSum;
     }
 
     public abstract isOfType(dataType: MidiEventDataType): boolean; 
+    
+    public abstract cloneEvent(): MidiEvent;
 
 }
 
-export class ChannelMidiEvent extends MidiEvent {
+export abstract class ChannelMidiEvent extends MidiEvent {
 
     private _channel: string;
 
@@ -435,23 +498,29 @@ export class ChannelMidiEvent extends MidiEvent {
         return this._channel;
     }
     
-    public set channel(value: string) {
-        this._channel = value;
+    public set channel(channel: string) {
+        if (!channel)
+            throw new Error(`O canal midi não pode ser nulo.`);
+
+        if (Midi.MIDI_CHANNELS_ARRAY.indexOf(channel) < 0)
+            throw new Error(`O canal midi ${channel} não é suportado.`);
+        
+        this._channel = channel;
     }
     
     public isOfType(dataType: MidiEventDataType): boolean {
         return dataType == MidiEventDataType.CHANNEL
     } 
-
 }
 
-export class NoteMidiEvent extends ChannelMidiEvent {
+export abstract class NoteMidiEvent extends ChannelMidiEvent {
 
     private _note: number;
     private _velocity: number;
 
-    octaveTranspose
-    originalVelocity
+    private _octaveTranspose: number;
+
+    private _originalVelocity: number;
 
     constructor(deltaTime: number, channel: string, note: number, velocity: number) {
         super(deltaTime, channel);
@@ -460,20 +529,67 @@ export class NoteMidiEvent extends ChannelMidiEvent {
         this.originalVelocity = velocity;
     }
 
-    public get note(): number {
+    get note(): number {
         return this._note;
     }
     
-    public set note(value: number) {
-        this._note = value;
+    set note(note: number) {
+        if (!note && note != 0) 
+            throw new Error(`A nota não pode ser nulo.`);
+        
+        if (note < Midi.MIN_NOTE_NUMBER) 
+            throw new Error(`A nota não pode menor que ${Midi.MIN_NOTE_NUMBER}.`);
+        
+        if (note > Midi.MAX_NOTE_NUMBER)
+            throw new Error(`A nota não pode maior que ${Midi.MAX_NOTE_NUMBER}.`);
+
+        this._note = note;
     }
     
-    public get velocity(): number {
+    get velocity(): number {
         return this._velocity;
     }
     
-    public set velocity(value: number) {
-        this._velocity = value;
+    set velocity(velocity: number) {
+
+        if (!velocity && velocity != 0) 
+            throw new Error(`A velocidade (volume) não pode ser nulo.`);
+        
+        if (velocity < Midi.MIN_VELOCITY_NUMBER) 
+            throw new Error(`A velocidade (volume) não pode menor que ${Midi.MIN_VELOCITY_NUMBER}.`);
+        
+        if (velocity > Midi.MAX_VELOCITY_NUMBER)
+            throw new Error(`A velocidade (volume) não pode maior que ${Midi.MAX_VELOCITY_NUMBER}.`);
+
+        this._velocity = velocity;
+    }
+
+    get octaveTranspose(): number {
+        return this._octaveTranspose;
+    }
+
+    set octaveTranspose(octaveTranspose: number) {
+        if (!octaveTranspose && octaveTranspose != 0) 
+            throw new Error(`A velocidade (volume) não pode ser nulo.`);
+        this._octaveTranspose = octaveTranspose;
+    }
+
+    get originalVelocity(): number {
+        return this._originalVelocity;
+    }
+
+    set originalVelocity(originalVelocity: number) {
+
+        if (!originalVelocity && originalVelocity != 0) 
+            throw new Error(`A velocidade (volume) não pode ser nulo.`);
+        
+        if (originalVelocity < Midi.MIN_VELOCITY_NUMBER) 
+            throw new Error(`A velocidade (volume) não pode menor que ${Midi.MIN_VELOCITY_NUMBER}.`);
+        
+        if (originalVelocity > Midi.MAX_VELOCITY_NUMBER)
+            throw new Error(`A velocidade (volume) não pode maior que ${Midi.MAX_VELOCITY_NUMBER}.`);
+
+        this._originalVelocity = originalVelocity;
     }
 
     public isOfType(dataType: MidiEventDataType): boolean {
@@ -506,18 +622,15 @@ export class NoteMidiEvent extends ChannelMidiEvent {
          
         let newVolume = Math.round(volumePercent * this.originalVelocity / 100);
 
-        if (newVolume < Midi.MIN_VOLUME_NUMBER) {
-            newVolume = Midi.MIN_VOLUME_NUMBER;
-        } else if (newVolume > Midi.MAX_VOLUME_NUMBER) {
-            newVolume = Midi.MAX_VOLUME_NUMBER;
+        if (newVolume < Midi.MIN_VELOCITY_NUMBER) {
+            newVolume = Midi.MIN_VELOCITY_NUMBER;
+        } else if (newVolume > Midi.MAX_VELOCITY_NUMBER) {
+            newVolume = Midi.MAX_VELOCITY_NUMBER;
         }
 
         this.velocity = newVolume;
 
     }
-
-
-
 }
 
 export class NoteOffMidiEvent extends NoteMidiEvent {
@@ -529,6 +642,11 @@ export class NoteOffMidiEvent extends NoteMidiEvent {
     public isOfType(dataType: MidiEventDataType): boolean {
         return super.isOfType(dataType) || dataType == MidiEventDataType.NOTE_OFF
     } 
+
+    public cloneEvent(): MidiEvent {
+        return new NoteOffMidiEvent(this.deltaTime, this.channel, this.note, this.velocity);
+    }
+
 
 }
 
@@ -542,6 +660,10 @@ export class NoteOnMidiEvent extends NoteMidiEvent {
         return super.isOfType(dataType) || dataType == MidiEventDataType.NOTE_ON;
     } 
 
+    public cloneEvent(): MidiEvent {
+        return new NoteOnMidiEvent(this.deltaTime, this.channel, this.note, this.velocity);
+    }
+
 }
 
 export class TempoMidiEvent extends MidiEvent {
@@ -553,17 +675,30 @@ export class TempoMidiEvent extends MidiEvent {
         this.tempo = tempo;
     }
 
-    public get tempo(): number {
+    get tempo(): number {
         return this._tempo;
     }
 
-    public set tempo(value: number) {
-        this._tempo = value;
+    set tempo(tempo: number) {
+        if (!tempo && tempo != 0) 
+            throw new Error(`O tempo não pode ser nulo.`);
+        
+        if (tempo < Midi.MIN_TEMPO_NUMBER) 
+            throw new Error(`O tempo não pode menor que ${Midi.MIN_TEMPO_NUMBER}.`);
+        
+        if (tempo > Midi.MAX_TEMPO_NUMBER)
+            throw new Error(`O tempo não pode maior que ${Midi.MAX_TEMPO_NUMBER}.`);
+        
+        this._tempo = tempo;
     }
 
     public isOfType(dataType: MidiEventDataType): boolean {
         return dataType == MidiEventDataType.TEMPO;
     } 
+
+    public cloneEvent(): MidiEvent {
+        return new TempoMidiEvent(this.deltaTime, this.tempo);
+    }
 
 }
 
@@ -582,36 +717,72 @@ export class TimeSignatureMidiEvent extends MidiEvent {
         this.notes32in4note = notes32in4note;
     }
 
-    public get numerator(): number {
+    get numerator(): number {
         return this._numerator;
     }
 
-    public set numerator(value: number) {
-        this._numerator = value;
+    set numerator(numerator: number) {
+        if (!numerator && numerator != 0) 
+            throw new Error(`O numerador não pode ser nulo.`);
+        
+        if (numerator < Midi.MIN_GENERIC_BYTE_VALUE) 
+            throw new Error(`O numerador não pode menor que ${Midi.MIN_GENERIC_BYTE_VALUE}.`);
+        
+        if (numerator > Midi.MAX_GENERIC_BYTE_VALUE)
+            throw new Error(`O numerador não pode maior que ${Midi.MAX_GENERIC_BYTE_VALUE}.`);
+        
+        this._numerator = numerator;
     }
 
-    public get denominator(): number {
+    get denominator(): number {
         return this._denominator;
     }
 
-    public set denominator(value: number) {
-        this._denominator = value;
+    set denominator(denominator: number) {
+        if (!denominator && denominator != 0) 
+            throw new Error(`O denominador não pode ser nulo.`);
+        
+        if (denominator < Midi.MIN_GENERIC_BYTE_VALUE) 
+            throw new Error(`O denominador não pode menor que ${Midi.MIN_GENERIC_BYTE_VALUE}.`);
+        
+        if (denominator > Midi.MAX_GENERIC_BYTE_VALUE)
+            throw new Error(`O denominador não pode maior que ${Midi.MAX_GENERIC_BYTE_VALUE}.`);
+        
+        this._denominator = denominator;
     }
 
-    public get midiClocks(): number {
+    get midiClocks(): number {
         return this._midiClocks;
     }
 
-    public set midiClocks(value: number) {
-        this._midiClocks = value;
+    set midiClocks(midiClocks: number) {
+        if (!midiClocks && midiClocks != 0) 
+            throw new Error(`O midi clocks não pode ser nulo.`);
+        
+        if (midiClocks < Midi.MIN_GENERIC_BYTE_VALUE) 
+            throw new Error(`O midi clocks não pode menor que ${Midi.MIN_GENERIC_BYTE_VALUE}.`);
+        
+        if (midiClocks > Midi.MAX_GENERIC_BYTE_VALUE)
+            throw new Error(`O midi clocks não pode maior que ${Midi.MAX_GENERIC_BYTE_VALUE}.`);
+        
+        this._midiClocks = midiClocks;
     }
 
-    public get notes32in4note(): number {
+    get notes32in4note(): number {
         return this._notes32in4note;
     }
 
-    public set notes32in4note(value: number) {
-        this._notes32in4note = value;
+    set notes32in4note(notes32in4note: number) {
+        if (!notes32in4note && notes32in4note != 0) 
+            throw new Error(`O notes32in4note não pode ser nulo.`);
+        
+        if (notes32in4note < Midi.MIN_GENERIC_BYTE_VALUE) 
+            throw new Error(`O notes32in4note não pode menor que ${Midi.MIN_GENERIC_BYTE_VALUE}.`);
+        
+        if (notes32in4note > Midi.MAX_GENERIC_BYTE_VALUE)
+            throw new Error(`O notes32in4note não pode maior que ${Midi.MAX_GENERIC_BYTE_VALUE}.`);
+        
+        this._notes32in4note = notes32in4note;
     }
     
     public compareTo(timeEventToCompare: TimeSignatureMidiEvent ){
@@ -624,6 +795,10 @@ export class TimeSignatureMidiEvent extends MidiEvent {
     public isOfType(dataType: MidiEventDataType): boolean {
         return dataType == MidiEventDataType.TIME_SIGNATURE;
     } 
+
+    public cloneEvent(): MidiEvent {
+        return new TimeSignatureMidiEvent(this.deltaTime, this.numerator, this.denominator, this.midiClocks, this.notes32in4note);
+    }
 
 }
 
@@ -642,16 +817,34 @@ export class KeySignatureMidiEvent extends MidiEvent {
         return this._tone;
     }
     
-    public set tone(value: number) {
-        this._tone = value;
+    public set tone(tone: number) {
+        if (!tone && tone != 0) 
+            throw new Error(`O tom não pode ser nulo.`);
+        
+        if (tone < Midi.MIN_KEY_SIGNATURE_TONE_NUMBER) 
+            throw new Error(`O tom não pode menor que ${Midi.MIN_KEY_SIGNATURE_TONE_NUMBER}.`);
+        
+        if (tone > Midi.MAX_KEY_SIGNATURE_TONE_NUMBER)
+            throw new Error(`O tom não pode maior que ${Midi.MAX_KEY_SIGNATURE_TONE_NUMBER}.`);
+        
+        this._tone = tone;
     }  
     
     public get mode(): number {
         return this._mode;
     }
     
-    public set mode(value: number) {
-        this._mode = value;
+    public set mode(mode: number) {
+        if (!mode && mode != 0) 
+            throw new Error(`O modo não pode ser nulo.`);
+        
+        if (mode < Midi.MIN_KEY_SIGNATURE_MODE_NUMBER) 
+            throw new Error(`O modo não pode menor que ${Midi.MIN_KEY_SIGNATURE_MODE_NUMBER}.`);
+        
+        if (mode > Midi.MAX_KEY_SIGNATURE_MODE_NUMBER)
+            throw new Error(`O modo não pode maior que ${Midi.MAX_KEY_SIGNATURE_MODE_NUMBER}.`);
+        
+        this._mode = mode;
     }
     
     public compareTo(keyEventToCompare: KeySignatureMidiEvent) {
@@ -662,6 +855,10 @@ export class KeySignatureMidiEvent extends MidiEvent {
     public isOfType(dataType: MidiEventDataType): boolean {
         return dataType == MidiEventDataType.KEY_SIGNATURE;
     } 
+
+    public cloneEvent(): MidiEvent {
+        return new KeySignatureMidiEvent(this.deltaTime, this.tone, this.mode);
+    }
 
 }
 
@@ -674,39 +871,44 @@ export class EndOfTrackMidiEvent extends MidiEvent {
     public isOfType(dataType: MidiEventDataType): boolean {
         return dataType == MidiEventDataType.END_OF_TRACK;
     } 
+
+    public cloneEvent(): MidiEvent {
+        return new EndOfTrackMidiEvent(this.deltaTime);
+    }
 }
 
-export class MusicalInstrumentMidiEvent extends MidiEvent {
+export class MusicalInstrumentMidiEvent extends ChannelMidiEvent {
     
-    private _channel: string;
     private _musicalInstrument: number;
 
     constructor(deltaTime: number, channel: string, musicalInstrument: number) {
-        super(MidiEventType.META_EVENT, deltaTime);
-        this.channel = channel;
+        super(deltaTime, channel);
         this.musicalInstrument = musicalInstrument;
     }
 
-
-    public get channel(): string {
-        return this._channel;
-    }
-    
-    public set channel(value: string) {
-        this._channel = value;
-    }
-
-    public get musicalInstrument(): number {
+    get musicalInstrument(): number {
         return this._musicalInstrument;
     }
 
-    public set musicalInstrument(value: number) {
-        this._musicalInstrument = value;
+    set musicalInstrument(musicalInstrument: number) {
+        if (!musicalInstrument && musicalInstrument !== 0) 
+            throw new Error(`O instrumento musical padrão não pode ser nulo.`);
+
+        if (musicalInstrument < Midi.MIN_MUSICAL_INSTRUMENT_NUMBER && musicalInstrument != Midi.DRUM_INSTRUMENT_NUMBER) 
+            throw new Error(`O instrumento musical não pode menor que ${Midi.MIN_MUSICAL_INSTRUMENT_NUMBER}.`);
+        
+        if (musicalInstrument > Midi.MAX_MUSICAL_INSTRUMENT_NUMBER && musicalInstrument != Midi.DRUM_INSTRUMENT_NUMBER)
+            throw new Error(`O instrumento musical não pode maior que ${Midi.MAX_MUSICAL_INSTRUMENT_NUMBER}.`);
+        this._musicalInstrument = musicalInstrument;
     }
     
     public isOfType(dataType: MidiEventDataType): boolean {
         return dataType == MidiEventDataType.DETERMINATE_MUSICAL_INSTRUMENT
     } 
+
+    public cloneEvent(): MidiEvent {
+        return new MusicalInstrumentMidiEvent(this.deltaTime, this.channel, this.musicalInstrument);
+    }
 
 }
 

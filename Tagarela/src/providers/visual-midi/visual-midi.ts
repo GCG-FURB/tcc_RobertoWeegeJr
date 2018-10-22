@@ -38,7 +38,6 @@ export class VisualMidiProvider {
             case -1:
                 return 'instrument-snare-drum';
         }
-        alert(midiNumber)
         return ''
     }
 
@@ -77,7 +76,6 @@ export class VisualMidiProvider {
             case -1:
                 return 'Bateria';
         }
-        alert(midiNumber)
         return 'Desconhecido'
     }
 
@@ -165,5 +163,18 @@ export class VisualMidiProvider {
         }
         return 'none'
     }
+
+    public getCompassFormula(numerator: number, denominator: number) {
+        return numerator + '/' + Math.pow(2, denominator)
+    }
+
+    public getMode(mode: number) {
+        switch (mode) {
+            case 0: return 'Maior'
+            case 1: return 'Menor'
+            default: return 'Desconhecido'
+        }
+    }
+
 
 }

@@ -159,13 +159,14 @@ export class GeneralControlComponent extends GenericComponent {
         }
     }
 
-    private downloadAndOpenPdf() {
+    private async downloadComposition() {
         try {
-            this.fileProvider.file.copyFile(this.fileProvider.tempAreaDir, this.compositionControl.composition.midiId + '.mid', this.fileProvider.file.externalRootDirectory + 'Download', 'copied3.mid')
-            .then(() => {alert('foi')
-        })
-            .catch((e) => {alert(JSON.stringify(e))})
-        
+            alert('aaaaa')
+            alert(this.compositionControl.composition.midiId)
+            this.startAlert(this.compositionControl.composition.midiId + '.mid');
+            await this.compositionControl.applyGeneralChanges();
+            await this.fileProvider.copyFileFromTempAreaToDownloadFolder(this.compositionControl.composition.midiId + '.mid', 'vai.mid')
+            alert('Arquivo criado com sucesso.');
         } catch (e) {
             this.errorHandler(e)
         }

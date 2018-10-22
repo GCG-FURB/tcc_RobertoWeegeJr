@@ -148,7 +148,7 @@
                 <form [formGroup]="stepForms[i]">
                     <ion-label>{{stepConfig.relativePath}}</ion-label>
                     <ion-item [class.input-invalid]= "!stepForms[i].controls.quantityOfQuarterNote.valid">
-                        <ion-label [class.invalid]=  "!stepForms[i].controls.quantityOfQuarterNote.valid" floating>Valor mínimo de volume
+                        <ion-label [class.invalid]=  "!stepForms[i].controls.quantityOfQuarterNote.valid" floating>Quantidade de quartos de nota
                             <p class="invalid" *ngIf="!stepForms[i].controls.quantityOfQuarterNote.valid && stepForms[i].controls.quantityOfQuarterNote.errors.validation_error">Ocorreu um erro no processo de validação</p>
                             <p class="invalid" *ngIf="!stepForms[i].controls.quantityOfQuarterNote.valid && stepForms[i].controls.quantityOfQuarterNote.errors.required">Valor requerido</p>
                             <p class="invalid" *ngIf="!stepForms[i].controls.quantityOfQuarterNote.valid && stepForms[i].controls.quantityOfQuarterNote.errors.not_number">O valor deve ser um número</p>

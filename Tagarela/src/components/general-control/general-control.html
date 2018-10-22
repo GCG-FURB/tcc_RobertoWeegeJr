@@ -18,8 +18,7 @@
             <ion-icon name="undo"></ion-icon>
         </button>
 
-        <!--*ngIf="compositionHasEnded()" -->
-        <button ion-button icon-only large class="flex-child" (click)="downloadAndOpenPdf()">
+        <button ion-button icon-only large class="flex-child" *ngIf="compositionHasEnded()" (click)="downloadComposition()">
             <ion-icon name="download"></ion-icon>
         </button>
 

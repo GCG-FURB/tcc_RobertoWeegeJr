@@ -1,11 +1,10 @@
 import { Midi } from "./midi";
-import { v4 as uuid } from 'uuid';
-import { MusicalCompositionConfig } from "./musical-composition-config";
-import { MusicalCompositionSource } from "./musical-composition-source";
+import { v4 as uuid } from "uuid";
 import { MidiSpectrum } from "./midi-spectrum";
-import { MidiControl } from "../control/midi";
 
 export class MusicalComposition {
+
+    private CONVERSION_FACTOR_TEMPO: number = 60000000;
    
     private _minTempo: number;               //Tempo minimo permitido para a composição (parâmatro utilizado em xxx)
     private _maxTempo: number;               //Tempo minimo permitido para a composição (parâmatro utilizado em xxx)
@@ -20,7 +19,12 @@ export class MusicalComposition {
 
     private _lines: MusicalCompositionLine[];
 
-    public midiControl: MidiControl = new MidiControl();
+    public numerator: number
+    public denominator: number
+    public mode: number
+
+
+    timeDivisionMetric: number = 0;
 
     constructor() {
         this.lines = [];
@@ -33,15 +37,24 @@ export class MusicalComposition {
     
     set minTempo(minTempo:number) {
         minTempo = +minTempo
-        if (!minTempo || minTempo < 1) {
-            throw new Error("O tempo mínimo não pode ser nulo ou menor que 1");
-        }
-        if (this.maxTempo && minTempo > this.maxTempo) {
-            throw new Error("O tempo mínimo não pode ser maior que o tempo máximo");
-        }
-        if (this.tempo && minTempo > this.tempo) {
-            throw new Error("O tempo mínimo não pode ser maior que o tempo padrão");
-        }
+        if (!minTempo && minTempo != 0) 
+            throw new Error(`O tempo mínimo não pode ser nulo.`);
+
+        if (Math.round(this.CONVERSION_FACTOR_TEMPO / minTempo) < Midi.MIN_TEMPO_NUMBER) 
+            throw new Error(`O fator de conversão (${this.CONVERSION_FACTOR_TEMPO}) dividido tempo mínimo não pode menor que ${Midi.MIN_TEMPO_NUMBER}.`);
+        
+        if (Math.round(this.CONVERSION_FACTOR_TEMPO / minTempo) > Midi.MAX_TEMPO_NUMBER)
+            throw new Error(`O fator de conversão (${this.CONVERSION_FACTOR_TEMPO}) dividido tempo mínimo não pode maior que ${Midi.MAX_TEMPO_NUMBER}.`);
+        
+        if ((this.maxTempo || this.maxTempo == 0) && minTempo > this.maxTempo) 
+            throw new Error(`O tempo mínimo não pode ser maior que o tempo máximo.`);
+        
+        if ((this.tempo || this.tempo == 0) && minTempo > this.tempo) 
+            throw new Error(`O tempo mínimo não pode ser maior que o tempo`);
+        
+        if ((this.stepTempo || this.stepTempo == 0) && (this.maxTempo || this.maxTempo == 0) && this.stepTempo > this.maxTempo - minTempo)
+            throw new Error(`O intervalo de escolha de tempo não pode ser maior que a diferença entre o tempo máximo e o mínimo.`);
+        
         this._minTempo = minTempo;
     }
     
@@ -51,15 +64,24 @@ export class MusicalComposition {
     
     set maxTempo(maxTempo:number) {
         maxTempo = +maxTempo;
-        if (!maxTempo || maxTempo < 1) {
-            throw new Error("O tempo máximo não pode ser nulo ou menor que 1");
-        }
-        if (this.minTempo && maxTempo < this.minTempo) {
-            throw new Error("O tempo máximo não pode ser menor que o tempo mínimo");
-        }
-        if (this.tempo && maxTempo < this.tempo) {
-            throw new Error("O tempo máximo não pode ser menor que o tempo padrão");
-        }
+        if (!maxTempo && maxTempo != 0) 
+            throw new Error(`O tempo máximo não pode ser nulo.`);
+        
+        if (Math.round(this.CONVERSION_FACTOR_TEMPO / maxTempo) < Midi.MIN_TEMPO_NUMBER) 
+            throw new Error(`O fator de conversão (${this.CONVERSION_FACTOR_TEMPO}) dividido tempo máximo não pode menor que ${Midi.MIN_TEMPO_NUMBER}.`);
+        
+        if (Math.round(this.CONVERSION_FACTOR_TEMPO / maxTempo) > Midi.MAX_TEMPO_NUMBER) 
+            throw new Error(`O fator de conversão (${this.CONVERSION_FACTOR_TEMPO}) dividido tempo máximo não pode maior que ${Midi.MAX_TEMPO_NUMBER}.`);
+        
+        if ((this.minTempo || this.minTempo == 0) && maxTempo < this.minTempo) 
+            throw new Error(`O tempo máximo não pode ser menor que o tempo máximo.`);
+        
+        if ((this.tempo || this.tempo == 0) && maxTempo < this.tempo) 
+            throw new Error(`O tempo máximo não pode ser menor que o tempo.`);
+        
+        if ((this.stepTempo || this.stepTempo == 0) && (this.minTempo || this.minTempo == 0)  && this.stepTempo > maxTempo - this.minTempo) 
+            throw new Error(`O intervalo de escolha de tempo não pode ser maior que a diferença entre o tempo máximo e o mínimo.`);
+        
         this._maxTempo = maxTempo;
     }
     
@@ -69,9 +91,12 @@ export class MusicalComposition {
     
     set stepTempo(stepTempo:number) {
         stepTempo = +stepTempo
-        if (!stepTempo || stepTempo < 1) {
-            throw new Error("O intervalo de escolha de tempo não pode ser nulo ou menor que 1");
-        }
+        if (!stepTempo && stepTempo != 0)
+            throw new Error(`O intervalo de escolha de tempo não pode ser nulo.`);
+        
+        if ((this.maxTempo || this.maxTempo == 0) && (this.minTempo || this.minTempo == 0) && stepTempo > this.maxTempo - this.minTempo)
+            throw new Error(`O intervalo de escolha de tempo não pode ser maior que a diferença entre o tempo máximo e o mínimo.`);
+        
         this._stepTempo = stepTempo;
     }
     
@@ -80,15 +105,21 @@ export class MusicalComposition {
     }
     
     set tempo(tempo: number) {
-        if (!tempo || tempo < 1) {
-            throw new Error("O tempo padrão não pode ser nulo ou menor que 1");
-        }
-        if (this.minTempo && tempo < this.minTempo) {
-            throw new Error("O tempo padrão não pode ser menor que o tempo mínimo");
-        }
-        if (this.maxTempo && tempo > this.maxTempo) {
-            throw new Error("O tempo padrão não pode ser maior que o tempo máximo");
-        }
+        if (!tempo && tempo != 0) 
+            throw new Error(`O tempo não pode ser nulo.`);
+        
+        if (Math.round(this.CONVERSION_FACTOR_TEMPO / tempo) < Midi.MIN_TEMPO_NUMBER) 
+            throw new Error(`O fator de conversão (${this.CONVERSION_FACTOR_TEMPO}) dividido tempo não pode menor que ${Midi.MIN_TEMPO_NUMBER}.`);
+        
+        if (Math.round(this.CONVERSION_FACTOR_TEMPO / tempo) > Midi.MAX_TEMPO_NUMBER) 
+            throw new Error(`O fator de conversão (${this.CONVERSION_FACTOR_TEMPO}) dividido tempo não pode maior que ${Midi.MAX_TEMPO_NUMBER}.`);
+        
+        if ((this.minTempo || this.minTempo == 0) && tempo < this.minTempo) 
+            throw new Error(`O tempo padrão não pode ser menor que o tempo mínimo.`);
+        
+        if ((this.maxTempo || this.maxTempo == 0) && tempo > this.maxTempo) 
+            throw new Error(`O tempo padrão não pode ser maior que o tempo máximo.`);
+        
         this._tempo = tempo;
     }
     
@@ -96,17 +127,26 @@ export class MusicalComposition {
         return this._keySignature;
     }
     
-    set keySignature(keySignature:number) {
+    set keySignature(keySignature: number) {
+        
+        if (!keySignature && keySignature != 0) 
+            throw new Error(`A armadura de clave não pode ser nulo.`);
+        
+        if (Midi.KEY_SIGNATURES_ARRAY.indexOf(keySignature) < 0) 
+            throw new Error(`A armadura de clave deve se um valor entre ${JSON.stringify(Midi.KEY_SIGNATURES_ARRAY)}.`);
+
         this._keySignature = keySignature;
+        
     }
 
-
-    
     get midiId(): string {
         return this._midiId;
     }
     
-    set midiId(midiId:string) {
+    set midiId(midiId: string) {
+        if (!midiId || midiId.length <= 0)
+            throw new Error(`O identificador de midi não pode ser nulo ou vazio.`);
+        
         this._midiId = midiId;
     }
     
@@ -114,7 +154,9 @@ export class MusicalComposition {
         return this._midi;
     }
     
-    set midi(midi:Midi) {
+    set midi(midi: Midi) {
+        if (!midi)
+            throw new Error(`O midi não pode ser nulo.`);
         this._midi = midi;
     }
 
@@ -124,14 +166,13 @@ export class MusicalComposition {
     
     set lines(lines:MusicalCompositionLine[]) {
         if (!lines) {
-            throw new Error("As urações de linhas não podem ser nulas");
+            throw new Error(`As linhas não podem ser nulas`);
         }
         this._lines = lines;
     }
 
-
     public getTempo(): number {
-        return  Math.round(60000000 / this.tempo)
+        return  Math.round(this.CONVERSION_FACTOR_TEMPO / this.tempo)
     }
 
 }
@@ -160,9 +201,9 @@ export class MusicalCompositionLine {
     }
     
     set name(name:string) {
-        if (!name || name.length <= 0){
-            throw new Error("O nome não pode ser nulo ou vazio");
-        }
+        if (!name || name.length <= 0)
+            throw new Error(`O nome não pode ser nulo ou vazio.`);
+        
         this._name = name;
     }
     
@@ -172,33 +213,51 @@ export class MusicalCompositionLine {
     
     set minVolume(minVolume:number) {
         minVolume = +minVolume
-        if ((!minVolume && minVolume !== 0) || minVolume < 0) {
-            throw new Error("O volume mínimo não pode ser nulo ou menor que 0");
-        }
-        if (this.maxVolume && minVolume > this.maxVolume) {
-            throw new Error("O volume mínimo não pode ser maior que o volume máximo");
-        }
-        if (this.volume && minVolume > this.volume) {
-            throw new Error("O volume mínimo não pode ser maior que o volume padrão");
-        }
+        if (!minVolume && minVolume != 0) 
+            throw new Error(`O volume mínimo não pode ser nulo.`);
+
+        if (minVolume < Midi.LOWER_ALLOWED_VOLUME) 
+            throw new Error(`O volume mínimo não pode menor que ${Midi.LOWER_ALLOWED_VOLUME}.`);
+        
+        if (minVolume > Midi.HIGHEST_ALLOWED_VOLUME)
+            throw new Error(`O volume mínimo não pode maior que ${Midi.HIGHEST_ALLOWED_VOLUME}.`);
+        
+        if ((this.maxVolume || this.maxVolume == 0) && minVolume > this.maxVolume) 
+            throw new Error(`O volume mínimo não pode ser maior que o volume máximo.`);
+        
+        if ((this.volume || this.volume == 0) && minVolume > this.volume) 
+            throw new Error(`O volume mínimo não pode ser maior que o volume`);
+        
+        if ((this.stepVolume || this.stepVolume == 0) && (this.maxVolume || this.maxVolume == 0) && this.stepVolume > this.maxVolume - minVolume)
+            throw new Error(`O intervalo de escolha de volume não pode ser maior que a diferença entre o volume máximo e o mínimo.`);
+
         this._minVolume = minVolume;
     }
-    
+
     get maxVolume(): number {
         return this._maxVolume;
     }
     
     set maxVolume(maxVolume:number) {
         maxVolume = +maxVolume
-        if ((!maxVolume && maxVolume !== 0) || maxVolume < 0) {
-            throw new Error("O volume máximo não pode ser nulo ou menor que 0");
-        }
-        if (this.minVolume && maxVolume < this.minVolume) {
-            throw new Error("O volume máximo não pode ser menor que o volume mínimo");
-        }
-        if (this.volume && maxVolume < this.volume) {
-            throw new Error("O volume máximo não pode ser menor que o volume padrão");
-        }
+        if (!maxVolume && maxVolume != 0) 
+            throw new Error(`O volume máximo não pode ser nulo.`);
+
+        if (maxVolume < Midi.LOWER_ALLOWED_VOLUME) 
+            throw new Error(`O volume máximo não pode menor que ${Midi.LOWER_ALLOWED_VOLUME}.`);
+        
+        if (maxVolume > Midi.HIGHEST_ALLOWED_VOLUME)
+            throw new Error(`O volume máximo não pode maior que ${Midi.HIGHEST_ALLOWED_VOLUME}.`);
+        
+        if ((this.minVolume || this.minVolume == 0) && maxVolume < this.minVolume) 
+            throw new Error(`O volume máximo não pode ser menor que o volume mínimo.`);
+        
+        if ((this.volume || this.volume == 0) && maxVolume < this.volume) 
+            throw new Error(`O volume máximo não pode ser menor que o volume`);
+        
+        if ((this.stepVolume || this.stepVolume == 0) && (this.minVolume || this.minVolume == 0) && this.stepVolume > maxVolume - this.minVolume)
+            throw new Error(`O intervalo de escolha de volume não pode ser maior que a diferença entre o volume máximo e o mínimo.`);
+
         this._maxVolume = maxVolume;
     }
     
@@ -208,9 +267,12 @@ export class MusicalCompositionLine {
     
     set stepVolume(stepVolume:number) {
         stepVolume = +stepVolume
-        if (!stepVolume || stepVolume < 1) {
-            throw new Error("O intervalo de escolha de volume não pode ser nulo ou menor que 1");
-        }
+        if (!stepVolume && stepVolume != 0) 
+            throw new Error(`O intervalo de escolha de volume não pode ser nulo.`);
+
+        if ((this.maxVolume || this.maxVolume == 0) && (this.minVolume || this.minVolume == 0) && stepVolume > this.maxVolume - this.minVolume)
+            throw new Error(`O intervalo de escolha de volume não pode ser maior que a diferença entre o volume máximo e o mínimo.`);
+
         this._stepVolume = stepVolume;
     }
     
@@ -220,15 +282,21 @@ export class MusicalCompositionLine {
     
     set volume(volume:number) {
         volume = +volume
-        if ((!volume && volume !== 0) || volume < 0) {
-            throw new Error("O volume padrão não pode ser nulo ou menor que 0");
-        }
-        if (this.minVolume && volume < this.minVolume) {
-            throw new Error("O volume padrão não pode ser menor que o volume mínimo");
-        }
-        if (this.maxVolume && volume > this.maxVolume) {
-            throw new Error("O volume padrão não pode ser maior que o volume máximo");
-        }
+        if (!volume && volume != 0) 
+            throw new Error(`O volume não pode ser nulo.`);
+
+        if (volume < Midi.LOWER_ALLOWED_VOLUME) 
+            throw new Error(`O volume não pode menor que ${Midi.LOWER_ALLOWED_VOLUME}.`);
+        
+        if (volume > Midi.HIGHEST_ALLOWED_VOLUME)
+            throw new Error(`O volume não pode maior que ${Midi.HIGHEST_ALLOWED_VOLUME}.`);
+
+        if ((this.minVolume || this.minVolume == 0) && volume < this.minVolume) 
+            throw new Error(`O volume padrão não pode ser menor que o volume mínimo.`);
+        
+        if ((this.maxVolume || this.maxVolume == 0) && volume > this.maxVolume) 
+            throw new Error(`O volume padrão não pode ser maior que o volume máximo.`);
+        
         this._volume = volume;
     }
 
@@ -236,7 +304,10 @@ export class MusicalCompositionLine {
         return this._midiId;
     }
     
-    set midiId(midiId:string) {
+    set midiId(midiId: string) {
+        if (!midiId || midiId.length <= 0)
+            throw new Error(`O identificador de midi não pode ser nulo ou vazio.`);
+        
         this._midiId = midiId;
     }
     
@@ -244,11 +315,13 @@ export class MusicalCompositionLine {
         return this._midi;
     }
     
-    set midi(midi:Midi) {
+    set midi(midi: Midi) {
+        if (!midi)
+            throw new Error(`O midi não pode ser nulo.`);
         this._midi = midi;
     }
 
-    applyMidiChanges() {
+    public applyMidiChanges() {
         if (this.options.length > 0) {
             this.options[0].applyMidiChanges();
             this.midi = this.options[0].midi.cloneMidi();
@@ -264,22 +337,18 @@ export class MusicalCompositionLine {
         }
     }
 
-    public getMinSpectrumNote(){
-
+    public getMinSpectrumNote() {
         if (this.options.length <= 0)
             return null;
-
         let minValue: number = this.options[0].spectrum.minNote;
-
         for (let option of this.options) {
             if (option.spectrum && option.spectrum.minNote < minValue)
                 minValue = option.spectrum.minNote
         }
-
         return minValue;
     }
 
-    public getMaxSpectrumNote(){
+    public getMaxSpectrumNote() {
 
         if (this.options.length <= 0)
             return null;
@@ -292,6 +361,14 @@ export class MusicalCompositionLine {
         }
 
         return maxValue;
+    }
+
+    public getTotalDeltaTime(): number {
+        let totalDeltaTime: number = 0;
+        for (let option of this.options) {
+            totalDeltaTime += option.getDeltaTimeSum();
+        }
+        return totalDeltaTime;
     }
 
 
@@ -318,7 +395,7 @@ export class MusicalCompositionOption {
     
     set fileName(fileName:string) {
         if (!fileName || fileName.length <= 0){
-            throw new Error("O nome do arquivo não pode ser nulo ou vazio");
+            throw new Error(`O nome do arquivo não pode ser nulo ou vazio`);
         }
         this._fileName = fileName;
     }
@@ -327,10 +404,18 @@ export class MusicalCompositionOption {
         return this._musicalInstrumentsAllowed;
     }
     
-    set musicalInstrumentsAllowed(musicalInstrumentsAllowed:number[]) {
-        if (!musicalInstrumentsAllowed) {
-            throw new Error("Os instrumentos musicais permitidos não podem ser nulos");
+    set musicalInstrumentsAllowed(musicalInstrumentsAllowed: number[]) {
+        if (!musicalInstrumentsAllowed) 
+            throw new Error(`Os instrumentos musicais permitidos não podem ser nulos.`);
+        
+        for (let musicalInstrument of musicalInstrumentsAllowed) {
+            if (musicalInstrument < Midi.MIN_MUSICAL_INSTRUMENT_NUMBER && musicalInstrument != Midi.DRUM_INSTRUMENT_NUMBER) 
+                throw new Error(`O instrumento musical não pode menor que ${Midi.MIN_MUSICAL_INSTRUMENT_NUMBER}.`);
+            
+            if (musicalInstrument > Midi.MAX_MUSICAL_INSTRUMENT_NUMBER && musicalInstrument != Midi.DRUM_INSTRUMENT_NUMBER)
+                throw new Error(`O instrumento musical não pode maior que ${Midi.MAX_MUSICAL_INSTRUMENT_NUMBER}.`);
         }
+
         this._musicalInstrumentsAllowed = musicalInstrumentsAllowed;
     }
     
@@ -340,9 +425,15 @@ export class MusicalCompositionOption {
     
     set musicalInstrument(musicalInstrument:number) {
         musicalInstrument = +musicalInstrument
-        if (!musicalInstrument && musicalInstrument !== 0) {
-            throw new Error("O instrumento musical padrão não pode ser nulo");
-        }
+        if (!musicalInstrument && musicalInstrument !== 0) 
+            throw new Error(`O instrumento musical padrão não pode ser nulo.`);
+
+        if (musicalInstrument < Midi.MIN_MUSICAL_INSTRUMENT_NUMBER && musicalInstrument != Midi.DRUM_INSTRUMENT_NUMBER) 
+            throw new Error(`O instrumento musical não pode menor que ${Midi.MIN_MUSICAL_INSTRUMENT_NUMBER}.`);
+        
+        if (musicalInstrument > Midi.MAX_MUSICAL_INSTRUMENT_NUMBER && musicalInstrument != Midi.DRUM_INSTRUMENT_NUMBER)
+            throw new Error(`O instrumento musical não pode maior que ${Midi.MAX_MUSICAL_INSTRUMENT_NUMBER}.`);
+
         this._musicalInstrument = musicalInstrument;
     }
 
@@ -350,7 +441,10 @@ export class MusicalCompositionOption {
         return this._midiId;
     }
     
-    set midiId(midiId:string) {
+    set midiId(midiId: string) {
+        if (!midiId || midiId.length <= 0)
+            throw new Error(`O identificador de midi não pode ser nulo ou vazio.`);
+        
         this._midiId = midiId;
     }
     
@@ -358,12 +452,21 @@ export class MusicalCompositionOption {
         return this._midi;
     }
     
-    set midi(midi:Midi) {
+    set midi(midi: Midi) {
+        if (!midi)
+            throw new Error(`O midi não pode ser nulo.`);
         this._midi = midi;
     }
 
     public applyMidiChanges() {
         this.midi.applyInstrumentChange(this.musicalInstrument);
     }
+
+
+    public getDeltaTimeSum(): number {
+        return this.midi.getDeltaTimeSum(0);
+    }
+
+
 
 }

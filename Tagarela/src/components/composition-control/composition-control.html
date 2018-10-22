@@ -1,4 +1,13 @@
 
+<ion-card class="overflow-drag">
+    Fórmula de compasso: {{visualMidiProvider.getCompassFormula(compositionControl.composition.numerator, 
+                                                                compositionControl.composition.denominator)}}
+
+    <br>
+    Modo: {{visualMidiProvider.getMode(compositionControl.composition.mode)}}
+    <br>
+</ion-card>
+
 <ion-card class="overflow-drag" *ngIf="compositionControl && getOptionsList().length > 0">
     <ion-card-content class="overflow-drag">
         <div class="teste overflow-drag">

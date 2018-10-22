@@ -152,4 +152,9 @@ export class FileProvider {
     public async removeFile(systemPath: string, relativePath: string, fileName: string) {
         await this.file.removeFile(this.concatenatePath(systemPath, relativePath), fileName);
     }
+
+    public async copyFileFromTempAreaToDownloadFolder(originalfileName:string, newFileName: string ) {
+        await this.file.copyFile(this.tempAreaDir, originalfileName, this.concatenatePath(this.file.externalRootDirectory, 'Downloads'), newFileName);
+    }
+
 }
