@@ -1,5 +1,3 @@
-import { ConvertionUtil } from "../util/hexa";
-
 export class Midi {
 
     //constants
@@ -616,6 +614,13 @@ export class TimeSignatureMidiEvent extends MidiEvent {
         this._notes32in4note = value;
     }
     
+    public compareTo(timeEventToCompare: TimeSignatureMidiEvent ){
+        return this.numerator == timeEventToCompare.numerator
+            && this.denominator == timeEventToCompare.denominator
+            && this.midiClocks == timeEventToCompare.midiClocks
+            && this.notes32in4note == timeEventToCompare.notes32in4note;
+    }
+
     public isOfType(dataType: MidiEventDataType): boolean {
         return dataType == MidiEventDataType.TIME_SIGNATURE;
     } 
@@ -649,6 +654,11 @@ export class KeySignatureMidiEvent extends MidiEvent {
         this._mode = value;
     }
     
+    public compareTo(keyEventToCompare: KeySignatureMidiEvent) {
+        return this.tone == keyEventToCompare.tone
+            && this.mode == keyEventToCompare.mode
+    }
+
     public isOfType(dataType: MidiEventDataType): boolean {
         return dataType == MidiEventDataType.KEY_SIGNATURE;
     } 

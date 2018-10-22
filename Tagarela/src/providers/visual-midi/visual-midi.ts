@@ -3,8 +3,6 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class VisualMidiProvider {
 
-    constructor() {}
-
     public getIonIconToMidiNumber(midiNumber: number): string {
         switch (midiNumber) {
             case 0:
@@ -167,6 +165,5 @@ export class VisualMidiProvider {
         }
         return 'none'
     }
-
 
 }

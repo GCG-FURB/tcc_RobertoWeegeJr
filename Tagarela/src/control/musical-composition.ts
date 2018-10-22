@@ -6,6 +6,9 @@ import { MidiControl } from './midi';
 
 export class MusicalCompositionControl {
 
+    public config: MusicalCompositionConfig;
+    public source: MusicalCompositionSource;
+
     public composition: MusicalComposition;
     
     //composition control
@@ -19,8 +22,8 @@ export class MusicalCompositionControl {
     constructor(config: MusicalCompositionConfig, source: MusicalCompositionSource) {
         
         this.composition = new MusicalComposition();
-        this.composition.config = config;
-        this.composition.source = source;
+        this.config = config;
+        this.source = source;
 
         this.setupDefaultValues();
         this.populateOptionsMap();
@@ -44,7 +47,7 @@ export class MusicalCompositionControl {
     }
 
     private setupDefaultValues() {
-        if (!this.composition.config)
+        if (!this.config)
             throw new Error('O objeto de configuração não pode ser nulo.');
 
         //indexes
@@ -55,14 +58,16 @@ export class MusicalCompositionControl {
         this.composition.keySignature = 0;
 
         //tempo
-        this.composition.minTempo = this.composition.config.minTempo;
-        this.composition.maxTempo = this.composition.config.maxTempo;
-        this.composition.stepTempo = this.composition.config.stepTempo;
-        this.composition.tempo = this.composition.config.defaultTempo;
+        this.composition.minTempo = this.config.minTempo;
+        this.composition.maxTempo = this.config.maxTempo;
+        this.composition.stepTempo = this.config.stepTempo;
+        this.composition.tempo = this.config.defaultTempo;
+
+        let newLine: MusicalCompositionLine;
 
         //lines
-        for(let line of this.composition.config.linesConfig){
-            let newLine: MusicalCompositionLine = new MusicalCompositionLine();
+        for(let line of this.config.linesConfig){
+            newLine = new MusicalCompositionLine();
             newLine.name = line.name;
             newLine.minVolume = line.minVolume;
             newLine.maxVolume = line.maxVolume;
@@ -73,14 +78,16 @@ export class MusicalCompositionControl {
     }
 
     private populateOptionsMap() {
-        if (!this.composition.config)
+        if (!this.config)
             throw new Error('O objeto de configuração não pode ser nulo.');
         
         this.optionsMap = new Map();
-        for(let i = 0; i < this.composition.config.stepsConfig.length; i++){
-            let optionMap: Map<number, MusicalCompositionOption[]> = new Map();
-            for(let j = 0; j < this.composition.config.stepsConfig[i].groupsConfig.length; j++) {
-                let options: MusicalCompositionOption[] = this.generateOptionsToChoice(i, j);
+        let optionMap: Map<number, MusicalCompositionOption[]>;
+        let options: MusicalCompositionOption[];
+        for(let i = 0; i < this.config.stepsConfig.length; i++){
+            optionMap = new Map();
+            for(let j = 0; j < this.config.stepsConfig[i].groupsConfig.length; j++) {
+                options = this.generateOptionsToChoice(i, j);
                 optionMap.set(j, options);
             }
             this.optionsMap.set(i, optionMap);
@@ -92,11 +99,12 @@ export class MusicalCompositionControl {
         
         let optionConfig: MusicalCompositionOptionConfig;
         let optionSource: MusicalCompositionOptionSource;
+        let newOption: MusicalCompositionOption;
 
-        for (let i = 0; i < this.composition.source.stepsSource[stepIndex].groupsSource[lineIndex].optionsSource.length; i++) {
-            optionConfig = this.composition.config.stepsConfig[stepIndex].groupsConfig[lineIndex].optionsConfig[i];
-            optionSource = this.composition.source.stepsSource[stepIndex].groupsSource[lineIndex].optionsSource[i];
-            let newOption: MusicalCompositionOption = new MusicalCompositionOption();
+        for (let i = 0; i < this.source.stepsSource[stepIndex].groupsSource[lineIndex].optionsSource.length; i++) {
+            optionConfig = this.config.stepsConfig[stepIndex].groupsConfig[lineIndex].optionsConfig[i];
+            optionSource = this.source.stepsSource[stepIndex].groupsSource[lineIndex].optionsSource[i];
+            newOption = new MusicalCompositionOption();
             newOption.fileName = optionConfig.fileName;
             newOption.musicalInstrument = optionConfig.defaultMusicalInstrument;
             newOption.musicalInstrumentsAllowed = optionConfig.musicalInstrumentsAllowed;
@@ -113,7 +121,7 @@ export class MusicalCompositionControl {
     }
 
     public compositionHasEnded(): boolean {
-        return this.stepIndex > this.composition.source.stepsSource.length -1
+        return this.stepIndex > this.source.stepsSource.length -1
     }
 
     public getOptionsToChoice(): MusicalCompositionOption[] {
@@ -152,14 +160,9 @@ export class MusicalCompositionControl {
         midi.applyTempoChange(this.composition.getTempo());
     }
 
-
-
-
-
     public applyChoice(option: MusicalCompositionOption){
         this.composition.lines[this.lineIndex].options.push(option);
-        this.composition.lines[this.lineIndex].applyMidiChanges();
-
+        //this.composition.lines[this.lineIndex].applyMidiChanges();
         this.lineIndex++;
         if (this.lineIndex >= this.composition.lines.length) {
             this.lineIndex = 0;
@@ -177,7 +180,5 @@ export class MusicalCompositionControl {
             this.composition.lines[this.lineIndex].options.pop();
         }
     }
-
-    
 
 }

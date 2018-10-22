@@ -1,14 +1,12 @@
 import { Midi } from "./midi";
 import { v4 as uuid } from 'uuid';
-import { MusicalCompositionConfig, MusicalCompositionOptionConfig } from "./musical-composition-config";
-import { MusicalCompositionSource, MusicalCompositionOptionSource } from "./musical-composition-source";
+import { MusicalCompositionConfig } from "./musical-composition-config";
+import { MusicalCompositionSource } from "./musical-composition-source";
 import { MidiSpectrum } from "./midi-spectrum";
 import { MidiControl } from "../control/midi";
 
 export class MusicalComposition {
-
-    public config: MusicalCompositionConfig;
-    private _source: MusicalCompositionSource;
+   
     private _minTempo: number;               //Tempo minimo permitido para a composição (parâmatro utilizado em xxx)
     private _maxTempo: number;               //Tempo minimo permitido para a composição (parâmatro utilizado em xxx)
     private _stepTempo: number;              //Passo a passo utilizado na composição
@@ -27,14 +25,6 @@ export class MusicalComposition {
     constructor() {
         this.lines = [];
         this.midiId = uuid();
-    }
-  
-    get source(): MusicalCompositionSource {
-        return this._source;
-    }
-    
-    set source(source:MusicalCompositionSource) {
-        this._source = source;
     }
 
     get minTempo(): number {

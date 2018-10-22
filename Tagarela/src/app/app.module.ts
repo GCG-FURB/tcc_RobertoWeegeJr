@@ -9,7 +9,6 @@ import { CompositionPage } from '../pages/composition/composition';
 import { GeneralControlComponent } from '../components/general-control/general-control';
 import { CompositionControlComponent } from '../components/composition-control/composition-control';
 import { ChoiceComponent } from '../components/choice/choice';
-import { DragComponentDirective } from '../directives/drag-component/drag-component';
 
 import { File } from '@ionic-native/file';
 import { FilePath } from '@ionic-native/file-path';
@@ -38,7 +37,6 @@ import { LineControl } from '../components/line-control/line-control';
     SlidePopoverComponent,
     ListPopoverComponent,
     PlayMidiComponent,
-    DragComponentDirective
   ],
   imports: [
     BrowserModule,
