@@ -1,17 +1,12 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams } from 'ionic-angular';
+import { NavController, NavParams, LoadingController, AlertController, PopoverController } from 'ionic-angular';
+import { GenericComponent } from '../../control/generic-component';
 
-/**
- * Generated class for the ListPopoverComponent component.
- *
- * See https://angular.io/api/core/Component for more info on Angular
- * Components.
- */
 @Component({
   selector: 'list-popover',
   templateUrl: 'list-popover.html'
 })
-export class ListPopoverComponent {
+export class ListPopoverComponent extends GenericComponent {
 
     private title: string;
     private list: string[];
@@ -19,29 +14,53 @@ export class ListPopoverComponent {
     private iconFunction: Function;
     private nameFunction: Function;
 
-    constructor(public navCtrl: NavController, public navParams: NavParams) {
+    constructor(private navCtrl: NavController, 
+                private navParams: NavParams, 
+                private loadingCtrl: LoadingController,
+                private alertCtrl: AlertController,
+                private popoverCtrl: PopoverController) {
+
+        super(loadingCtrl,
+              alertCtrl,
+              popoverCtrl);
+
     }
 
-    ionViewDidLoad() {
-
-        this.title = this.navParams.get("title");
-        this.list = this.navParams.get("list");
-        this.callback = this.navParams.get("callback");
-        this.iconFunction = this.navParams.get("iconFunction");
-        this.nameFunction = this.navParams.get("nameFunction");
-        
-        if (!this.nameFunction) 
-            this.nameFunction = this.defaultNameFunction;
-        
+    private ngOnInit(): void {
+        try { 
+            this.title = this.navParams.get("title");
+            this.list = this.navParams.get("list");
+            this.callback = this.navParams.get("callback");
+            this.iconFunction = this.navParams.get("iconFunction");
+            this.nameFunction = this.navParams.get("nameFunction");
+            
+            if (!this.nameFunction) 
+                this.nameFunction = this.defaultNameFunction;
+        } catch (e) {
+            this.errorHandler(e);
+        }
     }
 
     private goBack(value: string){
-        this.callback(value);
-        this.navCtrl.pop();
+        try { 
+            this.callback(value);
+            this.navCtrl.pop();
+        } catch (e) {
+            this.errorHandler(e);
+        }
     }
 
     private defaultNameFunction(element: string){
-        return element;
+        try { 
+            return element;
+        } catch (e) {
+            this.errorHandler(e);
+        }
+    }
+
+    public errorHandler(e) {
+        super.errorHandler(e);
+        this.navCtrl.pop();
     }
 
 }

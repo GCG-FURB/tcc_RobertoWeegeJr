@@ -26,10 +26,6 @@ export class SetupCompositionSourcePage extends GenericComponent {
     private _stepForms: FormGroup[];
     private _optionForms: FormGroup[][][];
 
-    midi = Midi;
-
-    public aaa:string = "0";
-    
     constructor(private navCtrl: NavController, 
                 private navParams: NavParams,
                 private formBuilder: FormBuilder,
@@ -99,7 +95,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         this._optionForms = optionForms;
     }
     
-    ngOnInit(){
+    private ngOnInit(){
         try {
             this.configSegment = 'general';
             let configControl = this.navParams.get('configControl');
@@ -191,7 +187,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
 	private getHighestQuantityOfQuarterNote():number {return Midi.HIGHEST_QUANTITY_OF_QUARTER_NOTE}
 
     //page refresh
-    updateGeneralFormControl() {
+    private updateGeneralFormControl() {
         try {
             this.generalForm.controls.minTempo.updateValueAndValidity(); 
             this.generalForm.controls.maxTempo.updateValueAndValidity(); 
@@ -202,7 +198,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         }
     }
 
-    updateAllLineFormControl() {
+    private updateAllLineFormControl() {
         try {
             for (let i = 0; i < this.lineForms.length; i++) {
                 this.updateLineFormControl(i);
@@ -212,7 +208,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         }
     }
  
-    updateLineFormControl(lineIndex: number) {
+    private updateLineFormControl(lineIndex: number) {
         try {
             this.lineForms[lineIndex].controls.minVolume.updateValueAndValidity(); 
             this.lineForms[lineIndex].controls.maxVolume.updateValueAndValidity(); 
@@ -223,7 +219,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         }
     }
 
-    updateAlloptionFormControl() {
+    private updateAlloptionFormControl() {
         try {        
             for (let i = 0; i < this.optionForms.length; i++) {
                 for (let j = 0; j < this.optionForms[i].length; j++) {
@@ -237,7 +233,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         }
     }
 
-    public lineFormsIsValid(): boolean {
+    private lineFormsIsValid(): boolean {
         try {
             for (let i = 0; i < this.lineForms.length; i++) {
                 if (!this.lineForms[i].valid) {
@@ -250,7 +246,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         }
     }
     
-    public stepFormsIsValid(): boolean {
+    private stepFormsIsValid(): boolean {
         try {
             for (let i = 0; i < this.stepForms.length; i++) {
                 if (!this.stepForms[i].valid) {
@@ -263,7 +259,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         }
     }
     
-    public optionFormsIsValid(): boolean {
+    private optionFormsIsValid(): boolean {
         try {
             for (let i = 0; i < this.optionForms.length; i++) {
                 for (let j = 0; j < this.optionForms[i].length; j++) {
@@ -280,7 +276,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         }
     }
 
-    updateoptionFormControl(iIndex: number, jIndex: number, kIndex: number) {
+    private updateoptionFormControl(iIndex: number, jIndex: number, kIndex: number) {
         try {
             this.optionForms[iIndex][jIndex][kIndex].controls.musicalInstrumentsAllowed.updateValueAndValidity(); 
             this.optionForms[iIndex][jIndex][kIndex].controls.defaultMusicalInstrument.updateValueAndValidity(); 

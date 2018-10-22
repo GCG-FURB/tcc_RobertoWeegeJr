@@ -1,5 +1,1 @@
-<div *ngIf="spectrum">
-    <div *ngFor="let line of spectrum.spectrumLines" class="flex-parent">
-        <div *ngFor="let spectrum of line.spectrumSVGs" [ngStyle]="{'background-image':'url('+ spectrum +')'}" class="image4 flex-child"></div>
-    </div>
-</div>
+<div *ngIf="spectrum" [ngStyle]="{'background-image':'url('+ spectrum +')'}" class="image4"></div>

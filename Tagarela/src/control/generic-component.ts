@@ -20,6 +20,14 @@ export class GenericComponent {
         this._loading = loading;
     }
 
+    public get error(): string {
+        return this._error;
+    }
+
+    public set error(value: string) {
+        this._error = value;
+    }
+
     public async createLoading(content: string){
         await this.dismissLoading();
         this.loading = this.loadingController.create({content: content});
@@ -45,12 +53,8 @@ export class GenericComponent {
 
     public errorHandler(e){
         this.dismissLoading();
-        /*alert('error handler')
-        alert(JSON.stringify(e))
+        alert('error handler')
         alert(e.message)
-        alert(e.stack)
-        alert(e.name)*/
     }
-
 
 }

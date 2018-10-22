@@ -1,7 +1,7 @@
 
 <div class="flex-parent" *ngIf="compositionControl && compositionControl.composition">
 
-        <button ion-button icon-only large class="flex-child" (click)="teste()" *ngIf="compositionHasStarted()">
+        <button ion-button icon-only large class="flex-child" (click)="playMidi()" *ngIf="compositionHasStarted()">
             <ion-icon name="play"></ion-icon>
         </button>
 
@@ -18,7 +18,8 @@
             <ion-icon name="undo"></ion-icon>
         </button>
 
-        <button ion-button icon-only large class="flex-child" *ngIf="compositionHasEnded()" (click)="downloadAndOpenPdf()">
+        <!--*ngIf="compositionHasEnded()" -->
+        <button ion-button icon-only large class="flex-child" (click)="downloadAndOpenPdf()">
             <ion-icon name="download"></ion-icon>
         </button>
 

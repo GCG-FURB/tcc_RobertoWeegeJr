@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams, LoadingController, AlertController, PopoverController } from 'ionic-angular';
+import { NavParams, LoadingController, AlertController, PopoverController } from 'ionic-angular';
 import { MusicalCompositionControl } from '../../control/musical-composition';
 import { GenericComponent } from '../../control/generic-component';
 
@@ -11,8 +11,7 @@ export class CompositionPage extends GenericComponent{
 
     private _compositionControl: MusicalCompositionControl;
 
-    constructor(private navCtrl: NavController, 
-                private navParams: NavParams, 
+    constructor(private navParams: NavParams, 
                 private loadingCtrl: LoadingController,
                 private alertCtrl: AlertController,
                 private popoverCtrl: PopoverController) {
@@ -31,7 +30,7 @@ export class CompositionPage extends GenericComponent{
         this._compositionControl = compositionControl;
     }
 
-    ngOnInit(){
+    private ngOnInit(){
         try {
             this.compositionControl = this.navParams.get('compositionControl');
         } catch (e) {

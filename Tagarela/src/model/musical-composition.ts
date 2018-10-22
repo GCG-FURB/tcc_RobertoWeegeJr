@@ -2,6 +2,8 @@ import { Midi } from "./midi";
 import { v4 as uuid } from 'uuid';
 import { MusicalCompositionConfig, MusicalCompositionOptionConfig } from "./musical-composition-config";
 import { MusicalCompositionSource, MusicalCompositionOptionSource } from "./musical-composition-source";
+import { MidiSpectrum } from "./midi-spectrum";
+import { MidiControl } from "../control/midi";
 
 export class MusicalComposition {
 
@@ -14,12 +16,13 @@ export class MusicalComposition {
 
     private _keySignature: number
 
-
     //midi
     private _midiId: string;
     private _midi: Midi;
 
     private _lines: MusicalCompositionLine[];
+
+    public midiControl: MidiControl = new MidiControl();
 
     constructor() {
         this.lines = [];
@@ -136,59 +139,10 @@ export class MusicalComposition {
         this._lines = lines;
     }
 
-    public getOptionsToChoice(stepIndex: number, lineIndex: number): MusicalCompositionOption[] {
-        let options: MusicalCompositionOption[] = []
-        
-        let optionConfig: MusicalCompositionOptionConfig;
-        let optionSource: MusicalCompositionOptionSource;
-
-        for (let i = 0; i < this.source.stepsSource[stepIndex].groupsSource[lineIndex].optionsSource.length; i++) {
-            optionConfig = this.config.stepsConfig[stepIndex].groupsConfig[lineIndex].optionsConfig[i];
-            optionSource = this.source.stepsSource[stepIndex].groupsSource[lineIndex].optionsSource[i];
-            let newOption: MusicalCompositionOption = new MusicalCompositionOption();
-            newOption.fileName = optionConfig.fileName;
-            newOption.musicalInstrument = optionConfig.defaultMusicalInstrument;
-            newOption.musicalInstrumentsAllowed = optionConfig.musicalInstrumentsAllowed;
-            newOption.midi = optionSource.midi; 
-            options.push(newOption);
-        }
-        
-        return options; 
-    }
-
-    public generateCompositionMidi() {
-        this.midi = new Midi();
-        let midiLines: Midi[] = [];
-        for (let line of this.lines) {
-            line.applyMidiChanges();
-            if (line.midi) {
-                this.applyMidiChanges(line.midi);
-                midiLines.push(line.midi);
-            }
-        }
-        this.midi.generateMidiType1(midiLines);
-    }
-    
-    public applyMidiChanges(midi: Midi){
-        midi.applyNoteTranspose(this.keySignature);
-        midi.applyTempoChange(this.getTempo());
-    }
-
-    public applyOptionChanges(option: MusicalCompositionOption) {
-        option.applyMidiChanges();
-        this.applyMidiChanges(option.midi);
-    }
-
-    public applyLineChanges(line: MusicalCompositionLine) {
-        line.applyMidiChanges();
-        this.applyMidiChanges(line.midi);
-    }
 
     public getTempo(): number {
         return  Math.round(60000000 / this.tempo)
     }
-
-
 
 }
 
@@ -320,25 +274,34 @@ export class MusicalCompositionLine {
         }
     }
 
-    public volumeDown(){
-        if (this.volume > this.minVolume) {
-            this.volume = this.volume - this.stepVolume;
+    public getMinSpectrumNote(){
+
+        if (this.options.length <= 0)
+            return null;
+
+        let minValue: number = this.options[0].spectrum.minNote;
+
+        for (let option of this.options) {
+            if (option.spectrum && option.spectrum.minNote < minValue)
+                minValue = option.spectrum.minNote
         }
+
+        return minValue;
     }
 
-    public volumeUp(){
-        if (this.volume < this.maxVolume) {
-            this.volume = this.volume + this.stepVolume;
+    public getMaxSpectrumNote(){
+
+        if (this.options.length <= 0)
+            return null;
+
+        let maxValue: number = this.options[0].spectrum.maxNote;
+
+        for (let option of this.options) {
+            if (option.spectrum && option.spectrum.maxNote > maxValue)
+                maxValue = option.spectrum.maxNote
         }
-    }
 
-    maxNote
-    minNote
-
-    public setNoteLimits() {
-        let limits: number[] = this.midi.getNoteLimits();
-        this.maxNote = limits[0]
-        this.minNote = limits[1]
+        return maxValue;
     }
 
 
@@ -353,6 +316,7 @@ export class MusicalCompositionOption {
 
     private _midiId: string;
     private _midi: Midi;
+    public spectrum: MidiSpectrum;
 
     constructor() {
         this.midiId = uuid();
@@ -408,7 +372,7 @@ export class MusicalCompositionOption {
         this._midi = midi;
     }
 
-    public applyMidiChanges(){
+    public applyMidiChanges() {
         this.midi.applyInstrumentChange(this.musicalInstrument);
     }
 

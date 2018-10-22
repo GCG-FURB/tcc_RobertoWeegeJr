@@ -1,7 +1,7 @@
 import { MusicalCompositionConfig, MusicalCompositionStepConfig, MusicalCompositionGroupConfig, MusicalCompositionOptionConfig, MusicalCompositionLineConfig } from "../model/musical-composition-config";
 import { MusicalCompositionSource } from "../model/musical-composition-source";
-import { MidiConstants } from "../model/midi";
 import { FileProvider } from "../providers/file/file";
+import { Midi } from "../model/midi";
 
 export class MusicalCompositionConfigControl {
 
@@ -20,7 +20,7 @@ export class MusicalCompositionConfigControl {
     private CONFIG_DEFAULT_QUANTITY_OF_QUARTER_NOTE: number = 8
 
     private CONFIG_DEFAULT_MUSICAL_INSTRUMENTS_ALLOWED: number[] = [0, 11, 13, 21, 24, 26, 33, 41, 46, 56, 57, 58, 65, 73, 105]
-    private CONFIG_DEFAULT_DRUMS_MUSICAL_INSTRUMENTS_ALLOWED: number[] = [999]
+    private CONFIG_DEFAULT_DRUMS_MUSICAL_INSTRUMENTS_ALLOWED: number[] = [-1]
 
     private CONFIG_DEFAULT_MIN_VOLUME: number = 0 
     private CONFIG_DEFAULT_MAX_VOLUME: number = 200
@@ -118,14 +118,22 @@ export class MusicalCompositionConfigControl {
             throw new Error('É necessário ao menos um passo para realizar a composição');
         }
 
+        let stepConfig: MusicalCompositionStepConfig;
+        let stepPath: string;
+        let groupDirectoriesList: string[];
+        let groupConfig: MusicalCompositionGroupConfig;
+        let linePath: string;
+        let optionFilesList: string[];
+        let optionConfig: MusicalCompositionOptionConfig;
+
         //steps
         for (let stepDirectory of stepDirectoriesList) {
-            let stepConfig: MusicalCompositionStepConfig = new MusicalCompositionStepConfig();
+            stepConfig = new MusicalCompositionStepConfig();
             stepConfig.relativePath = stepDirectory; 
             stepConfig.quantityOfQuarterNote = this.CONFIG_DEFAULT_QUANTITY_OF_QUARTER_NOTE;
 
-            let stepPath: string = this.fileProvider.concatenatePath(config.relativePath, stepDirectory);
-            let groupDirectoriesList: string[] = await this.fileProvider.getListOfDirectories(config.baseFileSystem, stepPath);
+            stepPath = this.fileProvider.concatenatePath(config.relativePath, stepDirectory);
+            groupDirectoriesList = await this.fileProvider.getListOfDirectories(config.baseFileSystem, stepPath);
 
             //groups validation
             if (groupDirectoriesList.length < 1) {
@@ -139,11 +147,11 @@ export class MusicalCompositionConfigControl {
 
             //groups
             for (let groupDirectory of groupDirectoriesList) {
-                let groupConfig: MusicalCompositionGroupConfig = new MusicalCompositionGroupConfig();
+                groupConfig = new MusicalCompositionGroupConfig();
                 groupConfig.relativePath = groupDirectory;
 
-                let linePath: string = this.fileProvider.concatenatePath(stepPath, groupDirectory);
-                let optionFilesList: string[] = await this.fileProvider.getListOfFiles(config.baseFileSystem, linePath)
+                linePath = this.fileProvider.concatenatePath(stepPath, groupDirectory);
+                optionFilesList = await this.fileProvider.getListOfFiles(config.baseFileSystem, linePath)
 
                 //options validation
                 if (optionFilesList.length < 1) {
@@ -152,7 +160,7 @@ export class MusicalCompositionConfigControl {
 
                 //options
                 for (let optionFile of optionFilesList) {
-                    let optionConfig: MusicalCompositionOptionConfig = new MusicalCompositionOptionConfig();
+                    optionConfig = new MusicalCompositionOptionConfig();
                     optionConfig.fileName = optionFile;
                     groupConfig.optionsConfig.push(optionConfig);
                 }
@@ -161,13 +169,15 @@ export class MusicalCompositionConfigControl {
             config.stepsConfig.push(stepConfig)
         }
 
+        let lineConfig: MusicalCompositionLineConfig;
+
         //lines config
         for (let stepConfig of config.stepsConfig) {
             for (let groupConfig of stepConfig.groupsConfig) {
                 if (!(config.linesConfig.find((element) => {
                     return element.name == groupConfig.relativePath
                 }))) {
-                    let lineConfig: MusicalCompositionLineConfig = new MusicalCompositionLineConfig();
+                    lineConfig = new MusicalCompositionLineConfig();
                     lineConfig.name = groupConfig.relativePath;
                     lineConfig.minVolume = this.CONFIG_DEFAULT_MIN_VOLUME;
                     lineConfig.maxVolume = this.CONFIG_DEFAULT_MAX_VOLUME;
@@ -273,14 +283,15 @@ export class MusicalCompositionConfigControl {
         if (!source) {
             throw Error('A fonte de composição não pode ser nula');
         }
+        let channels: string[];
         for (let i = 0; i < this.config.stepsConfig.length; i++) {
             for (let j = 0; j < this.config.stepsConfig[i].groupsConfig.length; j++) {
                 for (let k = 0; k < this.config.stepsConfig[i].groupsConfig[j].optionsConfig.length; k++) {
-                    let channels: string[] = source.stepsSource[i].groupsSource[j].optionsSource[k].midi.getAllUsedChannels();
+                    channels = source.stepsSource[i].groupsSource[j].optionsSource[k].midi.getAllUsedChannels();
                     if (channels.length > 1 || channels.length == 0) {
                         throw Error('Cada midi deve possuir somente um canal.');
                     }
-                    if (MidiConstants.DRUMS_MIDI_CHANNELS.indexOf(channels[0]) >= 0) {
+                    if (Midi.DRUMS_MIDI_CHANNELS.indexOf(channels[0]) >= 0) {
                         if (!this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].musicalInstrumentsAllowed)
                             this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].musicalInstrumentsAllowed = this.CONFIG_DEFAULT_DRUMS_MUSICAL_INSTRUMENTS_ALLOWED;
 

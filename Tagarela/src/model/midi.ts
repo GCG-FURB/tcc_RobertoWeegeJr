@@ -1,25 +1,12 @@
 import { ConvertionUtil } from "../util/hexa";
-import { MidiSpectrum, MidiSpectrumLine, MidiSpectrumNote } from "./midi-spectrum";
 
 export class Midi {
 
     //constants
-    public static MIDI_HEADER_LENGTH: number = 14;
-    //
-    public static HEADER_START_VALUE: string = 'MThd';
+    public static KEY_SIGNATURES_ARRAY: number[] = [-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7];
+    public static KEY_SIGNATURE_CONVERSION_VECTOR: number[] = [11, 6, 1, 8, 3, 10, 5, 0, 7, 2, 9, 4, 11, 6, 1]
 
-    public static MIDI_HEADER_LENGTH_VALUE: number = 6;
-    public static MIDI_HEADER_LENGTH_VALUE_LENGTH: number = 4;
-
-    public static MIDI_TYPE_VALUE_LENGTH: number = 2;
-    public static MIDI_TRACK_QUANTITY_VALUE_LENGTH: number = 2;
-    public static MIDI_TIME_DIVISION_VALUE_LENGTH: number = 2;
-
-    public static MIDI_TRACK_DESC_LENGTH: number = 8;
-
-    public static TRACK_START_VALUE: string = "MTrk";
-    public static MIDI_TRACK_LENGTH_VALUE_LENGTH: number = 4;
-    public static MIDI_DELTA_TIME_MAX_LENGTH: number = 4;
+    public static DRUMS_MIDI_CHANNELS: string[] = ['9']
 
     //validations 
     public static LOWER_ALLOWED_TEMPO: number = 1;
@@ -30,6 +17,24 @@ export class Midi {
 
     public static LOWER_QUANTITY_OF_QUARTER_NOTE: number = 1;
     public static HIGHEST_QUANTITY_OF_QUARTER_NOTE: number = 4000;
+
+    public static MIN_MUSICAL_INSTRUMENT_NUMBER: number = 0;
+    public static MAX_MUSICAL_INSTRUMENT_NUMBER: number = 127;
+    public static DRUM_INSTRUMENT_NUMBER: number = -1;
+
+    public static MIN_KEY_SIGNATURE_NUMBER: number = -7;
+    public static MAX_KEY_SIGNATURE_NUMBER: number = 7;
+
+    public static MIN_NOTE_NUMBER: number = 0;
+    public static MAX_NOTE_NUMBER: number = 127;
+
+    public static MIN_TEMPO_NUMBER: number = 1;
+    public static MAX_TEMPO_NUMBER: number = 16777215;
+    
+    public static MIN_VOLUME_NUMBER: number = 0;
+    public static MAX_VOLUME_NUMBER: number = 127;
+
+    public static OCTAVE_SEMI_TOM_QUANTITY: number = 12;
 
     private _midiType: MidiType;
     private _numberOfTracks: number;
@@ -68,6 +73,39 @@ export class Midi {
         this._midiTracks = midiTracks;
     }
 
+    public concatenateMidi(midiToConcatenate: Midi) {
+
+        if (this.midiType != midiToConcatenate.midiType)
+            throw Error('O tipo de midi deve ser o mesmo para realizar a concatenação.');
+
+        if (this.numberOfTracks != midiToConcatenate.numberOfTracks)
+            throw Error('A quanrtidade de tracks deve ser a mesma para realizar a concatenação.');
+
+        this.timeDivision.compareTimeDivision(midiToConcatenate.timeDivision)
+
+        for (let i = 0; i < this.midiTracks.length; i++) {
+            let lastTrackEvent: MidiEvent = this.midiTracks[i].midiEvents.pop();
+        
+            if (!lastTrackEvent.isOfType(MidiEventDataType.END_OF_TRACK))
+                throw new Error('O último evento da track deve ser o de finalização da track');
+    
+            let deltaTimeToSum: number = lastTrackEvent.deltaTime; 
+    
+            midiToConcatenate.midiTracks[i].applyNoteTranspose(this.getKeySignatureValues()[0]);
+            for (let midiEvent of midiToConcatenate.midiTracks[i].midiEvents) {
+                if (midiEvent.isOfType(MidiEventDataType.NOTE) || 
+                    midiEvent.isOfType(MidiEventDataType.DETERMINATE_MUSICAL_INSTRUMENT) ||
+                    midiEvent.isOfType(MidiEventDataType.END_OF_TRACK)) {
+                    midiEvent.sumDeltaTime(deltaTimeToSum);
+                    deltaTimeToSum = 0;   
+                    this.midiTracks[i].midiEvents.push(midiEvent)
+                } else {
+                    deltaTimeToSum += midiEvent.deltaTime;
+                }
+            }
+        }
+    }
+    
     public cloneMidi(): Midi{
         let midi = new Midi();
         midi.midiType = this.midiType;
@@ -76,70 +114,40 @@ export class Midi {
         midi.midiTracks = []; 
         
         for (let midiTrack of this.midiTracks) {
-            let newMidiTrack:MidiTrack = new MidiTrack()
+            let newMidiTrack: MidiTrack = new MidiTrack()
             newMidiTrack.midiEvents = Object.assign([], midiTrack.midiEvents);
             midi.midiTracks.push(newMidiTrack);
         }
         return midi;
     }
 
-    public concatenateMidi(midiToConcatenate: Midi) {
-        if (this.midiType != midiToConcatenate.midiType) {
-            throw Error('Erro');
+    //meta data
+    public getAllUsedChannels(): string[] {
+        let channels: string[] = [];
+        for (let track of this.midiTracks) {
+            channels = channels.concat(track.getAllUsedChannels());
         }
-        if (this.numberOfTracks != midiToConcatenate.numberOfTracks) {
-            throw Error('Erro');
-        }        
-
-        let aa = <MidiTimeDivisionMetrical> this.timeDivision
-        let bb = <MidiTimeDivisionMetrical>  midiToConcatenate.timeDivision
-
-        if (aa.timeDivisionType != bb.timeDivisionType || 
-            aa.metric != bb.metric) {
-            throw Error('Erro');
-        }        
-        for (let i = 0; i < this.midiTracks.length; i++) {
-            this.concatenateMidiTrack(i, midiToConcatenate.midiTracks[i]);
-        }
+        return channels;
     }
 
-    private concatenateMidiTrack(trackIndex: number, trackToConcatenate: MidiTrack) {
-        this.midiTracks[trackIndex].midiEvents.pop();
-        trackToConcatenate.applyNoteTranspose(this.midiTracks[trackIndex].getDecimalKeySignature());
-        for (let midiEvent of trackToConcatenate.midiEvents) {
-            this.midiTracks[trackIndex].midiEvents.push(midiEvent)
+    public getEventsByType(dataType: MidiEventDataType): any {
+        let midiEvents: MidiEvent[] = []
+        for(let midTrack of this.midiTracks) {
+            midiEvents = midiEvents.concat(midTrack.getEventsByType(dataType));
         }
+        return midiEvents;
     }
 
-    public generateMidiType1(midis: Midi[]) {
-        this.midiType = MidiType.TYPE_1;
-        this.midiTracks = [];
-        this.timeDivision = midis[0].timeDivision;
-        this.numberOfTracks = 0;
-        
-        let midiChannels: string[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', 'a', 'b', 'c', 'd', 'e', 'f'];
-        let midiChannelIndex: number = 0 
-        let channelChanged: boolean;
-
-        for (let midi of midis) {
-            for (let midiTrack of midi.midiTracks) {
-                channelChanged = midiTrack.changeMidiChannel(midiChannels[midiChannelIndex]);
-                if (channelChanged) {
-                    midiChannelIndex++;
-                    if (midiChannelIndex >= midiChannels.length){
-                        midiChannelIndex = 0;
-                    }
-                }
-                this.midiTracks.push(midiTrack);
-                this.numberOfTracks++
-            }
+    public getKeySignatureValues() {
+        let events: KeySignatureMidiEvent[] = <KeySignatureMidiEvent[]> this.getEventsByType(MidiEventDataType.KEY_SIGNATURE);
+        let keySignatures: number[] = [];
+        for (let event of events) {
+            keySignatures.push(event.tone);
         }
-        
+        return keySignatures;
     }
-    
-    
-    
 
+    //change functions
     public applyNoteTranspose(newKeySignatue: number){
         for (let midiTrack of this.midiTracks) {
             midiTrack.applyNoteTranspose(newKeySignatue);
@@ -157,116 +165,42 @@ export class Midi {
             midiTrack.applyInstrumentChange(instrumentNumber);
         }
     }
+
     public applyVolumeChange(volume: number){
         for (let midiTrack of this.midiTracks) {
             midiTrack.applyVolumeChange(volume);
         }
     }
 
-    public getAllUsedChannels(): string[] {
-        let channels: string[] = [];
-        for (let track of this.midiTracks) {
-            channels = channels.concat(track.getAllUsedChannels());
-        }
-        return channels;
-    }
-
-    public generateMidiSpectrum(externalMidiMinNote: number, externalMidiMaxNote: number): MidiSpectrum {
+    public generateMidiType1(midis: Midi[]) {
+        let newMidi: Midi = new Midi(); 
         
-        let midiSpectrum: MidiSpectrum = new MidiSpectrum();
+        newMidi.midiType = MidiType.TYPE_1;
+        newMidi.midiTracks = [];
+        newMidi.timeDivision = midis[0].timeDivision;
+        newMidi.numberOfTracks = 0;
+        
+        let midiChannels: string[] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', 'a', 'b', 'c', 'd', 'e', 'f'];
+        let midiChannelIndex: number = 0 
+        let channelChanged: boolean;
 
-        let midiTotalDeltaTime: number = 0;
-        let midiMinNote: number = +externalMidiMinNote < 0 ? 128 : +externalMidiMinNote;
-        let midiMaxNote: number = +externalMidiMaxNote < 0 ? 0 : +externalMidiMaxNote;
-
-        let spectrumLineMap: Map<number, MidiSpectrumLine> = new Map();
-        let spectrumNoteMap: Map<number, number> = new Map();
-
-        for (let midiEvent of this.midiTracks[0].midiEvents) {
-            midiTotalDeltaTime += midiEvent.deltaTimeNumber; 
-            
-            if (midiEvent.midiEventData.length >= 1 && midiEvent.midiEventData.substr(0, 1) == '9') {
-                let note: number = ConvertionUtil.convertHexStringToNumber(midiEvent.midiEventData.substr(2, 2));
-                if (note < midiMinNote) {
-                    midiMinNote = note;
-                }
-                if (note > midiMaxNote) {
-                    midiMaxNote = note;
-                }
-                spectrumNoteMap.set(note, midiTotalDeltaTime);
-
-            } else {
-
-                if (midiEvent.midiEventData.length >= 1 && midiEvent.midiEventData.substr(0, 1) == '8') {
-                    
-                    let note: number = ConvertionUtil.convertHexStringToNumber(midiEvent.midiEventData.substr(2, 2));
-                    
-                    if (!spectrumLineMap.has(note)){
-                        let spectrumLine: MidiSpectrumLine = new MidiSpectrumLine();
-                        spectrumLine.noteValue = note;
-                        spectrumLineMap.set(note, spectrumLine);
+        for (let midi of midis) {
+            for (let midiTrack of midi.midiTracks) {
+                channelChanged = midiTrack.changeMidiChannel(midiChannels[midiChannelIndex]);
+                if (channelChanged) {
+                    midiChannelIndex++;
+                    if (midiChannelIndex >= midiChannels.length){
+                        midiChannelIndex = 0;
                     }
-
-                    let spectrumNote: MidiSpectrumNote = new MidiSpectrumNote();
-                    spectrumNote.x = spectrumNoteMap.get(note);
-                    spectrumNote.width = midiTotalDeltaTime - spectrumNote.x;
-                    spectrumLineMap.get(note).notes.push(spectrumNote);
-                    
                 }
+                newMidi.midiTracks.push(midiTrack);
+                newMidi.numberOfTracks++
             }
         }
 
-        //tamanho em x
-        midiSpectrum.width = midiTotalDeltaTime;
-        //tamanho em y
-        midiSpectrum.height = midiMaxNote - midiMinNote;
-
-
-        for (let i = midiMinNote; i <= midiMaxNote; i++) {
-            
-            if (spectrumLineMap.has(i)) {
-                midiSpectrum.lines.push(spectrumLineMap.get(i));
-            } else {
-                let spectrumLine: MidiSpectrumLine = new MidiSpectrumLine();
-                spectrumLine.noteValue = i;
-                midiSpectrum.lines.push(spectrumLine);
-            }
-            
-        }
-
-        return midiSpectrum;
-
+        return newMidi;
+        
     }
-
-
-    public getNoteLimits(): number[] {
-        let midiMinNote: number = 128;
-        let midiMaxNote: number = 0;
-
-        for (let midiEvent of this.midiTracks[0].midiEvents) {
-            if (midiEvent.midiEventData.length >= 1 && midiEvent.midiEventData.substr(0, 1) == '9') {
-                let note: number = ConvertionUtil.convertHexStringToNumber(midiEvent.midiEventData.substr(2, 2));
-                if (note < midiMinNote) {
-                    midiMinNote = note;
-                }
-                if (note > midiMaxNote) {
-                    midiMaxNote = note;
-                }
-            }
-        }
-
-        return [midiMinNote, midiMaxNote]
-
-    }
-
-    public getEventByType(dataType: MidiEventDataType){
-        let midiEvents: MidiEvent[] = []
-        for(let midTrack of this.midiTracks) {
-            midiEvents = midiEvents.concat(midTrack.getEventByType(dataType));
-        }
-        return midiEvents;
-    }
-
 }
 
 export class MidiTimeDivision {
@@ -285,6 +219,9 @@ export class MidiTimeDivision {
         this._timeDivisionType = timeDivisionType;
     }
 
+    public compareTimeDivision(timeDivisionToCompare: MidiTimeDivision): boolean {
+        return this.timeDivisionType == timeDivisionToCompare.timeDivisionType
+    }
 }
 
 export class MidiTimeDivisionMetrical extends MidiTimeDivision {
@@ -307,6 +244,7 @@ export class MidiTimeDivisionMetrical extends MidiTimeDivision {
 }
 
 export class MidiTrack {
+
     private _midiEvents: MidiEvent[];
 
     constructor() {
@@ -325,151 +263,101 @@ export class MidiTrack {
         this.midiEvents.push(midiEvent);
     }
 
+    private addStartEventToTrack(event){
+        this.midiEvents.unshift(event);
+    }
+
+    public applyNoteTranspose(newKeySignature: number) {
+
+        if (!newKeySignature && newKeySignature != 0) 
+            throw new Error('A assinatura de clave não deve ser nula.')
+        
+        if (newKeySignature < Midi.MIN_KEY_SIGNATURE_NUMBER) 
+            throw new Error(`A assinatura de clave deve ser maior ou igual a ${Midi.MIN_KEY_SIGNATURE_NUMBER}.`)
+
+        if (newKeySignature > Midi.MAX_KEY_SIGNATURE_NUMBER) 
+            throw new Error(`A assinatura de clave deve ser menor ou igual a ${Midi.MAX_KEY_SIGNATURE_NUMBER}.`)
+
+        let keySignatureEvents: KeySignatureMidiEvent[] = <KeySignatureMidiEvent[]> this.getEventsByType(MidiEventDataType.KEY_SIGNATURE); 
+
+        if (keySignatureEvents.length <= 0) 
+            throw new Error(`Não foi identificado o evento de assinatura de clave.`)
+
+        if (keySignatureEvents.length > 1) 
+            throw new Error(`Mais de uma armadura de clave não é suportada.`)
+
+        let actualKeySignature: number = keySignatureEvents[0].tone;
+
+        let conversionFactor = Midi.KEY_SIGNATURE_CONVERSION_VECTOR[newKeySignature + 7]
+                             - Midi.KEY_SIGNATURE_CONVERSION_VECTOR[actualKeySignature + 7];
+
+        if (conversionFactor != 0) {
+            let noteEvent: NoteMidiEvent;
+            let keySignatureEvent: KeySignatureMidiEvent;
+            for (let event of this.midiEvents) {
+                if (event.isOfType(MidiEventDataType.NOTE)) {
+                    noteEvent = event as NoteMidiEvent;
+                    noteEvent.applyNoteTranspose(conversionFactor);
+                } else if (event.isOfType(MidiEventDataType.KEY_SIGNATURE)) {
+                    keySignatureEvent = <any> event as KeySignatureMidiEvent 
+                    keySignatureEvent.tone = newKeySignature;
+                }
+            }
+        }
+
+    }
+
     public applyTempoChange(newTempo: number) {
-        this.changeTempo(newTempo);
-    }
-
-    public applyNoteTranspose(newKeySignatue: number){
-        if (!(newKeySignatue >= -7 && newKeySignatue <=7)) {
-            throw Error('Wrong format')
-        }
-        let actualKeySignature: number = this.getDecimalKeySignature();
-
-        if (newKeySignatue - actualKeySignature != 0) {
-            let conversionFactor = MidiConstants.KEY_SIGNATURE_CONVERSION_VECTOR.indexOf(newKeySignatue)
-                                 - MidiConstants.KEY_SIGNATURE_CONVERSION_VECTOR.indexOf(actualKeySignature);
-            
-            this.changeKeySignatue((newKeySignatue >= 0 ? newKeySignatue : newKeySignatue + 256), conversionFactor)
-        }
-
-    }
-    
-    public getDecimalKeySignature(): number {
-        let actualKeySignature: number = ConvertionUtil.convertHexStringToNumber(this.getActualKeySignature());
-        if ( !(actualKeySignature >= 0 && actualKeySignature <= 7) &&
-             !(actualKeySignature >= 249 && actualKeySignature <= 255) ) {
-                throw Error('Wrong format')
-        }
-        //Tratativa para Key Signatures negativos 
-        if (actualKeySignature >= 249) {
-            actualKeySignature = (256 - actualKeySignature) * -1;
-        }
-        return actualKeySignature;
-    }
-
-
-
-    public changeKeySignatue(newKeySignatue: number, conversionFator: number){
+        let tempoEvent: TempoMidiEvent;
         for (let event of this.midiEvents) {
-            if (event.midiEventData) {
-                if (event.midiEventData.length >= 1 && (event.midiEventData.substr(0, 1) == '8' || 
-                                                        event.midiEventData.substr(0, 1) == '9')) {
-                    if (event.midiEventData.length != 6) {
-                        throw Error ('format error');
-                    }
-                    let noteNumber: number = ConvertionUtil.convertHexStringToNumber(event.midiEventData.substring(2, 4));
-                    //validar limites, o que fazer????
-                    noteNumber += conversionFator;
-                    event.midiEventData = event.midiEventData.substring(0, 2) 
-                                        + ConvertionUtil.convertNumberToHexString(noteNumber, 1)
-                                        + event.midiEventData.substring(4);
-                } else if (event.midiEventData.length >= 4 && event.midiEventData.substr(0, 4) == MidiConstants.KEY_SIGNATURE_EVENT_PREFIX) {
-                    //validar tamanho
-                    event.midiEventData = event.midiEventData.substring(0, 8) 
-                                        + ConvertionUtil.convertNumberToHexString(newKeySignatue, 1)
-                }
+            if (event.isOfType(MidiEventDataType.TEMPO)) {
+                tempoEvent = event as TempoMidiEvent;
+                tempoEvent.tempo = newTempo;
             }
         }
-    }
-
-    public changeTempo(newTempo: number){
-        for (let event of this.midiEvents) {
-            if (event.midiEventData) {
-                 if (event.midiEventData.length >= 4 && event.midiEventData.substr(0, 4) == MidiConstants.TEMPO_EVENT_PREFIX) {
-                    //validar tamanho
-                    event.midiEventData = event.midiEventData.substring(0, 6) 
-                                        + ConvertionUtil.convertNumberToHexString(newTempo, 3)
-                }
-            }
-        }
-    }
-
-    public getEventByEventDataPrefix(eventDataPrefix: string): MidiEvent {
-        for (let event of this.midiEvents) {
-            if (event.midiEventData 
-                && event.midiEventData.length >= eventDataPrefix.length
-                && event.midiEventData.substr(0, eventDataPrefix.length) == eventDataPrefix) {
-                    return event;
-            }
-        }
-        return null;
-    }
-
-    public getActualKeySignature(): string {
-        let midiEvent: MidiEvent = this.getEventByEventDataPrefix(MidiConstants.KEY_SIGNATURE_EVENT_PREFIX);
-        if (!midiEvent || !midiEvent.midiEventData || midiEvent.midiEventData.length != 10) {
-            throw Error('formato errado') 
-        }
-        return midiEvent.midiEventData.substring(8);
     }
 
     public applyInstrumentChange(instrumentNumber: number){
-        this.removeAllInstrumentEvents();
+        
+        this.removeAllEventsByType(MidiEventDataType.DETERMINATE_MUSICAL_INSTRUMENT);
+        
         for (let channel of this.getAllUsedChannels()) {
-            if (channel != '9') {
-                this.midiEvents.unshift(new MidiEvent('00', 0, MidiEventType.MIDI_EVENT, 'c' + channel + 
-                                                                                    ConvertionUtil.convertNumberToHexString(instrumentNumber, 1), false));
+            if (Midi.DRUMS_MIDI_CHANNELS.indexOf(channel) < 0) {
+                this.addStartEventToTrack(new MusicalInstrumentMidiEvent(0, channel, instrumentNumber));              
             }
         }
     }
 
-    public applyVolumeChange(volume: number){
-        this.removeAllVolumeEvents();
+    public applyVolumeChange(volumePercent: number){       
+        let noteEvent: NoteMidiEvent;
         for (let event of this.midiEvents) {
-        /*    this.midiEvents.unshift(new MidiEvent('00', MidiEventType.MIDI_EVENT, 'b' + channel + '07' +
-                                                                                   ConvertionUtil.convertNumberToHexString(volume, 1), false));
-        */
-            if (event.midiEventData.length >= 1 && event.midiEventData.substr(0, 1) == '9') {
-                    
-                if (event.midiEventData.length != 6) {
-                        throw Error ('format error');
-                }
-                let originalVolume = ConvertionUtil.convertHexStringToNumber(event.midiOriginalEventData.substring(4)); 
-                let newVolume = Math.round(volume * originalVolume / 100);
-                
-                //validar limites, o que fazer????
-                event.midiEventData = event.midiEventData.substring(0, 4) 
-                                    + ConvertionUtil.convertNumberToHexString((newVolume > 127 ? 127 : newVolume), 1)
+            if (event.isOfType(MidiEventDataType.NOTE_ON)) {
+                noteEvent = event as NoteMidiEvent;
+                noteEvent.applyVolumeChange(volumePercent);
             }
         }
     }
 
-    private removeAllInstrumentEvents() {
-        for (let event of this.midiEvents) {
-            if (event && event.midiEventData && event.midiEventData.length > 1 && event.midiEventData.substr(0, 1) == 'c') {
-                this.midiEvents.splice(this.midiEvents.indexOf(event), 1);
+    private removeAllEventsByType(eventType: MidiEventDataType) {
+        let deltaTime: number = 0;
+        for (let i = 0; i < this.midiEvents.length; i++) {
+            if (this.midiEvents[i].isOfType(eventType)){
+                deltaTime = this.midiEvents[i].deltaTime;
+                if (this.midiEvents.length > i+1) 
+                    this.midiEvents[i+1].sumDeltaTime(deltaTime);
+                this.midiEvents.splice(i, 1);
             }
-        }       
-    }
-
-    private removeAllVolumeEvents() {
-        for (let event of this.midiEvents) {
-            if (event && event.midiEventData && event.midiEventData.length > 4 && event.midiEventData.substr(0, 1) == 'b' && event.midiEventData.substr(2, 2) == '07') {
-                this.midiEvents.splice(this.midiEvents.indexOf(event), 1);
-            }
-        }       
+        }
     }
 
     public getAllUsedChannels():string[] {
         let chanels: string[] = [];
+        let channelEvent: ChannelMidiEvent;
         for (let event of this.midiEvents) {
-            if (event && event.midiEventData && event.midiEventData.length > 1 && (event.midiEventData.substr(0, 1) == '8' || 
-                                                        event.midiEventData.substr(0, 1) == '9')) {
-                if (event.midiEventData.length != 6) {
-                    throw Error ('format error');
-                }
-                if (chanels.indexOf(event.midiEventData.substr(1, 1)) < 0) {
-                    chanels.push(event.midiEventData.substr(1, 1))
+            if (event.isOfType(MidiEventDataType.NOTE)) {
+                channelEvent = event as ChannelMidiEvent;
+                if (chanels.indexOf(channelEvent.channel) < 0) {
+                    chanels.push(channelEvent.channel)
                 }
             }
         }        
@@ -478,14 +366,12 @@ export class MidiTrack {
 
     public changeMidiChannel(midiChannel: string): boolean {
         let midiChannelChanged: boolean = false;
+        let channelEvent: ChannelMidiEvent;
         for (let event of this.midiEvents) {
-            if (event && event.midiEventData && event.midiEventData.length > 1 && (event.midiEventData.substr(0, 1) == '8' || 
-                                                        event.midiEventData.substr(0, 1) == '9' || event.midiEventData.substr(0, 1) == 'c')) {
-            
-                if (!(event.midiEventData.substr(1, 1) == '9')) {
-                    event.midiEventData = event.midiEventData.substring(0, 1) 
-                                        + midiChannel
-                                        + event.midiEventData.substring(2);
+            if (event.isOfType(MidiEventDataType.CHANNEL)) {
+                channelEvent = event as ChannelMidiEvent;
+                if (Midi.DRUMS_MIDI_CHANNELS.indexOf(channelEvent.channel) < 0) {
+                    channelEvent.channel = midiChannel;
                     midiChannelChanged = true;
                 }
             }
@@ -493,7 +379,7 @@ export class MidiTrack {
         return midiChannelChanged;    
     }
 
-    public getEventByType(dataType: MidiEventDataType){
+    public getEventsByType(dataType: MidiEventDataType): any{
         let midiEvents: MidiEvent[] = []
         for(let midiEvent of this.midiEvents) {
             if (midiEvent.isOfType(dataType))
@@ -504,149 +390,313 @@ export class MidiTrack {
 
 }
 
-export class MidiEvent {
+export abstract class MidiEvent {
 
-    public static NOTE_OFF_FIRST_CHAR: string = '8'; 
-    public static NOTE_OFF_EVENT_LENGTH: number = 3;
-    public static NOTE_ON_FIRST_CHAR: string = '9';
-    public static NOTE_ON_EVENT_LENGTH: number = 3;
-    public static A_EVENT_FIRST_CHAR: string = 'a';
-    public static A_EVENT_EVENT_LENGTH: number = 3;
-    public static B_EVENT_FIRST_CHAR: string = 'b';
-    public static B_EVENT_EVENT_LENGTH: number = 3;
-    public static C_EVENT_FIRST_CHAR: string = 'c';
-    public static C_EVENT_EVENT_LENGTH: number = 2;
-    public static D_EVENT_FIRST_CHAR: string = 'd';
-    public static D_EVENT_EVENT_LENGTH: number = 2;
-    public static E_EVENT_FIRST_CHAR: string = 'e';
-    public static E_EVENT_EVENT_LENGTH: number = 3;
-    public static F_EVENT_FIRST_CHAR: string = 'f';
-    public static SYSTEM_EXCLUSIVE_EVENTS_FIRST_BYTE_F0: string = 'f0'; 
-    public static SYSTEM_EXCLUSIVE_EVENTS_FIRST_BYTE_F7: string = 'f7';
-    public static META_EVENT_FIRST_BYTE: string = 'ff';
-    public static META_EVENT_TEMPO_TYPE_BYTE: string = '51';
-    public static META_EVENT_TIME_SIGNATURE_TYPE_BYTE: string = '58';
-    public static META_EVENT_KEY_SIGNATURE_TYPE_BYTE: string = '59';
-    public static META_EVENT_END_OF_TRACK_TYPE_BYTE: string = '2f';
-
-
-    private _deltaTime: string;
-    private _deltaTimeNumber: number;
+    private _deltaTime: number;
     private _midiEventType: MidiEventType;
-    private _midiEventData: string;
-    private _midiOriginalEventData: string;
-    private _loadEvent: boolean;
 
-    constructor(deltaTime: string, deltaTimeNumber: number, midiEventType: MidiEventType, midiEventData: string, loadEvent: boolean){
-        this.deltaTime = deltaTime;
-        this.deltaTimeNumber = deltaTimeNumber;
+    constructor(midiEventType: MidiEventType, deltaTime: number) {
         this.midiEventType = midiEventType;
-        this.midiEventData = midiEventData;
-        this._midiOriginalEventData = midiEventData;
-        this.loadEvent = loadEvent;
+        this.deltaTime = deltaTime;
     }
 
-    get deltaTime(): string{
-        return this._deltaTime;
-    }
-    
-    set deltaTime(deltaTime: string){
-        this._deltaTime = deltaTime;
-    }
-
-    get deltaTimeNumber(): number{
-        return this._deltaTimeNumber;
-    }
-    
-    set deltaTimeNumber(deltaTimeNumber: number){
-        this._deltaTimeNumber = deltaTimeNumber;
-    }
-
-    get midiEventType(): MidiEventType{
+    public get midiEventType(): MidiEventType {
         return this._midiEventType;
     }
-    
-    set midiEventType(midiEventType: MidiEventType){
+
+    public set midiEventType(midiEventType: MidiEventType) {
         this._midiEventType = midiEventType;
     }
 
-    get midiEventData(): string{
-        return this._midiEventData;
+    get deltaTime(): number{
+        return this._deltaTime;
     }
     
-    set midiEventData(midiEventData: string){
-        this._midiEventData = midiEventData;
+    set deltaTime(deltaTime: number){
+        this._deltaTime = deltaTime;
     }
 
-    get midiOriginalEventData(): string{
-        return this._midiOriginalEventData;
+    public sumDeltaTime(deltaTimeToSum: number){
+        this.deltaTime += deltaTimeToSum;
+    }
+
+    public abstract isOfType(dataType: MidiEventDataType): boolean; 
+
+}
+
+export class ChannelMidiEvent extends MidiEvent {
+
+    private _channel: string;
+
+    constructor(deltaTime: number, channel: string) {
+        super(MidiEventType.MIDI_EVENT, deltaTime);
+        this.channel = channel;
+    }
+
+    public get channel(): string {
+        return this._channel;
     }
     
-    set midiOriginalEventData(midiOriginalEventData: string){
-        this._midiOriginalEventData = midiOriginalEventData;
-    }
-
-    get loadEvent(): boolean{
-        return this._loadEvent;
+    public set channel(value: string) {
+        this._channel = value;
     }
     
-    set loadEvent(loadEvent: boolean){
-        this._loadEvent = loadEvent;
+    public isOfType(dataType: MidiEventDataType): boolean {
+        return dataType == MidiEventDataType.CHANNEL
+    } 
+
+}
+
+export class NoteMidiEvent extends ChannelMidiEvent {
+
+    private _note: number;
+    private _velocity: number;
+
+    octaveTranspose
+    originalVelocity
+
+    constructor(deltaTime: number, channel: string, note: number, velocity: number) {
+        super(deltaTime, channel);
+        this.note = note;
+        this.velocity = velocity;
+        this.originalVelocity = velocity;
     }
 
-    public getDataLength(){
-        return this.midiEventData.length / 2;
+    public get note(): number {
+        return this._note;
+    }
+    
+    public set note(value: number) {
+        this._note = value;
+    }
+    
+    public get velocity(): number {
+        return this._velocity;
+    }
+    
+    public set velocity(value: number) {
+        this._velocity = value;
     }
 
     public isOfType(dataType: MidiEventDataType): boolean {
-        switch(dataType){
-            case MidiEventDataType.TEMPO:
-                return this.midiEventData.substr(0, 4) == 'ff51';
-            case MidiEventDataType.TIME_SIGNATURE:
-                return this.midiEventData.substr(0, 4) == 'ff58'; 
-            case MidiEventDataType.KEY_SIGNATURE:
-                return this.midiEventData.substr(0, 4) == 'ff59';
-            case MidiEventDataType.END_OF_TRACK:
-                return this.midiEventData.substr(0, 4) == 'ff2f';
-            case MidiEventDataType.NOTE_ON_OR_OFF:
-                let firstChar: string = this.midiEventData.substr(0, 1) 
-                return firstChar == '8' || firstChar == '9'
+        return super.isOfType(dataType) || dataType == MidiEventDataType.NOTE
+    }  
+
+    public applyNoteTranspose(convesionFactor: number) {
+        if (!convesionFactor && convesionFactor != 0) 
+            throw new Error('O fator de conversão não deve ser nulo.')
+        
+        let octaveTranspose: number = 0;
+        let note: number = this.note + (((this.octaveTranspose ? this.octaveTranspose : 0) * Midi.OCTAVE_SEMI_TOM_QUANTITY) + convesionFactor); 
+
+        while (note < Midi.MIN_NOTE_NUMBER) {
+            note += Midi.OCTAVE_SEMI_TOM_QUANTITY;
+            octaveTranspose++;
         }
-        return false;
+        while (note > Midi.MAX_NOTE_NUMBER) {
+            note -= Midi.OCTAVE_SEMI_TOM_QUANTITY;
+            octaveTranspose--;
+        }
+        this.octaveTranspose = octaveTranspose;
+        this.note = note;
     }
 
-    public getMidiHexChannelOfNoteOnOrOff() {
-        if (this.isOfType(MidiEventDataType.NOTE_ON_OR_OFF)) {
-            return this.midiEventData.substr(1, 1);
+    public applyVolumeChange(volumePercent: number) {
+        
+        if (!volumePercent && volumePercent != 0) 
+            throw new Error('O volume não pode ser nulo.')
+         
+        let newVolume = Math.round(volumePercent * this.originalVelocity / 100);
+
+        if (newVolume < Midi.MIN_VOLUME_NUMBER) {
+            newVolume = Midi.MIN_VOLUME_NUMBER;
+        } else if (newVolume > Midi.MAX_VOLUME_NUMBER) {
+            newVolume = Midi.MAX_VOLUME_NUMBER;
         }
-        return null; 
+
+        this.velocity = newVolume;
+
     }
-    
+
+
+
 }
 
-export class MidiConstants {
+export class NoteOffMidiEvent extends NoteMidiEvent {
+
+    constructor(deltaTime: number, channel: string, note: number, velocity: number) {
+        super(deltaTime, channel, note, velocity);
+    }
+
+    public isOfType(dataType: MidiEventDataType): boolean {
+        return super.isOfType(dataType) || dataType == MidiEventDataType.NOTE_OFF
+    } 
+
+}
+
+export class NoteOnMidiEvent extends NoteMidiEvent {
+
+    constructor(deltaTime: number, channel: string, note: number, velocity: number) {
+        super(deltaTime, channel, note, velocity);
+    }
+
+    public isOfType(dataType: MidiEventDataType): boolean {
+        return super.isOfType(dataType) || dataType == MidiEventDataType.NOTE_ON;
+    } 
+
+}
+
+export class TempoMidiEvent extends MidiEvent {
+
+    private _tempo: number;
+
+    constructor(deltaTime: number, tempo: number) {
+        super(MidiEventType.META_EVENT, deltaTime);
+        this.tempo = tempo;
+    }
+
+    public get tempo(): number {
+        return this._tempo;
+    }
+
+    public set tempo(value: number) {
+        this._tempo = value;
+    }
+
+    public isOfType(dataType: MidiEventDataType): boolean {
+        return dataType == MidiEventDataType.TEMPO;
+    } 
+
+}
+
+export class TimeSignatureMidiEvent extends MidiEvent {
+
+    private _numerator: number;
+    private _denominator: number;
+    private _midiClocks: number;
+    private _notes32in4note: number;
+
+    constructor(deltaTime: number, numerator: number, denominator: number, midiClocks: number, notes32in4note: number) {
+        super(MidiEventType.META_EVENT, deltaTime);
+        this.numerator = numerator;
+        this.denominator = denominator;
+        this.midiClocks = midiClocks;
+        this.notes32in4note = notes32in4note;
+    }
+
+    public get numerator(): number {
+        return this._numerator;
+    }
+
+    public set numerator(value: number) {
+        this._numerator = value;
+    }
+
+    public get denominator(): number {
+        return this._denominator;
+    }
+
+    public set denominator(value: number) {
+        this._denominator = value;
+    }
+
+    public get midiClocks(): number {
+        return this._midiClocks;
+    }
+
+    public set midiClocks(value: number) {
+        this._midiClocks = value;
+    }
+
+    public get notes32in4note(): number {
+        return this._notes32in4note;
+    }
+
+    public set notes32in4note(value: number) {
+        this._notes32in4note = value;
+    }
+    
+    public isOfType(dataType: MidiEventDataType): boolean {
+        return dataType == MidiEventDataType.TIME_SIGNATURE;
+    } 
+
+}
+
+export class KeySignatureMidiEvent extends MidiEvent {
+    
+    private _tone: number;
+    private _mode: number;
+
+    constructor(deltaTime: number, tone: number, mode: number) {
+        super(MidiEventType.META_EVENT, deltaTime);
+        this.tone = tone;
+        this.mode = mode;
+    }
+
+    public get tone(): number {
+        return this._tone;
+    }
+    
+    public set tone(value: number) {
+        this._tone = value;
+    }  
+    
+    public get mode(): number {
+        return this._mode;
+    }
+    
+    public set mode(value: number) {
+        this._mode = value;
+    }
+    
+    public isOfType(dataType: MidiEventDataType): boolean {
+        return dataType == MidiEventDataType.KEY_SIGNATURE;
+    } 
+
+}
+
+export class EndOfTrackMidiEvent extends MidiEvent {
+
+    constructor(deltaTime: number) {
+        super(MidiEventType.META_EVENT, deltaTime);
+    }
+
+    public isOfType(dataType: MidiEventDataType): boolean {
+        return dataType == MidiEventDataType.END_OF_TRACK;
+    } 
+}
+
+export class MusicalInstrumentMidiEvent extends MidiEvent {
+    
+    private _channel: string;
+    private _musicalInstrument: number;
+
+    constructor(deltaTime: number, channel: string, musicalInstrument: number) {
+        super(MidiEventType.META_EVENT, deltaTime);
+        this.channel = channel;
+        this.musicalInstrument = musicalInstrument;
+    }
 
 
-    public static NOTE_OFF_EVENT_PREFIX: string = "8";
-    public static NOTE_ON_EVENT_PREFIX: string = "9";
-    public static KEY_SIGNATURE_EVENT_PREFIX: string = "ff59";
-    public static TEMPO_EVENT_PREFIX: string = "ff51";
-    public static KEY_SIGNATURE_CONVERSION_VECTOR: number[] = 
-                    [     0 //Dó  
-                        , 7 //Dó# 
-                        , 2 //Ré  
-                        ,-3 //Ré# 
-                        , 4 //Mi  
-                        ,-1 //Fá 
-                        , 6 //Fa# 
-                        , 1 //Sol 
-                        ,-4 //Sol#
-                        , 3 //Lá  
-                        ,-2 //Lá# 
-                        , 5 //Si  
-                    ];
+    public get channel(): string {
+        return this._channel;
+    }
+    
+    public set channel(value: string) {
+        this._channel = value;
+    }
 
-    public static DRUMS_MIDI_CHANNELS: string[] = ['9']
+    public get musicalInstrument(): number {
+        return this._musicalInstrument;
+    }
+
+    public set musicalInstrument(value: number) {
+        this._musicalInstrument = value;
+    }
+    
+    public isOfType(dataType: MidiEventDataType): boolean {
+        return dataType == MidiEventDataType.DETERMINATE_MUSICAL_INSTRUMENT
+    } 
 
 }
 
@@ -658,13 +708,12 @@ export enum MidiTimeDivisionType {
     METRICAL_TYPE=0, TIME_CODE_BASED=1
 }
 
-
 export enum MidiEventType {
     MIDI_EVENT, SYSEX_EVENT, META_EVENT
 }
 
 export enum MidiEventDataType {
-    TEMPO, TIME_SIGNATURE, KEY_SIGNATURE, END_OF_TRACK, NOTE_ON_OR_OFF
+    NOTE_OFF, NOTE_ON, TEMPO, TIME_SIGNATURE, KEY_SIGNATURE, END_OF_TRACK, NOTE, DETERMINATE_MUSICAL_INSTRUMENT, CHANNEL
 }
 
 

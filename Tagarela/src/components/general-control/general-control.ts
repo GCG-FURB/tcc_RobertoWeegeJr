@@ -1,124 +1,175 @@
 import { Component, Input } from '@angular/core';
 import { MusicalCompositionControl } from '../../control/musical-composition';
-import { PopoverController } from 'ionic-angular';
+import { PopoverController, LoadingController, AlertController } from 'ionic-angular';
 import { ListPopoverComponent } from '../list-popover/list-popover';
-import { MidiConstants } from '../../model/midi';
 import { SlidePopoverComponent } from '../slide-popover/slide-popover';
-import { PlayMidiSpectrums, PlayMidiSpectrum } from '../../model/play-midi';
 import { PlayMidiComponent } from '../play-midi/play-midi';
-import { FileProvider } from '../../providers/file/file';
 import { VisualMidiProvider } from '../../providers/visual-midi/visual-midi';
+import { GenericComponent } from '../../control/generic-component';
+import { MidiSpectrum } from '../../model/midi-spectrum';
+import { MidiSpectrumSvgProvider } from '../../providers/midi-spectrum-svg/midi-spectrum-svg';
+import { Midi } from '../../model/midi';
+import { FileProvider } from '../../providers/file/file';
 
 @Component({
     selector: 'general-control',
     templateUrl: 'general-control.html'
 })
-export class GeneralControlComponent {
+export class GeneralControlComponent extends GenericComponent {
     
-    @Input()
-    private compositionControl: MusicalCompositionControl;
+    private _compositionControl: MusicalCompositionControl;
 
+    constructor(private loadingCtrl: LoadingController,
+                private alertCtrl: AlertController,
+                private popoverCtrl: PopoverController,
+                private visualMidiProvider: VisualMidiProvider,
+                private midiSpectrumSvgProvider: MidiSpectrumSvgProvider,
+                private fileProvider: FileProvider) {        
 
-    constructor(private fileProvider: FileProvider,  public popoverCtrl: PopoverController, private visualMidiProvider: VisualMidiProvider) {        
+        super(loadingCtrl,
+              alertCtrl,
+              popoverCtrl);
+
+    }
+   
+    public get compositionControl(): MusicalCompositionControl {
+        return this._compositionControl;
     }
 
-    teste() {
-        this.compositionControl.generateCompositionMidi();
-        let midi: PlayMidiSpectrums = new PlayMidiSpectrums();
-        midi.midi = this.compositionControl.composition.midi;
-        midi.midiId = this.compositionControl.composition.midiId;
+    @Input() 
+    public set compositionControl(value: MusicalCompositionControl) {
+        this._compositionControl = value;
+    }
 
+    private playMidi() {
+        try {
+            this.compositionControl.applyGeneralChanges();
+            this.startPopover(
+                PlayMidiComponent, 
+                {
+                    spectrum: this.getSvgImageImage(),
+                    midi: this.compositionControl.composition.midi,
+                    midiId: this.compositionControl.composition.midiId
+                }
+            );
+        } catch (e) {
+            this.errorHandler(e)
+        }
+    }
+
+    private getSvgImageImage(): string {
+        let spectrums: MidiSpectrum[][] = [];
+        let musicalInstruments: number[][] = [];
+        let minNotes: number[] = [];
+        let maxNotes: number[] = [];
+    
         for (let line of this.compositionControl.composition.lines) {
-            let spt: PlayMidiSpectrum = new PlayMidiSpectrum();
+
+            let lineSpectrums: MidiSpectrum[] = []; 
+            let lineMusicalInstruments: number[] = [];
+
             for (let option of line.options) {
-                let spectrumPalete = this.visualMidiProvider.getSpectrumPaleteByInstrumentType(this.visualMidiProvider.getInstrumentType(option.musicalInstrument));
-                let backgroundSVGImageURL = encodeURI('data:image/svg+xml;utf8,' + option.midi
-                                                                                    .generateMidiSpectrum(line.maxNote, line.minNote)
-                                                                                    .getSVG(spectrumPalete[0], spectrumPalete[1], spectrumPalete[2]));
-                spt.spectrumSVGs.push(backgroundSVGImageURL);
+                lineSpectrums.push(option.spectrum);
+                lineMusicalInstruments.push(option.musicalInstrument);
             }
-            if (spt.spectrumSVGs.length > 0) {
-                midi.spectrumLines.push(spt);
-            }
+
+            minNotes.push(line.getMinSpectrumNote())
+            maxNotes.push(line.getMaxSpectrumNote())
+            spectrums.push(lineSpectrums);
+            musicalInstruments.push(lineMusicalInstruments);
+
+        }
+        return this.midiSpectrumSvgProvider.concatenateSpectrums(spectrums, musicalInstruments, minNotes, maxNotes);
+    }
+
+    private changeKeySignature(){
+        try {
+            this.startPopover(
+                ListPopoverComponent, 
+                {
+                    title: 'Armadura de Clave',
+                    list: Midi.KEY_SIGNATURES_ARRAY,
+                    callback: this.setKeySignature.bind(this),
+                    iconFunction: this.visualMidiProvider.getIonIconToMayorKeySignatureNumber,
+                    nameFunction: this.visualMidiProvider.getInstrumentNameToMayorKeySignatureNumber
+                }
+            );
+        } catch (e) {
+            this.errorHandler(e)
+        }
+    }
+
+    private setKeySignature(keySignature: number) {
+        try {
+            this.compositionControl.composition.keySignature = keySignature;
+        } catch (e) {
+            this.errorHandler(e)
+        }
+    }
+
+    private changeTempo(){
+        try {
+            this.startPopover(
+                SlidePopoverComponent, 
+                {
+                    callback: this.setTempo.bind(this),
+                    color: 'danger',
+                    description: 'Tempo',
+                    value: this.compositionControl.composition.tempo,
+                    minRangeValue: this.compositionControl.composition.minTempo,
+                    maxRangeValue: this.compositionControl.composition.maxTempo,
+                    stepRangeValue: this.compositionControl.composition.stepTempo,
+                    snapsRange: false
+                }
+            );
+        } catch (e) {
+            this.errorHandler(e)
+        }
+    }
+
+    private setTempo(tempo: number) {
+        try {
+            this.compositionControl.composition.tempo = tempo;
+        } catch (e) {
+            this.errorHandler(e)
+        }
+    }
+
+    private undo() {
+        try {
+            this.compositionControl.undoChoice();
+        } catch (e) {
+            this.errorHandler(e)
+        }
+    }
+
+    private compositionHasStarted(): boolean{
+        try {
+            return this.compositionControl.compositionHasStarted();
+        } catch (e) {
+            this.errorHandler(e)
+        }
+    }
+
+    private compositionHasEnded(): boolean{
+        try {
+            return this.compositionControl.compositionHasEnded();
+        } catch (e) {
+            this.errorHandler(e)
+        }
+    }
+
+    private downloadAndOpenPdf() {
+        try {
+            this.fileProvider.file.copyFile(this.fileProvider.tempAreaDir, this.compositionControl.composition.midiId + '.mid', this.fileProvider.file.externalRootDirectory + 'Download', 'copied3.mid')
+            .then(() => {alert('foi')
+        })
+            .catch((e) => {alert(JSON.stringify(e))})
+        
+        } catch (e) {
+            this.errorHandler(e)
         }
         
-        const popover = this.popoverCtrl.create(PlayMidiComponent, 
-            {
-                spectrum: midi
-            });
-        popover.present();
-    }
-
-
-    public changeKeySignature(){
-        const popover = this.popoverCtrl.create(ListPopoverComponent, 
-            {
-                title: 'Escolha a Armadura de Clave',
-                list: MidiConstants.KEY_SIGNATURE_CONVERSION_VECTOR,
-                callback: this.setKeySignature.bind(this),
-                iconFunction: this.visualMidiProvider.getIonIconToMayorKeySignatureNumber,
-                nameFunction: this.visualMidiProvider.getInstrumentNameToMayorKeySignatureNumber
-            });
-        popover.present();
-    }
-
-    public setKeySignature(keySignature: number) {
-        this.compositionControl.composition.keySignature = keySignature;
-    }
-
-
-    public changeTempo(){
-        const popover = this.popoverCtrl.create(SlidePopoverComponent, 
-            {
-                callback: this.setTempo.bind(this),
-                color: 'danger',
-                description: 'Tempo',
-                value: this.compositionControl.composition.tempo,
-                minRangeValue: this.compositionControl.composition.minTempo,
-                maxRangeValue: this.compositionControl.composition.maxTempo,
-                stepRangeValue: this.compositionControl.composition.stepTempo,
-                snapsRange: false
-            });
-        popover.present();
-    }
-
-    public setTempo(tempo: number) {
-        this.compositionControl.composition.tempo = tempo;
-    }
-
-    public undo() {
-        this.compositionControl.undoChoice();
-    }
-
-    public compositionHasStarted(): boolean{
-        return this.compositionControl.compositionHasStarted();
-    }
-
-    public compositionHasEnded(): boolean{
-        return this.compositionControl.compositionHasEnded();
-    }
-
-    downloadAndOpenPdf() {
-        /*const transfer = this.transfer.create();
-
-        transfer.download(encodeURI(FileUtil._tempAreaDir + this.compositionControl.composition.midiId + '.mid'), 
-        this.file.externalRootDirectory + 'Download/myfile.mid')
-            .then(entry => {
-                let url = entry.toURL();
-                alert('Foi')
-                alert(url)
-                alert(JSON.stringify(url))
-                this.file.listDir(this.file.externalRootDirectory, 'Download').then((a) => {alert(JSON.stringify(a))})            
-                this.mediaUtil.playMidi(this.file.externalRootDirectory + 'Download/myfile.mid');
-            
-            })
-        .catch(e => alert(JSON.stringify(e)));*/
-
-        this.fileProvider.file.copyFile(this.fileProvider.tempAreaDir, this.compositionControl.composition.midiId + '.mid', this.fileProvider.file.externalRootDirectory + 'Download', 'copied2.mid')
-            .then(() => {alert('foi')
-            })
-            .catch((e) => {alert(JSON.stringify(e))})
-
     }
 
 }

@@ -37,9 +37,10 @@ export class VisualMidiProvider {
                 return 'instrument-flute';
             case 105:
                 return 'instrument-banjo';
-            case 999:
+            case -1:
                 return 'instrument-snare-drum';
         }
+        alert(midiNumber)
         return ''
     }
 
@@ -75,9 +76,10 @@ export class VisualMidiProvider {
                 return 'Flauta';
             case 105:
                 return 'Banjo';
-            case 999:
+            case -1:
                 return 'Bateria';
         }
+        alert(midiNumber)
         return 'Desconhecido'
     }
 
@@ -159,7 +161,7 @@ export class VisualMidiProvider {
 				return 'instrument_type_woods';
 			case 11:
             case 13:
-			case 999:
+			case -1:
 				return 'instrument_type_percussion';
 
         }

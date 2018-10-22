@@ -3,8 +3,8 @@
     <ion-card-content class="overflow-drag">
         <div class="teste overflow-drag">
             <ion-scroll id="scroll1" scrollX="true" class="scroll-1"> 
-                <div class="choice-margin float-left-child top-z-index" *ngFor="let item of getOptionsList()">
-                    <choice-component [midiChoice]="item" [composition]="compositionControl" [toChoice]="true" ></choice-component> 
+                <div class="choice-margin float-left-child top-z-index" *ngFor="let option of getOptionsList()">
+                    <choice-component [midiChoice]="option" [composition]="compositionControl" [toChoice]="true" ></choice-component> 
                 </div>
             </ion-scroll> 
         </div>
@@ -16,7 +16,7 @@
             <div class="flex-child-control">
                 <ion-scroll scrollX="true" class="scroll-2">
                     <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
-                        <volume-component [composition]="compositionControl" [compositionLine]="compositionLine"></volume-component>
+                        <line-control-component [compositionControl]="compositionControl" [compositionLine]="compositionLine"></line-control-component>
                     </div>
                 </ion-scroll>
             </div>
@@ -24,7 +24,7 @@
                 <ion-scroll scrollX="true" class="scroll-2">
                     <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
                         <choice-component class="float-left-child" *ngFor="let compositionOption of compositionLine.options"
-                        [midiChoice]="compositionOption" [composition]="compositionControl" [minNote]="compositionLine.minNote" [maxNote]="compositionLine.maxNote">
+                        [midiChoice]="compositionOption" [composition]="compositionControl" [minNote]="compositionLine.getMinSpectrumNote()" [maxNote]="compositionLine.getMaxSpectrumNote()">
                         </choice-component>
                     </div>
                 </ion-scroll>

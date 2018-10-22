@@ -64,7 +64,6 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
                 this.customCompositionSystemFileSystem = this.fileProvider.file.documentsDirectory;
             } else {
                 throw new Error('plataforma não suportada')
-                //this.customCompositionSystemFileSystem ='-'
             }
         } catch (e) {
             this.errorHandler(e);
