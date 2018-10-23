@@ -90,12 +90,18 @@ export class GeneralControlComponent extends GenericComponent {
                     title: 'Armadura de Clave',
                     list: Midi.KEY_SIGNATURES_ARRAY,
                     callback: this.setKeySignature.bind(this),
-                    iconFunction: this.visualMidiProvider.getIonIconToMayorKeySignatureNumber,
-                    nameFunction: this.visualMidiProvider.getInstrumentNameToMayorKeySignatureNumber
+                    iconFunction: this.visualMidiProvider.getIonIconToKeySignatureNumber,
+                    nameFunction: this.getKeySignatureName(this.compositionControl.composition.mode)
                 }
             );
         } catch (e) {
             this.errorHandler(e)
+        }
+    }
+
+    private getKeySignatureName(mode: number) {
+        return (keySignatureNumber: number): string => {
+            return this.visualMidiProvider.getInstrumentNameKeySignatureNumber(keySignatureNumber, mode);
         }
     }
 

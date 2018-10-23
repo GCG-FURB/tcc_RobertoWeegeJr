@@ -190,7 +190,11 @@ export class MusicalCompositionConfigControl {
                 throw Error("Exite inconsistência entre nome ou quantidade de grupos em cada etapa de composição")
             } 
         }
+        this.config = config;
+    }
 
+    public async loadSavedConfigs(){
+        
         let actualConfigString = await this.getConfig();
 
         if (actualConfigString) {
@@ -198,29 +202,29 @@ export class MusicalCompositionConfigControl {
 
                 let actualConfig = JSON.parse(actualConfigString);
 
-                if (this.validateSavedConfig(config, actualConfig)) {
+                if (this.validateSavedConfig(this.config, actualConfig)) {
                 
-                    config.minTempo = +actualConfig._minTempo;
-                    config.maxTempo = +actualConfig._maxTempo;
-                    config.stepTempo = +actualConfig._stepTempo;
-                    config.defaultTempo = +actualConfig._defaultTempo;
+                    this.config.minTempo = +actualConfig._minTempo;
+                    this.config.maxTempo = +actualConfig._maxTempo;
+                    this.config.stepTempo = +actualConfig._stepTempo;
+                    this.config.defaultTempo = +actualConfig._defaultTempo;
     
-                    for (let i = 0; i < config.stepsConfig.length; i++) {
-                        config.stepsConfig[i].quantityOfQuarterNote = +actualConfig._stepsConfig[i]._quantityOfQuarterNote;
-                        for (let j = 0; j < config.stepsConfig[i].groupsConfig.length; j++) {
-                            for (let k = 0; k < config.stepsConfig[i].groupsConfig[j].optionsConfig.length; k++) {
-                                config.stepsConfig[i].groupsConfig[j].optionsConfig[k].baseMusicalInstrumentsAllowed = actualConfig._stepsConfig[i]._groupsConfig[j]._optionsConfig[k]._baseMusicalInstrumentsAllowed.map((item) => {return parseInt(item, 10);});
-                                config.stepsConfig[i].groupsConfig[j].optionsConfig[k].defaultMusicalInstrument = +actualConfig._stepsConfig[i]._groupsConfig[j]._optionsConfig[k]._defaultMusicalInstrument;
-                                config.stepsConfig[i].groupsConfig[j].optionsConfig[k].musicalInstrumentsAllowed = actualConfig._stepsConfig[i]._groupsConfig[j]._optionsConfig[k]._musicalInstrumentsAllowed.map((item) => {return parseInt(item, 10);});
+                    for (let i = 0; i < this.config.stepsConfig.length; i++) {
+                        this.config.stepsConfig[i].quantityOfQuarterNote = +actualConfig._stepsConfig[i]._quantityOfQuarterNote;
+                        for (let j = 0; j < this.config.stepsConfig[i].groupsConfig.length; j++) {
+                            for (let k = 0; k < this.config.stepsConfig[i].groupsConfig[j].optionsConfig.length; k++) {
+                                this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].baseMusicalInstrumentsAllowed = actualConfig._stepsConfig[i]._groupsConfig[j]._optionsConfig[k]._baseMusicalInstrumentsAllowed.map((item) => {return parseInt(item, 10);});
+                                this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].defaultMusicalInstrument = +actualConfig._stepsConfig[i]._groupsConfig[j]._optionsConfig[k]._defaultMusicalInstrument;
+                                this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].musicalInstrumentsAllowed = actualConfig._stepsConfig[i]._groupsConfig[j]._optionsConfig[k]._musicalInstrumentsAllowed.map((item) => {return parseInt(item, 10);});
                             }
                         }
                     }
     
-                    for (let i = 0; i < config.linesConfig.length; i++) {
-                        config.linesConfig[i].minVolume = +actualConfig._linesConfig[i]._minVolume;
-                        config.linesConfig[i].maxVolume = +actualConfig._linesConfig[i]._maxVolume;
-                        config.linesConfig[i].stepVolume = +actualConfig._linesConfig[i]._stepVolume;
-                        config.linesConfig[i].defaultVolume = +actualConfig._linesConfig[i]._defaultVolume;
+                    for (let i = 0; i < this.config.linesConfig.length; i++) {
+                        this.config.linesConfig[i].minVolume = +actualConfig._linesConfig[i]._minVolume;
+                        this.config.linesConfig[i].maxVolume = +actualConfig._linesConfig[i]._maxVolume;
+                        this.config.linesConfig[i].stepVolume = +actualConfig._linesConfig[i]._stepVolume;
+                        this.config.linesConfig[i].defaultVolume = +actualConfig._linesConfig[i]._defaultVolume;
                     }
                 } else {
                     throw new Error('Arquivo em formato inválido');
@@ -230,8 +234,9 @@ export class MusicalCompositionConfigControl {
                 throw new Error('O arquivo de configuração continha inconsistências, portanto foi removido. Temte novamente.');
             }
         }
-        this.config = config;
     }
+
+
 
     private validateSavedConfig(config: MusicalCompositionConfig, actualConfig: any): boolean{
         
@@ -314,4 +319,11 @@ export class MusicalCompositionConfigControl {
             }
         }
     }
+
+
+
+
+
+
+    
 }

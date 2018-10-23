@@ -79,43 +79,118 @@ export class VisualMidiProvider {
         return 'Desconhecido'
     }
 
-    public getInstrumentNameToMayorKeySignatureNumber(keySignatureNumber: number): string {
+    public getInstrumentNameKeySignatureNumber(keySignatureNumber: number, mode: number): string {
         switch (keySignatureNumber) {
             case -7:
-                return 'Dób Maior';
+                if (mode == 0)
+                    return 'Dób Maior';
+                else if(mode == 1)
+                    return 'Láb Menor';
+                else 
+                    return 'Desconhecido';
             case -6:
-                return 'Solb Maior';
+                if (mode == 0)
+                    return 'Solb Maior';
+                else if(mode == 1)
+                    return 'Mib Menor';
+                else 
+                    return 'Desconhecido';
             case -5:
-                return 'Réb Maior';
+                if (mode == 0)
+                    return 'Réb Maior';
+                else if(mode == 1)
+                    return 'Sib Menor';
+                else 
+                    return 'Desconhecido';
             case -4:
-                return 'Láb Maior';
+                if (mode == 0)
+                    return 'Láb Maior';
+                else if(mode == 1)
+                    return 'Fá Menor';
+                else 
+                    return 'Desconhecido';
             case -3:
-                return 'Mib Maior';
+                if (mode == 0)
+                    return 'Mib Maior';
+                else if(mode == 1)
+                    return 'Dó Menor';
+                else 
+                    return 'Desconhecido';
             case -2:
-                return 'Sib Maior';
+                if (mode == 0)
+                    return 'Sib Maior';
+                else if(mode == 1)
+                    return 'Sol Menor';
+                else 
+                    return 'Desconhecido';
             case -1:
-                return 'Fá Maior';
+                if (mode == 0)
+                    return 'Fá Maior';
+                else if(mode == 1)
+                    return 'Ré Menor';
+                else 
+                    return 'Desconhecido';
             case 0:
-                return 'Dó Maior';
+                if (mode == 0)
+                    return 'Dó Maior';
+                else if(mode == 1)
+                    return 'Lá Menor';
+                else 
+                    return 'Desconhecido';
             case 1:
-                return 'Sol Maior';
+                if (mode == 0)
+                    return 'Sol Maior';
+                else if(mode == 1)
+                    return 'Mi Menor';
+                else 
+                    return 'Desconhecido';
             case 2:
-                return 'Ré Maior';
+                if (mode == 0)
+                    return 'Ré Maior';
+                else if(mode == 1)
+                    return 'Si Menor';
+                else 
+                    return 'Desconhecido';
             case 3:
-                return 'Lá Maior';
+                if (mode == 0)
+                    return 'Lá Maior';
+                else if(mode == 1)
+                    return 'Fá# Menor';
+                else 
+                    return 'Desconhecido';
             case 4:
-                return 'Mi Maior';
+                if (mode == 0)
+                    return 'Mi Maior';
+                else if(mode == 1)
+                    return 'Dó# Menor';
+                else 
+                    return 'Desconhecido';
             case 5:
-                return 'Si Maior';
+                if (mode == 0)
+                    return 'Si Maior';
+                else if(mode == 1)
+                    return 'Sol# Menor';
+                else 
+                    return 'Desconhecido';
             case 6:
-                return 'Fá# Maior';
+                if (mode == 0)
+                    return 'Fá# Maior';
+                else if(mode == 1)
+                    return 'Ré# Menor';
+                else 
+                    return 'Desconhecido';
             case 7:
-                return 'Dó# Maior';
+                if (mode == 0)
+                    return 'Dó# Maior';
+                else if(mode == 1)
+                    return 'Lá# Menor';
+                else 
+                    return 'Desconhecido';
         }
         return ''
     }
 
-    public getIonIconToMayorKeySignatureNumber(keySignatureNumber: number): string {
+    public getIonIconToKeySignatureNumber(keySignatureNumber: number): string {
         return 'key_signature_' + keySignatureNumber;
     }
 
