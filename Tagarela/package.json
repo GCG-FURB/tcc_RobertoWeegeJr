@@ -48,7 +48,8 @@
     "rxjs": "5.5.11",
     "sw-toolbox": "3.6.0",
     "tunnel-agent": "^0.6.0",
-    "zone.js": "0.8.26"
+    "zone.js": "0.8.26",
+    "cordova-plugin-filepath": "^1.4.2"
   },
   "devDependencies": {
     "@ionic/app-scripts": "3.2.0",
