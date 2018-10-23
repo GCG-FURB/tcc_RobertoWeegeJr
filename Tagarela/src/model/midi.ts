@@ -301,7 +301,7 @@ export class MidiTrack {
         this.midiEvents.push(midiEvent);
     }
 
-    private addStartEventToTrack(event){
+    public addStartEventToTrack(event){
         if (!event) 
             throw new Error(`O evento Midi não pode ser nulo.`);
             

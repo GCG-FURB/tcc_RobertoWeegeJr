@@ -55,6 +55,7 @@ export class GenericComponent {
         this.dismissLoading();
         alert('error handler')
         alert(e.message)
+        alert(e.stack)
     }
 
 }

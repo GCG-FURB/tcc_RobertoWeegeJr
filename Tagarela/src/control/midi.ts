@@ -1,4 +1,4 @@
-import { Midi, MidiTrack, MidiEvent, MidiType, MidiTimeDivisionType, MidiTimeDivisionMetrical, NoteOffMidiEvent, NoteOnMidiEvent, TempoMidiEvent, TimeSignatureMidiEvent, KeySignatureMidiEvent, EndOfTrackMidiEvent, MidiEventDataType, MusicalInstrumentMidiEvent, ChannelMidiEvent } from "../model/midi";
+import { Midi, MidiTrack, MidiEvent, MidiType, MidiTimeDivisionType, MidiTimeDivisionMetrical, NoteOffMidiEvent, NoteOnMidiEvent, TempoMidiEvent, TimeSignatureMidiEvent, KeySignatureMidiEvent, EndOfTrackMidiEvent, MidiEventDataType, MusicalInstrumentMidiEvent, ChannelMidiEvent, NoteMidiEvent } from "../model/midi";
 import { ConvertionUtil } from "../util/hexa";
 import { MidiSpectrumLine, MidiSpectrum, MidiSpectrumNote } from "../model/midi-spectrum";
 
@@ -27,7 +27,7 @@ export class MidiControl {
         }
     }
 
-    public setupMidiFromFile(binaryString: string, midiToCompare: Midi): Midi {
+    public setupMidiFromFile(binaryString: string, midiToCompare: Midi): Midi[] {
         
         if (!binaryString || binaryString.length <= 0)
             throw Error(`A primeira parte do caminho não pode ser nulo ou vazio.`);
@@ -74,7 +74,17 @@ export class MidiControl {
 
         midi.midiTracks = [];
 
+        let midis: Midi[] = [];
+        let newMidi: Midi;
+        let firstTrackTimeSignatureEvent: TimeSignatureMidiEvent = null;
+        let firstTrackKeySignatureEvent: KeySignatureMidiEvent = null;
+        let firstTrackTempoEvent: TempoMidiEvent = null;
+
         for (let i = 0; i < numberOfTracks; i++) {
+
+            newMidi = midi.cloneMidi();
+            newMidi.midiType = MidiType.TYPE_0;
+            newMidi.numberOfTracks = 1;
 
             if (binaryString.length < actualByte + MidiProtocolConstants.MIDI_TRACK_DESC_LENGTH)
                 throw Error(`O arquivo midi não possui a descrição correta de track. Track: ${i}`);
@@ -89,9 +99,10 @@ export class MidiControl {
             let finishLength: number = actualByte + taskLength;
 
             let timeSignatureEvent: TimeSignatureMidiEvent = null;
-            let midiKeySignatureEvent: KeySignatureMidiEvent = null;
+            let keySignatureEvent: KeySignatureMidiEvent = null;
             let endOfTrackEvent: EndOfTrackMidiEvent = null;
             let tempoEvent: TempoMidiEvent = null;
+            let noteEvent: NoteMidiEvent = null;
             let midiChannel: string;
 
             let midiTrack: MidiTrack = new MidiTrack();
@@ -131,6 +142,9 @@ export class MidiControl {
                         } else {
                             midiChannel = channelEvent.channel;
                         }
+                        if (midiEvent.event.isOfType(MidiEventDataType.NOTE)) {
+                            noteEvent = midiEvent.event as NoteMidiEvent;
+                        }
                     } else if (midiEvent.event.isOfType(MidiEventDataType.TIME_SIGNATURE)) {
                         let timeEvent: TimeSignatureMidiEvent = midiEvent.event as TimeSignatureMidiEvent;
                         if (timeSignatureEvent) {
@@ -150,8 +164,8 @@ export class MidiControl {
                         }
                     } else if (midiEvent.event.isOfType(MidiEventDataType.KEY_SIGNATURE)) {
                         let keyEvent: KeySignatureMidiEvent = midiEvent.event as KeySignatureMidiEvent;
-                        if (midiKeySignatureEvent) {
-                            if (!midiKeySignatureEvent.compareTo(keyEvent))
+                        if (keySignatureEvent) {
+                            if (!keySignatureEvent.compareTo(keyEvent))
                                 throw Error(`Mais de uma definição de assinatura de tonalidade não são suportadas. Track: ${i} - Byte ${actualByte}`);
                             midiEvent.event = null;
                         } else {
@@ -163,7 +177,7 @@ export class MidiControl {
                                         throw Error(`A definição de modo da assinatura de tonalidade é diferente entre o arquivo atual e o de comparação. Track: ${i} - Byte ${actualByte}`);
                                 }
                             } 
-                            midiKeySignatureEvent = keyEvent;
+                            keySignatureEvent = keyEvent;
                         }
                     } else if (midiEvent.event.isOfType(MidiEventDataType.TEMPO)) {
                         if (tempoEvent) {
@@ -191,21 +205,43 @@ export class MidiControl {
             if (actualByte != finishLength) 
                 throw Error(`A definiçã de tamanho de track está errada. Track: ${i}`);
 
-            if (!timeSignatureEvent)
-                throw Error(`Não foi encontrado evento de assinatura de tempo. Track: ${i}`);
-            
-            if (!midiKeySignatureEvent)
-                throw Error(`Não foi encontrado evento de tonalidade. Track: ${i}`);
-
-            if (!tempoEvent)
-                throw Error(`Não foi encontrado evento de Tempo. Track: ${i}`);
-
             if (!endOfTrackEvent)
                 throw Error(`Não foi encontrado evento de finalização de track. Track: ${i}`);
 
-            midi.midiTracks.push(midiTrack);
+            firstTrackTimeSignatureEvent = firstTrackTimeSignatureEvent ? firstTrackTimeSignatureEvent : timeSignatureEvent; 
+            firstTrackKeySignatureEvent = firstTrackKeySignatureEvent ? firstTrackKeySignatureEvent : keySignatureEvent;
+            firstTrackTempoEvent = firstTrackTempoEvent ? firstTrackTempoEvent : tempoEvent;
+
+            if (!timeSignatureEvent) {
+                if (firstTrackTimeSignatureEvent) {
+                    midiTrack.addStartEventToTrack(firstTrackTimeSignatureEvent.cloneEvent());
+                } else {
+                    throw Error(`Não foi encontrado evento de assinatura de tempo. Track: ${i}`);
+                }
+            }
+            
+            if (!keySignatureEvent) {
+                if (firstTrackKeySignatureEvent) {
+                    midiTrack.addStartEventToTrack(firstTrackKeySignatureEvent.cloneEvent());
+                } else {
+                    throw Error(`Não foi encontrado evento de tonalidade. Track: ${i}`);
+                }
+            }
+
+            if (!tempoEvent){
+                if (firstTrackTempoEvent) {
+                    midiTrack.addStartEventToTrack(firstTrackTempoEvent.cloneEvent());
+                } else {
+                    throw Error(`Não foi encontrado evento de Tempo. Track: ${i}`);
+                }
+            }
+            newMidi.midiTracks.push(midiTrack);
+            
+            if (noteEvent)
+                midis.push(newMidi);
+
         }
-        return midi;
+        return midis;
     }
 
     public generateMidiEventFromBinaryString(deltaTime: number, midiData: string): MidiCreatedEventModel {
