@@ -11,7 +11,6 @@ import { CompositionControlComponent } from '../components/composition-control/c
 import { ChoiceComponent } from '../components/choice/choice';
 
 import { File } from '@ionic-native/file';
-import { FilePath } from '@ionic-native/file-path';
 import { Media } from '@ionic-native/media';
 import { SetupCompositionSourcePage } from '../pages/setup-composition-source/setup-composition-source';
 import { ChoiceCompositionSourcePage } from '../pages/choice-composition-source/choice-composition-source';
@@ -23,6 +22,7 @@ import { MediaProvider } from '../providers/media/media';
 import { VisualMidiProvider } from '../providers/visual-midi/visual-midi';
 import { MidiSpectrumSvgProvider } from '../providers/midi-spectrum-svg/midi-spectrum-svg';
 import { LineControl } from '../components/line-control/line-control';
+import { DownloadMidiComponent } from '../components/download-midi/download-midi';
 
 @NgModule({
   declarations: [
@@ -37,6 +37,7 @@ import { LineControl } from '../components/line-control/line-control';
     SlidePopoverComponent,
     ListPopoverComponent,
     PlayMidiComponent,
+    DownloadMidiComponent
   ],
   imports: [
     BrowserModule,
@@ -50,13 +51,13 @@ import { LineControl } from '../components/line-control/line-control';
     ChoiceCompositionSourcePage,
     SlidePopoverComponent,
     ListPopoverComponent,
-    PlayMidiComponent
+    PlayMidiComponent,
+    DownloadMidiComponent
   ],
   providers: [
     StatusBar,
     SplashScreen,
     File,
-    FilePath,
     Media,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     FileProvider,

@@ -1,0 +1,7 @@
+<div>
+    <ion-input type="text" [(ngModel)]="fileName"></ion-input>
+    <button ion-button full (click)="downloadMidi()" [disabled]="!fileName">
+        Download
+    </button>
+
+</div>

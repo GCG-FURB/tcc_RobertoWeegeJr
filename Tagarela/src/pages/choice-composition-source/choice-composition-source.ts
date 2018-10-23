@@ -178,9 +178,10 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
                                                                     relativePath + chosedDefaultCompositionSource, 
                                                                     isCustomSource
                                                                 );
-        await configControl.loadConfigs();
-
+        
         let sourceControl: MusicalCompositionSourceControl = new MusicalCompositionSourceControl(this.fileProvider, baseFileSystem);
+        
+        await configControl.loadConfigs();
         await sourceControl.loadSources(configControl.config);
         await configControl.loadSavedConfigs(); 
         await configControl.determinateMidiChannels(sourceControl.source);

@@ -9,7 +9,7 @@ export class MediaProvider {
 
     public async playMidiFromTempArea(uId: string, callback: Function){
 
-        const file = this.nativeMedia.create(this.fileProvider.tempAreaDir + uId + '.mid');
+        const file = this.nativeMedia.create(this.fileProvider.tempAreaFullDir + uId + '.mid');
         
         file.onSuccess.subscribe(() => {
             file.release();

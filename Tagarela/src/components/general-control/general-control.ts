@@ -10,6 +10,8 @@ import { MidiSpectrum } from '../../model/midi-spectrum';
 import { MidiSpectrumSvgProvider } from '../../providers/midi-spectrum-svg/midi-spectrum-svg';
 import { Midi } from '../../model/midi';
 import { FileProvider } from '../../providers/file/file';
+import { MidiControl } from '../../control/midi';
+import { DownloadMidiComponent } from '../download-midi/download-midi';
 
 @Component({
     selector: 'general-control',
@@ -167,16 +169,13 @@ export class GeneralControlComponent extends GenericComponent {
 
     private async downloadComposition() {
         try {
-            alert('aaaaa')
-            alert(this.compositionControl.composition.midiId)
-            this.startAlert(this.compositionControl.composition.midiId + '.mid');
-            await this.compositionControl.applyGeneralChanges();
-            await this.fileProvider.copyFileFromTempAreaToDownloadFolder(this.compositionControl.composition.midiId + '.mid', 'vai.mid')
-            alert('Arquivo criado com sucesso.');
+            this.startPopover(
+                DownloadMidiComponent,
+                {midi: this.compositionControl.composition.midi}
+            )
         } catch (e) {
             this.errorHandler(e)
         }
-        
     }
 
 }

@@ -4,10 +4,14 @@ import { File, IWriteOptions } from '@ionic-native/file';
 @Injectable()
 export class FileProvider {
 
-    public tempAreaDir: string;
-
+    public tempAreaFullDir: string;
+    
+    public tempAreaSystemDir: string = this.file.dataDirectory;
+    
+    public tempAreaRelativeDir: string = 'temp/'
+    
     constructor(public file: File) {
-        this.tempAreaDir = this.file.dataDirectory + 'temp/';
+        this.tempAreaFullDir = this.file.dataDirectory + 'temp/';
         this.verifyAndCreateDirs(this.file.dataDirectory, 'temp/');
     }
 
@@ -87,7 +91,17 @@ export class FileProvider {
             bytes[i] = binaryString.charCodeAt(i);
         }
     
-        await this.file.writeFile(this.tempAreaDir , uId + '.mid', bytes.buffer, options)
+        await this.file.writeFile(this.tempAreaFullDir , uId + '.mid', bytes.buffer, options)
+    }
+
+    public async writeBinaryStringDownloadArea(fileName: string, binaryString: string){
+        let options: IWriteOptions = { replace: true };
+        let len = binaryString.length;
+        let bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        await this.file.writeFile(this.concatenatePath(this.file.externalRootDirectory, 'Download') , fileName + '.mid', bytes.buffer, options)
     }
 
     public async getFileContentIfExists(systemPath: string, relativePath: string, fileName: string): Promise<any> {
@@ -151,10 +165,6 @@ export class FileProvider {
 
     public async removeFile(systemPath: string, relativePath: string, fileName: string) {
         await this.file.removeFile(this.concatenatePath(systemPath, relativePath), fileName);
-    }
-
-    public async copyFileFromTempAreaToDownloadFolder(originalfileName:string, newFileName: string ) {
-        await this.file.copyFile(this.tempAreaDir, originalfileName, this.concatenatePath(this.file.externalRootDirectory, 'Downloads'), newFileName);
     }
 
 }
