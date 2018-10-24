@@ -1,7 +1,8 @@
 import { MusicalCompositionConfig, MusicalCompositionStepConfig, MusicalCompositionGroupConfig, MusicalCompositionOptionConfig, MusicalCompositionLineConfig } from "../model/musical-composition-config";
 import { MusicalCompositionSource } from "../model/musical-composition-source";
 import { FileProvider } from "../providers/file/file";
-import { Midi } from "../model/midi";
+import { Midi, MidiTimeDivisionMetrical, MidiEventDataType, TimeSignatureMidiEvent, KeySignatureMidiEvent } from "../model/midi";
+import { MidiControl } from "./midi";
 
 export class MusicalCompositionConfigControl {
 
@@ -27,6 +28,10 @@ export class MusicalCompositionConfigControl {
     private CONFIG_DEFAULT_STEP_VOLUME: number = 10
     private CONFIG_DEFAULT_DEFAULT_VOLUME: number = 100
 
+    private CONFIG_DEFAULT_KEY_SIGNATURE: number = 0;
+
+    private CONFIG_DEFAULT_SHOW_COMPOSITION_DATA: boolean = true;
+
     //variables
     private _fileProvider: FileProvider;
 
@@ -35,6 +40,8 @@ export class MusicalCompositionConfigControl {
     private _baseFileSystemComposition: string;
     private _baseFileSystemConfig: string;
     private _relativePath: string;
+
+    midiControl = new MidiControl();
 
     constructor(file: FileProvider, baseFileSystem: string, relativePath: string, isCustomSource: boolean){
         this.fileProvider = file;
@@ -110,6 +117,10 @@ export class MusicalCompositionConfigControl {
         config.maxTempo = this.CONFIG_DEFAULT_MAX_TEMPO;
         config.stepTempo = this.CONFIG_DEFAULT_STEP_TEMPO;
         config.defaultTempo = this.CONFIG_DEFAULT_DEFAULT_TEMPO;
+        config.baseKeySignaturesAllowed = Midi.KEY_SIGNATURES_ARRAY;
+        config.keySignaturesAllowed = Midi.KEY_SIGNATURES_ARRAY;
+        config.keySignature = this.CONFIG_DEFAULT_KEY_SIGNATURE;
+        config.showCompositionData = this.CONFIG_DEFAULT_SHOW_COMPOSITION_DATA
     
         let stepDirectoriesList: string[] = await this.fileProvider.getListOfDirectories(config.baseFileSystem, config.relativePath);
         
@@ -208,6 +219,10 @@ export class MusicalCompositionConfigControl {
                     this.config.maxTempo = +actualConfig._maxTempo;
                     this.config.stepTempo = +actualConfig._stepTempo;
                     this.config.defaultTempo = +actualConfig._defaultTempo;
+
+                    this.config.keySignaturesAllowed = actualConfig._keySignaturesAllowed;
+                    this.config.keySignature = +actualConfig._keySignature;
+                    this.config.showCompositionData = actualConfig._showCompositionData;
     
                     for (let i = 0; i < this.config.stepsConfig.length; i++) {
                         this.config.stepsConfig[i].quantityOfQuarterNote = +actualConfig._stepsConfig[i]._quantityOfQuarterNote;
@@ -235,8 +250,6 @@ export class MusicalCompositionConfigControl {
             }
         }
     }
-
-
 
     private validateSavedConfig(config: MusicalCompositionConfig, actualConfig: any): boolean{
         
@@ -320,10 +333,83 @@ export class MusicalCompositionConfigControl {
         }
     }
 
+    public validateMidiEventsAndNormalizeTimeDivision(midiSource: MusicalCompositionSource) {
 
+        let maxTimeDivicionMetric: number = Midi.MIN_TIME_DIVISION_METRIC_VALUE;
 
+        for (let source of midiSource.stepsSource) {
+            for (let group of source.groupsSource) {
+                for (let option of group.optionsSource) {
+                    
+                    let metricalTimeDivion: MidiTimeDivisionMetrical =  <MidiTimeDivisionMetrical> option.midi.timeDivision;
+                   
+                    if (metricalTimeDivion.metric > maxTimeDivicionMetric) {
+                        maxTimeDivicionMetric = metricalTimeDivion.metric;
+                    }
 
+                    for (let track of option.midi.midiTracks) {
+                        let timeSignatureEventExists: boolean = false
+                        let keySignatureEventExists: boolean = false
+                        let tempoEventExists: boolean = false
+                        for (let event of track.midiEvents) {
+                            if (event.isOfType(MidiEventDataType.TIME_SIGNATURE)) {
+                            
+                                let timeEvent: TimeSignatureMidiEvent = event as TimeSignatureMidiEvent;
+                                this.config.numerator = timeEvent.numerator
+                                this.config.denominator = timeEvent.denominator
+                            
+                                if (timeSignatureEventExists) {
+                                    throw new Error(`Mais de um evento de assinatura de tempo não é suportado. `+
+                                    `Fonte: ${source.relativePath} - Grupo: ${group.relativePath} - Opção: ${option.fileName}`)
+                                }
+                                timeSignatureEventExists = true;
+                            } else if (event.isOfType(MidiEventDataType.KEY_SIGNATURE)) {
+                                
+                                let keyEvent: KeySignatureMidiEvent = event as KeySignatureMidiEvent;
+                                this.config.mode = keyEvent.mode
+                            
+                                if (keySignatureEventExists) {
+                                    throw new Error(`Mais de um evento de assinatura de clave não é suportado. `+
+                                    `Fonte: ${source.relativePath} - Grupo: ${group.relativePath} - Opção: ${option.fileName}`)
+                                }
+                                keySignatureEventExists = true;
+                            } else if (event.isOfType(MidiEventDataType.TEMPO)) {
+                                if (tempoEventExists) {
+                                    throw new Error(`Mais de um evento de definição de tempo não é suportado. `+
+                                    `Fonte: ${source.relativePath} - Grupo: ${group.relativePath} - Opção: ${option.fileName}`)
+                                }
+                                tempoEventExists = true;
+                            } else if (event.isOfType(MidiEventDataType.NOTE)) {
+                                break;
+                            }
+                        }
+                        if (!timeSignatureEventExists) {
+                            throw new Error(`Não foi encontrado evento de assinatura de tempo. `+
+                            `Fonte: ${source.relativePath} - Grupo: ${group.relativePath} - Opção: ${option.fileName}`)
+                        } 
+                        if (!keySignatureEventExists) {
+                            throw new Error(`Não foi encontrado evento de assinatura de clave. `+
+                            `Fonte: ${source.relativePath} - Grupo: ${group.relativePath} - Opção: ${option.fileName}`)
+                        } 
+                        if (!tempoEventExists) {
+                            throw new Error(`Não foi encontrado evento de definição de tempo. `+
+                            `Fonte: ${source.relativePath} - Grupo: ${group.relativePath} - Opção: ${option.fileName}`)
+                        } 
+                    }
+                }
+            }
+        }
 
+        for (let source of midiSource.stepsSource) {
+            for (let group of source.groupsSource) {
+                for (let option of group.optionsSource) {
+                    this.midiControl.ajustMidiTimeDivision(option.midi, maxTimeDivicionMetric);
+                }
+            }
+        }
 
+        this.config.timeDivisionMetric = maxTimeDivicionMetric;
+
+    }
     
 }

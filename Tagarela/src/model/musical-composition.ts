@@ -13,6 +13,9 @@ export class MusicalComposition {
 
     private _keySignature: number
 
+    keySignaturesAllowed;
+    showCompositionData;
+
     //midi
     private _midiId: string;
     private _midi: Midi;
@@ -23,8 +26,7 @@ export class MusicalComposition {
     public denominator: number
     public mode: number
 
-
-    timeDivisionMetric: number = 0;
+    timeDivisionMetric: number;
 
     constructor() {
         this.lines = [];
@@ -128,9 +130,10 @@ export class MusicalComposition {
     }
     
     set keySignature(keySignature: number) {
-        
-        if (!keySignature && keySignature != 0) 
-            throw new Error(`A armadura de clave não pode ser nulo.`);
+        keySignature=+keySignature
+
+        if (!keySignature && keySignature != 0)
+            throw new Error(`A armadura de clave não pode ser nula.`);
         
         if (Midi.KEY_SIGNATURES_ARRAY.indexOf(keySignature) < 0) 
             throw new Error(`A armadura de clave deve se um valor entre ${JSON.stringify(Midi.KEY_SIGNATURES_ARRAY)}.`);

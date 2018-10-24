@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams, LoadingController, AlertController, PopoverController } from 'ionic-angular';
+import { NavController, NavParams, LoadingController, AlertController, PopoverController, ToastController } from 'ionic-angular';
 import { FileProvider } from '../../providers/file/file';
 import { MediaProvider } from '../../providers/media/media';
 import { MidiControl } from '../../control/midi';
@@ -23,11 +23,13 @@ export class PlayMidiComponent extends GenericComponent{
                 private mediaProvider: MediaProvider,
                 private loadingCtrl: LoadingController,
                 private alertCtrl: AlertController,
-                private popoverCtrl: PopoverController) {
+                private popoverCtrl: PopoverController,
+                private toastCtrl: ToastController) {
 
         super(loadingCtrl,
-            alertCtrl,
-            popoverCtrl);
+              alertCtrl,
+              popoverCtrl,
+              toastCtrl);
     
     }
 

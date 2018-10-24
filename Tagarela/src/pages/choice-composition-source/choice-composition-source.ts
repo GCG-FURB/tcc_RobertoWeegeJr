@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, LoadingController, AlertController, PopoverController, Loading } from 'ionic-angular';
+import { NavController, LoadingController, AlertController, PopoverController, Loading, ToastController } from 'ionic-angular';
 import { SetupCompositionSourcePage } from '../setup-composition-source/setup-composition-source';
 import { MusicalCompositionConfigControl } from '../../control/musical-composition-config';
 import { Platform } from 'ionic-angular';
@@ -24,11 +24,13 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
                 private loadingCtrl: LoadingController,
                 private alertCtrl: AlertController,
                 private popoverCtrl: PopoverController,
-                private fileProvider: FileProvider) {
-        
+                private fileProvider: FileProvider,
+                private toastCtrl: ToastController) { 
+
         super(loadingCtrl,
               alertCtrl,
-              popoverCtrl);
+              popoverCtrl,
+              toastCtrl);
     }
 
     //gets e sets - variaveis locais
@@ -185,6 +187,7 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
         await sourceControl.loadSources(configControl.config);
         await configControl.loadSavedConfigs(); 
         await configControl.determinateMidiChannels(sourceControl.source);
+        await configControl.validateMidiEventsAndNormalizeTimeDivision(sourceControl.source);
         await this.dismissLoading();
 
         this.navCtrl.setRoot(SetupCompositionSourcePage, {

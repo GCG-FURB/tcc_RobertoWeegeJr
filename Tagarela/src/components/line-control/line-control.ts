@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { MusicalCompositionLine} from '../../model/musical-composition';
-import { PopoverController, LoadingController, AlertController } from 'ionic-angular';
+import { PopoverController, LoadingController, AlertController, ToastController } from 'ionic-angular';
 import { SlidePopoverComponent } from '../slide-popover/slide-popover';
 import { PlayMidiComponent } from '../play-midi/play-midi';
 import { GenericComponent } from '../../control/generic-component';
@@ -20,11 +20,13 @@ export class LineControl extends GenericComponent {
     constructor(private loadingCtrl: LoadingController,
                 private alertCtrl: AlertController,
                 private popoverCtrl: PopoverController,
-                private midiSpectrumSvgProvider: MidiSpectrumSvgProvider) {  
-            
+                private midiSpectrumSvgProvider: MidiSpectrumSvgProvider,
+                private toastCtrl: ToastController) {
+
         super(loadingCtrl,
               alertCtrl,
-              popoverCtrl);
+              popoverCtrl,
+              toastCtrl);
     }
 
     public get compositionLine(): MusicalCompositionLine {

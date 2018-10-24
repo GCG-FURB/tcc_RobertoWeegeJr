@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { PopoverController, LoadingController, AlertController } from 'ionic-angular';
+import { PopoverController, LoadingController, AlertController, ToastController } from 'ionic-angular';
 import { MusicalCompositionControl } from '../../control/musical-composition';
 import { MusicalCompositionOption } from '../../model/musical-composition';
 import { ListPopoverComponent } from '../list-popover/list-popover';
@@ -28,11 +28,13 @@ export class ChoiceComponent extends GenericComponent{
                 private alertCtrl: AlertController,
                 private popoverCtrl: PopoverController, 
                 private visualMidiProvider: VisualMidiProvider,
-                private midiSpectrumSvgProvider: MidiSpectrumSvgProvider) {
-    
+                private midiSpectrumSvgProvider: MidiSpectrumSvgProvider,
+                private toastCtrl: ToastController) { 
+
         super(loadingCtrl,
               alertCtrl,
-              popoverCtrl);
+              popoverCtrl,
+              toastCtrl);
     
     }
     

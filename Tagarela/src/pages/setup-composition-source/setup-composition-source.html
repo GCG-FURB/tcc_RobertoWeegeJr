@@ -4,14 +4,13 @@
         <ion-title>Configuração de Composição</ion-title>
     </ion-navbar>
     <ion-toolbar>
-        <button ion-button full (click)="saveConfigAndStartComposition()" [disabled]="!generalForm.valid || !lineFormsIsValid() || !stepFormsIsValid() || !optionFormsIsValid()">
+        <button ion-button full (click)="saveConfigAndStartComposition()" [disabled]="!generalForm.valid || !stepFormsIsValid() || !optionFormsIsValid()">
             Começar composição
         </button>
     </ion-toolbar>
     <ion-toolbar>
-    
         
-        <ion-segment [(ngModel)]="configSegment" *ngIf="configControl && sourceControl && generalForm && lineForms && stepForms && optionForms">
+        <ion-segment [(ngModel)]="configSegment" *ngIf="configControl && sourceControl && generalForm && stepForms && optionForms">
             <ion-segment-button value="general">
                 <p [class.invalid]="!generalForm.valid">Geral</p>
             </ion-segment-button>
@@ -32,113 +31,139 @@
 
 <ion-content>
 
-    <div [ngSwitch]="configSegment" *ngIf="configControl && sourceControl && generalForm && lineForms && stepForms && optionForms">
+    <div [ngSwitch]="configSegment" *ngIf="configControl && sourceControl && generalForm && stepForms && optionForms">
         
         <div *ngSwitchCase="'general'">
             <ion-label>Escolha os parâmetros gerais de composição:</ion-label>
            
+            <ion-item>
+                <ion-label>Valor mínimo e máximo de tempo (BPM) </ion-label>
+                <ion-badge item-end>{{tempoRange.lower}}</ion-badge>
+                <ion-badge item-end>{{tempoRange.upper}}</ion-badge>
+            </ion-item>
+            <ion-item>
+                <ion-range (ionChange)="updateGeneralFormControl()"
+                           [min]="getLowerAllowedTempo()" 
+                           [max]="getHighestAllowedTempo()" 
+                           [(ngModel)]="tempoRange"
+                           pin="true"
+                           dualKnobs="true">
+                    <ion-label range-left >{{getLowerAllowedTempo()}}</ion-label>
+                    <ion-label range-right>{{getHighestAllowedTempo()}}</ion-label>
+                </ion-range>
+            </ion-item>
+
+            <ion-item>
+                <ion-label>Quantidade de números incrementados</ion-label>
+                <ion-badge item-end>{{configControl.config.stepTempo}}</ion-badge>
+            </ion-item>
+            <ion-item>
+                <ion-range [min]="1" 
+                            [max]="getMaxStepValueTempo()" 
+                            pin="true"
+                            [(ngModel)]="configControl.config.stepTempo">
+                    <ion-label range-left>1</ion-label>
+                    <ion-label range-right>{{getMaxStepValueTempo()}}</ion-label>
+                </ion-range>
+            </ion-item>
+            <ion-item>
+                <ion-label>Valor inicial de tempo</ion-label>
+                <ion-badge item-end>{{configControl.config.defaultTempo}}</ion-badge>
+            </ion-item>
+            <ion-item>
+                <ion-range [min]="tempoRange.lower" 
+                            [max]="tempoRange.upper" 
+                            pin="true"
+                            [(ngModel)]="configControl.config.defaultTempo">
+                    <ion-label range-left>{{tempoRange.lower}}</ion-label>
+                    <ion-label range-right>{{tempoRange.upper}}</ion-label>
+                </ion-range>
+            </ion-item>
+
             <form [formGroup]="generalForm">
                 
-                <ion-item [class.input-invalid]="!generalForm.controls.minTempo.valid" >
-                    <ion-label [class.invalid]="!generalForm.controls.minTempo.valid" floating>Valor mínimo de tempo (BPM) 
-                        <p class="invalid" *ngIf="!generalForm.controls.minTempo.valid && generalForm.controls.minTempo.errors.validation_error">Ocorreu um erro no processo de validação</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.minTempo.valid && generalForm.controls.minTempo.errors.required">Valor requerido</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.minTempo.valid && generalForm.controls.minTempo.errors.not_number">O valor deve ser um número</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.minTempo.valid && generalForm.controls.minTempo.errors.not_integer">O valor deve ser um número inteiro</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.minTempo.valid && generalForm.controls.minTempo.errors.min_tempo_midi">O valor deve ser superior a {{getLowerAllowedTempo()}}</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.minTempo.valid && generalForm.controls.minTempo.errors.max_tempo_midi">O valor deve ser inferior a {{getHighestAllowedTempo()}}</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.minTempo.valid && generalForm.controls.minTempo.errors.min_tempo">O valor mínimo deve ser menor ou igual ao valor máximo</p>
-                    </ion-label>
-                    <ion-input [formControl]="generalForm.controls.minTempo" type="number" [(ngModel)]="configControl.config.minTempo" (change)="updateGeneralFormControl()"></ion-input>
-                </ion-item>
-                
-                <ion-item [class.input-invalid]="!generalForm.controls.maxTempo.valid">
-                    <ion-label [class.invalid]="!generalForm.controls.maxTempo.valid" floating>Valor maximo de tempo (BPM)
-                        <p class="invalid" *ngIf="!generalForm.controls.maxTempo.valid && generalForm.controls.maxTempo.errors.validation_error">Ocorreu um erro no processo de validação</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.maxTempo.valid && generalForm.controls.maxTempo.errors.required">Valor requerido</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.maxTempo.valid && generalForm.controls.maxTempo.errors.not_number">O valor deve ser um número</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.maxTempo.valid && generalForm.controls.maxTempo.errors.not_integer">O valor deve ser um número inteiro</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.maxTempo.valid && generalForm.controls.maxTempo.errors.min_tempo_midi">O valor deve ser superior a {{getLowerAllowedTempo()}}</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.maxTempo.valid && generalForm.controls.maxTempo.errors.max_tempo_midi">O valor deve ser inferior a {{getHighestAllowedTempo()}}</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.maxTempo.valid && generalForm.controls.maxTempo.errors.max_tempo">O valor máximo deve ser maior ou igual ao valor mínimo</p>
-                    </ion-label>
-                    <ion-input [formControl]="generalForm.controls.maxTempo" type="number" [(ngModel)]="configControl.config.maxTempo" (change)="updateGeneralFormControl()"></ion-input>
-                </ion-item>
+                <ion-label>Escolha os parâmetros gerais de tonalidade:</ion-label>
 
-                <ion-item [class.input-invalid]="!generalForm.controls.stepTempo.valid">
-                    <ion-label [class.invalid]="!generalForm.controls.stepTempo.valid" floating>Quantidade de números incrementados
-                        <p class="invalid" *ngIf="!generalForm.controls.stepTempo.valid && generalForm.controls.stepTempo.errors.validation_error">Ocorreu um erro no processo de validação</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.stepTempo.valid && generalForm.controls.stepTempo.errors.required">Valor requerido</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.stepTempo.valid && generalForm.controls.stepTempo.errors.not_number">O valor deve ser um número</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.stepTempo.valid && generalForm.controls.stepTempo.errors.not_integer">O valor deve ser um número inteiro</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.stepTempo.valid && generalForm.controls.stepTempo.errors.step_tempo">O valor de incremento deve ser menor que a diferença entre os valores máximo e mínimo</p>
+                <ion-item [class.input-invalid]= "!generalForm.controls.keySignaturesAllowed.valid">
+                    <ion-label [class.invalid]  ="!generalForm.controls.keySignaturesAllowed.valid">Tonalidades para escolha:
+                        <p class="invalid" *ngIf="!generalForm.controls.keySignaturesAllowed.valid && generalForm.controls.keySignaturesAllowed.errors.validation_error">Ocorreu um erro no processo de validação</p>
+                        <p class="invalid" *ngIf="!generalForm.controls.keySignaturesAllowed.valid && generalForm.controls.keySignaturesAllowed.errors.required" >Valor requerido</p>
                     </ion-label>
-                    <ion-input [formControl]="generalForm.controls.stepTempo" type="number" [(ngModel)]="configControl.config.stepTempo" (change)="updateGeneralFormControl()"></ion-input>
+                    <ion-select [formControl]="generalForm.controls.keySignaturesAllowed" [(ngModel)]="configControl.config.keySignaturesAllowed" multiple="true">
+                        <ion-option *ngFor=" let key of configControl.config.baseKeySignaturesAllowed" [value]="key">
+                                {{visualMidiProvider.getInstrumentNameKeySignatureNumber(key, configControl.config.mode)}}
+                        </ion-option> 
+                    </ion-select>
                 </ion-item>
-
-                <ion-item [class.input-invalid]="!generalForm.controls.defaultTempo.valid">
-                    <ion-label [class.invalid]="!generalForm.controls.defaultTempo.valid" floating>Valor inicial de tempo
-                        <p class="invalid" *ngIf="!generalForm.controls.defaultTempo.valid && generalForm.controls.defaultTempo.errors.validation_error">Ocorreu um erro no processo de validação</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.defaultTempo.valid && generalForm.controls.defaultTempo.errors.required">Valor requerido</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.defaultTempo.valid && generalForm.controls.defaultTempo.errors.not_number">O valor deve ser um número</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.defaultTempo.valid && generalForm.controls.defaultTempo.errors.not_integer">O valor deve ser um número inteiro</p>
-                        <p class="invalid" *ngIf="!generalForm.controls.defaultTempo.valid && generalForm.controls.defaultTempo.errors.default_tempo">O valor padrão deve entar entre os valores mínimo e máximo</p>
+                <ion-item [class.input-invalid]= "!generalForm.controls.defaultKeySignature.valid">
+                    <ion-label [class.invalid]=  "!generalForm.controls.defaultKeySignature.valid">Tonalidade padrão:
+                        <p class="invalid" *ngIf="!generalForm.controls.defaultKeySignature.valid && generalForm.controls.defaultKeySignature.errors.validation_error">Ocorreu um erro no processo de validação</p>
+                        <p class="invalid" *ngIf="!generalForm.controls.defaultKeySignature.valid && generalForm.controls.defaultKeySignature.errors.required">Valor requerido</p>
                     </ion-label>
-                    <ion-input [formControl]="generalForm.controls.defaultTempo" type="number" [(ngModel)]="configControl.config.defaultTempo" (change)="updateGeneralFormControl()"></ion-input>
+                    <ion-select [formControl]="generalForm.controls.defaultKeySignature" [(ngModel)]="configControl.config.keySignature" multiple="false">
+                        <ion-option *ngFor="let key of configControl.config.baseKeySignaturesAllowed" [value]="key">
+                                {{visualMidiProvider.getInstrumentNameKeySignatureNumber(key, configControl.config.mode)}}
+                        </ion-option>
+                    </ion-select>
                 </ion-item>
             </form>
-        </div>
-      
+
+            <ion-label>Escolha os parâmetros gerais de viualização:</ion-label>
+            <ion-item>
+                <ion-label>Exibir dados de composição</ion-label>
+                <ion-checkbox [(ngModel)]="configControl.config.showCompositionData"></ion-checkbox>
+            </ion-item>
+
+        </div>       
+
         <div *ngSwitchCase="'lines'">
             <ion-label>Escolha os parâmetros das linhas de composição:</ion-label>
             <div *ngFor="let lineConfig of configControl.config.linesConfig; let i = index">
-                <form [formGroup]="lineForms[i]">
-                    <ion-label>{{lineConfig.name}}</ion-label>
-                    <ion-item [class.input-invalid]="!lineForms[i].controls.minVolume.valid">
-                        <ion-label [class.invalid]="!lineForms[i].controls.minVolume.valid" floating>Valor mínimo de volume
-                            <p class="invalid" *ngIf="!lineForms[i].controls.minVolume.valid && lineForms[i].controls.minVolume.errors.validation_error">Ocorreu um erro no processo de validação</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.minVolume.valid && lineForms[i].controls.minVolume.errors.required">Valor requerido</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.minVolume.valid && lineForms[i].controls.minVolume.errors.not_number">O valor deve ser um número</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.minVolume.valid && lineForms[i].controls.minVolume.errors.not_integer">O valor deve ser um número inteiro</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.minVolume.valid && lineForms[i].controls.minVolume.errors.min_volume_midi">O valor deve ser superior a {{getLowerAllowedVolume()}}</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.minVolume.valid && lineForms[i].controls.minVolume.errors.max_volume_midi">O valor deve ser inferior a {{getHighestAllowedVolume()}}</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.minVolume.valid && lineForms[i].controls.minVolume.errors.min_volume">O valor mínimo deve ser menor ou igual ao valor máximo</p>
-                        </ion-label>
-                        <ion-input [formControl]="lineForms[i].controls.minVolume" type="number" [(ngModel)]="lineConfig.minVolume" (change)="updateLineFormControl(i)"></ion-input>
-                    </ion-item>
-                    <ion-item [class.input-invalid]="!lineForms[i].controls.maxVolume.valid">
-                        <ion-label [class.invalid]="!lineForms[i].controls.maxVolume.valid" floating>Valor maximo de volume
-                            <p class="invalid" *ngIf="!lineForms[i].controls.maxVolume.valid && lineForms[i].controls.maxVolume.errors.validation_error">Ocorreu um erro no processo de validação</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.maxVolume.valid && lineForms[i].controls.maxVolume.errors.required">Valor requerido</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.maxVolume.valid && lineForms[i].controls.maxVolume.errors.not_number">O valor deve ser um número</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.maxVolume.valid && lineForms[i].controls.maxVolume.errors.not_integer">O valor deve ser um número inteiro</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.maxVolume.valid && lineForms[i].controls.maxVolume.errors.min_volume_midi">O valor deve ser superior a {{getLowerAllowedVolume()}}</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.maxVolume.valid && lineForms[i].controls.maxVolume.errors.max_volume_midi">O valor deve ser inferior a {{getHighestAllowedVolume()}}</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.maxVolume.valid && lineForms[i].controls.maxVolume.errors.max_volume">O valor máximo deve ser maior ou igual ao valor mínimo</p>
-                        </ion-label>
-                        <ion-input [formControl]="lineForms[i].controls.maxVolume" type="number" [(ngModel)]="lineConfig.maxVolume" (change)="updateLineFormControl(i)"></ion-input>
-                    </ion-item>
-                    <ion-item [class.input-invalid]="!lineForms[i].controls.stepVolume.valid">
-                        <ion-label [class.invalid]="!lineForms[i].controls.stepVolume.valid" floating>Quantidade de números incrementados
-                            <p class="invalid" *ngIf="!lineForms[i].controls.stepVolume.valid && lineForms[i].controls.stepVolume.errors.validation_error">Ocorreu um erro no processo de validação</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.stepVolume.valid && lineForms[i].controls.stepVolume.errors.required">Valor requerido</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.stepVolume.valid && lineForms[i].controls.stepVolume.errors.not_number">O valor deve ser um número</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.stepVolume.valid && lineForms[i].controls.stepVolume.errors.not_integer">O valor deve ser um número inteiro</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.stepVolume.valid && lineForms[i].controls.stepVolume.errors.step_volume">O valor de incremento deve ser menor que a diferença entre os valores máximo e mínimo</p>
-                        </ion-label>
-                        <ion-input [formControl]="lineForms[i].controls.stepVolume" type="number" [(ngModel)]="lineConfig.stepVolume" (change)="updateLineFormControl(i)"></ion-input>
-                    </ion-item>
-                    <ion-item [class.input-invalid]="!lineForms[i].controls.defaultVolume.valid">
-                        <ion-label [class.invalid]="!lineForms[i].controls.defaultVolume.valid" floating>Valor inicial de volume
-                            <p class="invalid" *ngIf="!lineForms[i].controls.defaultVolume.valid && lineForms[i].controls.defaultVolume.errors.validation_error">Ocorreu um erro no processo de validação</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.defaultVolume.valid && lineForms[i].controls.defaultVolume.errors.required">Valor requerido</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.defaultVolume.valid && lineForms[i].controls.defaultVolume.errors.not_number">O valor deve ser um número</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.defaultVolume.valid && lineForms[i].controls.defaultVolume.errors.not_integer">O valor deve ser um número inteiro</p>
-                            <p class="invalid" *ngIf="!lineForms[i].controls.defaultVolume.valid && lineForms[i].controls.defaultVolume.errors.default_volume">O valor padrão deve entar entre os valores mínimo e máximo</p>
-                        </ion-label>
-                        <ion-input [formControl]="lineForms[i].controls.defaultVolume" type="number" [(ngModel)]="lineConfig.defaultVolume" (change)="updateLineFormControl(i)"></ion-input>
-                    </ion-item>
-                </form>
+                <ion-label>{{lineConfig.name}}</ion-label>
+                <ion-item>
+                    <ion-label>Valor mínimo e máximo de volume</ion-label>
+                    <ion-badge item-end>{{volumeRange[i].lower}}</ion-badge>
+                    <ion-badge item-end>{{volumeRange[i].upper}}</ion-badge>
+                </ion-item>
+                <ion-item>
+                    <ion-range (ionChange)="updateLineFormControl(i)"
+                               [min]="getLowerAllowedVolume()" 
+                               [max]="getHighestAllowedVolume()" 
+                               [(ngModel)]="volumeRange[i]"
+                               pin="true"
+                               dualKnobs="true">
+                        <ion-label range-left >{{getLowerAllowedVolume()}}</ion-label>
+                        <ion-label range-right>{{getHighestAllowedVolume()}}</ion-label>
+                    </ion-range>
+                </ion-item>
+    
+                <ion-item>
+                    <ion-label>Quantidade de números incrementados</ion-label>
+                    <ion-badge item-end>{{lineConfig.stepVolume}}</ion-badge>
+                </ion-item>
+                <ion-item>
+                    <ion-range [min]="getMinStepValueTempo(i)" 
+                                [max]="getMaxStepValueTempo(i)" 
+                                pin="true"
+                                [(ngModel)]="lineConfig.stepVolume">
+                        <ion-label range-left>{{getMinStepValueTempo(i)}}</ion-label>
+                        <ion-label range-right>{{getMaxStepValueTempo(i)}}</ion-label>
+                    </ion-range>
+                </ion-item>
+                <ion-item>
+                    <ion-label>Valor inicial de volume</ion-label>
+                    <ion-badge item-end>{{lineConfig.defaultVolume}}</ion-badge>
+                </ion-item>
+                <ion-item>
+                    <ion-range [min]="volumeRange[i].lower" 
+                               [max]="volumeRange[i].upper" 
+                               pin="true"
+                               [(ngModel)]="lineConfig.defaultVolume">
+                        <ion-label range-left>{{volumeRange[i].lower}}</ion-label>
+                        <ion-label range-right>{{volumeRange[i].upper}}</ion-label>
+                    </ion-range>
+                </ion-item>
+
             </div>
         </div>
 

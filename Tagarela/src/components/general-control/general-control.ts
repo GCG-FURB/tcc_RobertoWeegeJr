@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { MusicalCompositionControl } from '../../control/musical-composition';
-import { PopoverController, LoadingController, AlertController } from 'ionic-angular';
+import { PopoverController, LoadingController, AlertController, ToastController } from 'ionic-angular';
 import { ListPopoverComponent } from '../list-popover/list-popover';
 import { SlidePopoverComponent } from '../slide-popover/slide-popover';
 import { PlayMidiComponent } from '../play-midi/play-midi';
@@ -26,11 +26,13 @@ export class GeneralControlComponent extends GenericComponent {
                 private popoverCtrl: PopoverController,
                 private visualMidiProvider: VisualMidiProvider,
                 private midiSpectrumSvgProvider: MidiSpectrumSvgProvider,
-                private fileProvider: FileProvider) {        
+                private fileProvider: FileProvider,
+                private toastCtrl: ToastController) {
 
         super(loadingCtrl,
               alertCtrl,
-              popoverCtrl);
+              popoverCtrl,
+              toastCtrl);
 
     }
    
@@ -90,7 +92,7 @@ export class GeneralControlComponent extends GenericComponent {
                 ListPopoverComponent, 
                 {
                     title: 'Armadura de Clave',
-                    list: Midi.KEY_SIGNATURES_ARRAY,
+                    list: this.compositionControl.composition.keySignaturesAllowed,
                     callback: this.setKeySignature.bind(this),
                     iconFunction: this.visualMidiProvider.getIonIconToKeySignatureNumber,
                     nameFunction: this.getKeySignatureName(this.compositionControl.composition.mode)
@@ -169,9 +171,12 @@ export class GeneralControlComponent extends GenericComponent {
 
     private async downloadComposition() {
         try {
+            this.compositionControl.applyGeneralChanges();
             this.startPopover(
                 DownloadMidiComponent,
-                {midi: this.compositionControl.composition.midi}
+                {
+                    midi: this.compositionControl.composition.midi
+                }
             )
         } catch (e) {
             this.errorHandler(e)

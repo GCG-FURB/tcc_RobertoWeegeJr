@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavParams, LoadingController, AlertController, PopoverController } from 'ionic-angular';
+import { NavParams, LoadingController, AlertController, PopoverController, ToastController } from 'ionic-angular';
 import { MusicalCompositionControl } from '../../control/musical-composition';
 import { GenericComponent } from '../../control/generic-component';
 
@@ -14,11 +14,13 @@ export class CompositionPage extends GenericComponent{
     constructor(private navParams: NavParams, 
                 private loadingCtrl: LoadingController,
                 private alertCtrl: AlertController,
-                private popoverCtrl: PopoverController) {
-        
+                private popoverCtrl: PopoverController,
+                private toastCtrl: ToastController) { 
+
         super(loadingCtrl,
-            alertCtrl,
-            popoverCtrl);
+              alertCtrl,
+              popoverCtrl,
+              toastCtrl);
             
     }
 

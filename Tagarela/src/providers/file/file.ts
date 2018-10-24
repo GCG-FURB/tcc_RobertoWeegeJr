@@ -104,6 +104,11 @@ export class FileProvider {
         await this.file.writeFile(this.concatenatePath(this.file.externalRootDirectory, 'Download') , fileName + '.mid', bytes.buffer, options)
     }
 
+
+    public async verifyFileToDownloadMidi(fileName: string): Promise<boolean> {
+        return await this,this.verifyFile(this.file.externalRootDirectory, 'Download',  fileName + '.mid');
+    }
+
     public async getFileContentIfExists(systemPath: string, relativePath: string, fileName: string): Promise<any> {
         if (await this.verifyFile(systemPath, relativePath, fileName)) {
             return await this.file.readAsText(this.concatenatePath(systemPath, relativePath), fileName);
@@ -166,5 +171,31 @@ export class FileProvider {
     public async removeFile(systemPath: string, relativePath: string, fileName: string) {
         await this.file.removeFile(this.concatenatePath(systemPath, relativePath), fileName);
     }
+
+    public async cleanTempArea(){
+        let files = await this.file.listDir(this.tempAreaSystemDir, this.tempAreaRelativeDir);
+        for (let file of files) {
+            if (file.isDirectory) {
+                this.deleteAll(this.tempAreaSystemDir, this.concatenatePath(this.tempAreaRelativeDir, file.name))
+            } else {
+                await this.file.removeFile(this.concatenatePath(this.tempAreaSystemDir, this.tempAreaRelativeDir), file.name);         
+            }
+        }
+    }
+
+    public async deleteAll(systemDir: string, relativeDir: string){
+        let files = await this.file.listDir(systemDir, relativeDir);
+        for (let file of files) {
+            if (file.isDirectory) {
+                this.deleteAll(systemDir, this.concatenatePath(relativeDir, file.name))
+            } else {
+                await this.file.removeFile(this.concatenatePath(systemDir, relativeDir), file.name);         
+            }
+        }
+        await this.file.removeDir(systemDir, relativeDir);
+    }
+
+
+
 
 }

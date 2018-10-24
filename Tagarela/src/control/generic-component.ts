@@ -1,4 +1,4 @@
-import { Loading, LoadingController, AlertController, PopoverController } from "ionic-angular";
+import { Loading, LoadingController, AlertController, PopoverController, ToastController } from "ionic-angular";
 
 export class GenericComponent {
 
@@ -10,7 +10,8 @@ export class GenericComponent {
     
     constructor(private loadingController: LoadingController,
                 private alertController: AlertController,
-                private popoverController: PopoverController) {}
+                private popoverController: PopoverController,
+                private toastController: ToastController) {}
 
     get loading(): Loading {
         return this._loading;
@@ -49,6 +50,15 @@ export class GenericComponent {
     public async startAlert(alertParams: any) {
         let alert = this.alertController.create(alertParams);
         await alert.present()
+    }
+
+    public async createDefaultToast(message: string) {
+        let toast = this.toastController.create({
+            message: message,
+            duration: 3000,
+            position: 'down'
+        });
+        await toast.present();
     }
 
     public errorHandler(e){

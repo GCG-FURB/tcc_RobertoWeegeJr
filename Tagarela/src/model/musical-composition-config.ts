@@ -1,5 +1,15 @@
 export class MusicalCompositionConfig {
 
+    numerator;
+    denominator;
+    timeDivisionMetric;
+    mode;
+    keySignature;
+    baseKeySignaturesAllowed 
+    keySignaturesAllowed;
+
+    showCompositionData: boolean;
+
     // General Config
     private _baseFileSystem: string;           //Caminho relativo raiz da composição 
     private _relativePath: string;           //Caminho relativo raiz da composição 
