@@ -256,6 +256,56 @@ export class MidiControl {
         let firstEventByte: string = ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 1)); 
         
         switch (firstEventByte.charAt(0)) {
+            case MidiProtocolConstants._0_EVENT_FIRST_CHAR:
+                return new MidiCreatedEventModel(MidiProtocolConstants._0_EVENT_EVENT_LENGTH);
+            case MidiProtocolConstants._1_EVENT_FIRST_CHAR:
+                return new MidiCreatedEventModel(MidiProtocolConstants._1_EVENT_EVENT_LENGTH);
+            case MidiProtocolConstants._2_EVENT_FIRST_CHAR:
+                return new MidiCreatedEventModel(MidiProtocolConstants._2_EVENT_EVENT_LENGTH);
+            case MidiProtocolConstants._3_EVENT_FIRST_CHAR:
+                return new MidiCreatedEventModel(MidiProtocolConstants._3_EVENT_EVENT_LENGTH);
+            case MidiProtocolConstants._4_EVENT_FIRST_CHAR:
+                return new MidiCreatedEventModel(MidiProtocolConstants._4_EVENT_EVENT_LENGTH);
+            case MidiProtocolConstants._5_EVENT_FIRST_CHAR:
+                return new MidiCreatedEventModel(MidiProtocolConstants._5_EVENT_EVENT_LENGTH);
+            case MidiProtocolConstants._6_EVENT_FIRST_CHAR:
+                switch(firstEventByte) {
+                    case MidiProtocolConstants.CONTROLLER_EVENT_FIRST_BYTE_60:
+                        return new MidiCreatedEventModel(MidiProtocolConstants.CONTROLLER_EVENT_60_LENGTH);
+                    case MidiProtocolConstants.CONTROLLER_EVENT_FIRST_BYTE_61:
+                        return new MidiCreatedEventModel(MidiProtocolConstants.CONTROLLER_EVENT_61_LENGTH);
+                    case MidiProtocolConstants.CONTROLLER_EVENT_FIRST_BYTE_62:
+                        return new MidiCreatedEventModel(MidiProtocolConstants.CONTROLLER_EVENT_62_LENGTH);
+                    case MidiProtocolConstants.CONTROLLER_EVENT_FIRST_BYTE_63:
+                        return new MidiCreatedEventModel(MidiProtocolConstants.CONTROLLER_EVENT_63_LENGTH);
+                    case MidiProtocolConstants.CONTROLLER_EVENT_FIRST_BYTE_64:
+                        return new MidiCreatedEventModel(MidiProtocolConstants.CONTROLLER_EVENT_64_LENGTH);
+                    case MidiProtocolConstants.CONTROLLER_EVENT_FIRST_BYTE_65:
+                        return new MidiCreatedEventModel(MidiProtocolConstants.CONTROLLER_EVENT_65_LENGTH);
+                    default:
+                        throw Error(`O evento começando com ${firstEventByte} não está mapeado.`)
+                }
+            case MidiProtocolConstants._7_EVENT_FIRST_CHAR:
+                switch(firstEventByte) {
+                    case MidiProtocolConstants.CONTROLLER_EVENT_FIRST_BYTE_78:
+                        return new MidiCreatedEventModel(MidiProtocolConstants.CONTROLLER_EVENT_78_LENGTH);
+                    case MidiProtocolConstants.CONTROLLER_EVENT_FIRST_BYTE_79:
+                        return new MidiCreatedEventModel(MidiProtocolConstants.CONTROLLER_EVENT_79_LENGTH);
+                    case MidiProtocolConstants.CONTROLLER_EVENT_FIRST_BYTE_7A:
+                        return new MidiCreatedEventModel(MidiProtocolConstants.CONTROLLER_EVENT_7A_LENGTH);
+                    case MidiProtocolConstants.CONTROLLER_EVENT_FIRST_BYTE_7B:
+                        return new MidiCreatedEventModel(MidiProtocolConstants.CONTROLLER_EVENT_7B_LENGTH);
+                    case MidiProtocolConstants.CONTROLLER_EVENT_FIRST_BYTE_7C:
+                        return new MidiCreatedEventModel(MidiProtocolConstants.CONTROLLER_EVENT_7C_LENGTH);
+                    case MidiProtocolConstants.CONTROLLER_EVENT_FIRST_BYTE_7D:
+                        return new MidiCreatedEventModel(MidiProtocolConstants.CONTROLLER_EVENT_7D_LENGTH);
+                    case MidiProtocolConstants.CONTROLLER_EVENT_FIRST_BYTE_7E:
+                        return new MidiCreatedEventModel(MidiProtocolConstants.CONTROLLER_EVENT_7E_LENGTH);
+                    case MidiProtocolConstants.CONTROLLER_EVENT_FIRST_BYTE_7F:
+                        return new MidiCreatedEventModel(MidiProtocolConstants.CONTROLLER_EVENT_7F_LENGTH);
+                    default:
+                        throw Error(`O evento começando com ${firstEventByte} não está mapeado.`)
+                }
             case MidiProtocolConstants.NOTE_OFF_FIRST_CHAR:
                 return new MidiCreatedEventModel(MidiProtocolConstants.NOTE_OFF_EVENT_LENGTH, this.createNoteOffEvent(deltaTime, midiData));
             case MidiProtocolConstants.NOTE_ON_FIRST_CHAR:
@@ -554,8 +604,10 @@ export class MidiControl {
                         spectrumLineMap.set(note, spectrumLine);
                     }
                     spectrumNote = new MidiSpectrumNote();
-                    spectrumNote.x = spectrumNoteMap.get(note);
-                    spectrumNote.width = midiTotalDeltaTime - spectrumNote.x;
+                    spectrumNote.deltaTimeStart = spectrumNoteMap.get(note);
+                    spectrumNoteMap.delete(note);
+
+                    spectrumNote.deltaTimeEnd = midiTotalDeltaTime;
                     spectrumLineMap.get(note).notes.push(spectrumNote);
                 }
             }
@@ -563,8 +615,7 @@ export class MidiControl {
 
         spectrum.minNote = midiMinNote;
         spectrum.maxNote = midiMaxNote;
-        spectrum.width = midiTotalDeltaTime;
-        spectrum.height = midiMaxNote - midiMinNote;
+        spectrum.deltaTime = midiTotalDeltaTime;
 
         for (let i = midiMinNote; i <= midiMaxNote; i++) {
             if (spectrumLineMap.has(i)) {
@@ -575,7 +626,6 @@ export class MidiControl {
                 spectrum.lines.push(spectrumLine);
             }
         }
-        spectrum.generateLinesY();
         return spectrum;
     }
 
@@ -685,6 +735,68 @@ class MidiProtocolConstants {
     public static NOTE_ON_NOTE_BYTE_LENGTH: number = 1;
     public static NOTE_ON_VELOCITY_BYTE_INDEX: number = 2;
     public static NOTE_ON_VELOCITY_BYTE_LENGTH: number = 1;
+
+    public static _0_EVENT_FIRST_CHAR: string = '0';
+    public static _0_EVENT_EVENT_LENGTH: number = 2;
+
+    public static _1_EVENT_FIRST_CHAR: string = '1';
+    public static _1_EVENT_EVENT_LENGTH: number = 2;
+
+    public static _2_EVENT_FIRST_CHAR: string = '2';
+    public static _2_EVENT_EVENT_LENGTH: number = 2;
+
+    public static _3_EVENT_FIRST_CHAR: string = '3';
+    public static _3_EVENT_EVENT_LENGTH: number = 2;
+
+    public static _4_EVENT_FIRST_CHAR: string = '4';
+    public static _4_EVENT_EVENT_LENGTH: number = 2;
+
+    public static _5_EVENT_FIRST_CHAR: string = '5';
+    public static _5_EVENT_EVENT_LENGTH: number = 2;
+
+    public static _6_EVENT_FIRST_CHAR: string = '6';
+    public static CONTROLLER_EVENT_FIRST_BYTE_60: string = '60'; 
+    public static CONTROLLER_EVENT_60_LENGTH: number = 1; 
+
+    public static CONTROLLER_EVENT_FIRST_BYTE_61: string = '61';
+    public static CONTROLLER_EVENT_61_LENGTH: number = 1;
+
+    public static CONTROLLER_EVENT_FIRST_BYTE_62: string = '62';
+    public static CONTROLLER_EVENT_62_LENGTH: number = 2; 
+
+    public static CONTROLLER_EVENT_FIRST_BYTE_63: string = '63';
+    public static CONTROLLER_EVENT_63_LENGTH: number = 2;
+
+    public static CONTROLLER_EVENT_FIRST_BYTE_64: string = '64';
+    public static CONTROLLER_EVENT_64_LENGTH: number = 2; 
+
+    public static CONTROLLER_EVENT_FIRST_BYTE_65: string = '65';
+    public static CONTROLLER_EVENT_65_LENGTH: number = 2;
+
+    public static _7_EVENT_FIRST_CHAR: string = '7';
+    public static CONTROLLER_EVENT_FIRST_BYTE_78: string = '78';
+    public static CONTROLLER_EVENT_78_LENGTH: number = 2;
+
+    public static CONTROLLER_EVENT_FIRST_BYTE_79: string = '79';
+    public static CONTROLLER_EVENT_79_LENGTH: number = 2;
+
+    public static CONTROLLER_EVENT_FIRST_BYTE_7A: string = '7a';
+    public static CONTROLLER_EVENT_7A_LENGTH: number = 2;
+
+    public static CONTROLLER_EVENT_FIRST_BYTE_7B: string = '7b';
+    public static CONTROLLER_EVENT_7B_LENGTH: number = 2;
+
+    public static CONTROLLER_EVENT_FIRST_BYTE_7C: string = '7c';
+    public static CONTROLLER_EVENT_7C_LENGTH: number = 2;
+
+    public static CONTROLLER_EVENT_FIRST_BYTE_7D: string = '7d';
+    public static CONTROLLER_EVENT_7D_LENGTH: number = 2;
+
+    public static CONTROLLER_EVENT_FIRST_BYTE_7E: string = '7e';
+    public static CONTROLLER_EVENT_7E_LENGTH: number = 2;
+
+    public static CONTROLLER_EVENT_FIRST_BYTE_7F: string = '7f';
+    public static CONTROLLER_EVENT_7F_LENGTH: number = 2;
 
     public static A_EVENT_FIRST_CHAR: string = 'a';
     public static A_EVENT_EVENT_LENGTH: number = 3;

@@ -13,8 +13,20 @@ export class MusicalComposition {
 
     private _keySignature: number
 
-    keySignaturesAllowed;
-    showCompositionData;
+    private _keySignaturesAllowed;
+    public get keySignaturesAllowed() {
+        return this._keySignaturesAllowed;
+    }
+    public set keySignaturesAllowed(value) {
+        this._keySignaturesAllowed = value;
+    }
+    private _showCompositionData;
+    public get showCompositionData() {
+        return this._showCompositionData;
+    }
+    public set showCompositionData(value) {
+        this._showCompositionData = value;
+    }
 
     //midi
     private _midiId: string;

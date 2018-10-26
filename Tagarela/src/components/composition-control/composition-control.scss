@@ -1,52 +1,49 @@
-.flex-parent {
+.flex-parent-composition-control {
     display: flex;
-  }
-
-.flex-child {
-    flex: 1;
+    justify-content: flex-start;
+    width: 100%;
 }
 
 .choice-margin {
-    margin-left: 1%;
-    margin-right: 1%;
+    margin-left: 3vw;
+    margin-right: 3vw;
 }
 
-.teste {
+.inline-display {
     display: inline;
-}
-
-.overflow-drag {
-    overflow: initial;
 }
 
 .float-left-child {
     display: inline-block;
-    min-width: 40%;
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
 }
 
 .scroll-1 {
     white-space: nowrap;
-    height: 150px;
+    height: 15vh;
+}
+
+.scroll-2-control {
+    white-space: nowrap;
+    height: 12vh * 3;
+    margin-right: 0;
+    padding-top: 16px;
 }
 
 .scroll-2 {
     white-space: nowrap;
-    height: 400px;
-}
-
-.flex-child-control {
-    flex: 10;
-}
-
-.flex-child-lines {
-    flex: 20;
+    height: 12vh * 3;
+    width: 100%;
 }
 
 .composition-line {
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin-top: 1vh;
+    margin-bottom: 1vh;
 }
 
-.top-z-index {
-    z-index: 10;
+.composition-line-control {
+    margin-top: 1vh;
+    margin-bottom: 1vh;
+    height: 10vh;
 }

@@ -1,35 +1,46 @@
 
-<ion-card class="overflow-drag">
-    Fórmula de compasso: {{visualMidiProvider.getCompassFormula(compositionControl.composition.numerator, 
-                                                                compositionControl.composition.denominator)}}
+<ion-card *ngIf="compositionControl && this.compositionControl.composition.showCompositionData">
+    <ion-card-content>
+        <h6 ion-text>Dados de composição:</h6>
+        <br>
+        <h6 ion-text>Fórmula de compasso: {{visualMidiProvider.getCompassFormula(compositionControl.composition.numerator, 
+                                                                    compositionControl.composition.denominator)}}</h6>
+        <h6 ion-text>Tom: {{visualMidiProvider.getKeySignatureName(compositionControl.composition.keySignature, compositionControl.composition.mode)}}</h6>
+        <div *ngIf="!compositionHasEnded()">
+            <h6 ion-text>Passo: {{(compositionControl.stepIndex + 1) + '/' + compositionControl.config.stepsConfig.length}}</h6>
+            <h6 ion-text>Linha: {{(compositionControl.lineIndex + 1) + '/' + compositionControl.config.linesConfig.length}}</h6>
+            <h6 ion-text>Opções: {{getOptionsList().length}}</h6>
+        </div>
+        <div *ngFor="let line of compositionControl.config.linesConfig; let i = index">
+            <h6 ion-text >Linha {{i + 1}}: {{line.name}}</h6>
+        </div>
+        
 
-    <br>
-    Modo: {{visualMidiProvider.getMode(compositionControl.composition.mode)}}
-    <br>
+    </ion-card-content>
 </ion-card>
 
-<ion-card class="overflow-drag" *ngIf="compositionControl && getOptionsList().length > 0">
-    <ion-card-content class="overflow-drag">
-        <div class="teste overflow-drag">
+<ion-card *ngIf="compositionControl && getOptionsList().length > 0">
+    <ion-card-content>
+        <h6 ion-text>Escolha uma opção para a composição:</h6>
+        <div class="inline-display">
             <ion-scroll id="scroll1" scrollX="true" class="scroll-1"> 
-                <div class="choice-margin float-left-child top-z-index" *ngFor="let option of getOptionsList()">
-                    <choice-component [midiChoice]="option" [composition]="compositionControl" [toChoice]="true" ></choice-component> 
+                <div class="choice-margin float-left-child" *ngFor="let option of getOptionsList()">
+                    <choice-component [midiChoice]="option" [composition]="compositionControl" [toChoice]="true"></choice-component> 
                 </div>
             </ion-scroll> 
         </div>
     </ion-card-content>
 </ion-card>
-<ion-card *ngIf="compositionControl && getCompositionLinesList().length > 0 && getCompositionLinesList()[0].options.length > 0">
+
+<ion-card *ngIf="compositionControl">
     <ion-card-content>
-        <div class="flex-parent">
-            <div class="flex-child-control">
-                <ion-scroll scrollX="true" class="scroll-2">
-                    <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
-                        <line-control-component [compositionControl]="compositionControl" [compositionLine]="compositionLine"></line-control-component>
+        <h6 ion-text>Linhas de composição:</h6>
+        <div class="flex-parent-composition-control">
+                <div class="scroll-2-control">
+                    <div  class="composition-line-control" *ngFor="let compositionLine of getCompositionLinesList()">
+                        <line-control-component #controlScroll [compositionControl]="compositionControl" [compositionLine]="compositionLine"></line-control-component>
                     </div>
-                </ion-scroll>
-            </div>
-            <div class="flex-child-lines">
+                </div>
                 <ion-scroll scrollX="true" class="scroll-2">
                     <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
                         <choice-component class="float-left-child" *ngFor="let compositionOption of compositionLine.options"
@@ -37,7 +48,6 @@
                         </choice-component>
                     </div>
                 </ion-scroll>
-            </div>
         </div>
     </ion-card-content>
 </ion-card>

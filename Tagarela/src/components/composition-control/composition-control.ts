@@ -25,13 +25,13 @@ export class CompositionControlComponent extends GenericComponent {
               toastCtrl);
     }
 
-    public get compositionControl(): MusicalCompositionControl {
+    get compositionControl(): MusicalCompositionControl {
         return this._compositionControl;
     }
 
     @Input()
-    public set compositionControl(value: MusicalCompositionControl) {
-        this._compositionControl = value;
+    set compositionControl(compositionControl: MusicalCompositionControl) {
+        this._compositionControl = compositionControl;
     }
 
     private getOptionsList(): MusicalCompositionOption[] {
@@ -64,6 +64,22 @@ export class CompositionControlComponent extends GenericComponent {
                 return this.compositionControl.composition.lines[lineIndex].options;
             }
             return []
+        } catch (e) {
+            this.errorHandler(e)
+        }
+    }
+
+    private compositionHasStarted(): boolean{
+        try {
+            return this.compositionControl.compositionHasStarted();
+        } catch (e) {
+            this.errorHandler(e)
+        }
+    }
+
+    private compositionHasEnded(): boolean{
+        try {
+            return this.compositionControl.compositionHasEnded();
         } catch (e) {
             this.errorHandler(e)
         }

@@ -28,7 +28,7 @@ $app-direction: ltr;
 // The "primary" color is the only required color in the map.
 
 $colors: (
-  primary:    #488aff,
+  primary:    #0277BD,
   secondary:  #32db64,
   danger:     #f53d3d,
   light:      #f4f4f4,
@@ -79,7 +79,6 @@ $colors: (
 @import "roboto";
 @import "noto-sans";
 
-
 //custom
 ion-icon {
   &[class*="instrument-"] {
@@ -91,58 +90,60 @@ ion-icon {
       height: 1em;
   }
   // custom icons
-&[class*="instrument-piano"] {mask-image: url(../assets/icon/piano.svg);}
-//&[class*="instrument-piano"] {mask-image: url(../assets/icon/teste0.svg);}
-&[class*="instrument-vibraphone"] {mask-image: url(../assets/icon/vibraphone.svg);}
-&[class*="instrument-xylophone"] {mask-image: url(../assets/icon/xylophone.svg);}
-&[class*="instrument-accordion"] {mask-image: url(../assets/icon/accordion.svg);}
-&[class*="instrument-acoustic-guitar"] {mask-image: url(../assets/icon/acoustic-guitar.svg);}
-&[class*="instrument-electric-guitar"] {mask-image: url(../assets/icon/electric-guitar.svg);}
-&[class*="instrument-bass-guitar"] {mask-image: url(../assets/icon/bass-guitar.svg);}
-&[class*="instrument-violin"] {mask-image: url(../assets/icon/violin.svg);}
-&[class*="instrument-harp"] {mask-image: url(../assets/icon/harp.svg);}
-&[class*="instrument-trumpet"] {mask-image: url(../assets/icon/trumpet.svg);}
-&[class*="instrument-trombone"] {mask-image: url(../assets/icon/trombone.svg);}
-&[class*="instrument-tuba"] {mask-image: url(../assets/icon/tuba.svg);}
-&[class*="instrument-saxophone"] {mask-image: url(../assets/icon/saxophone.svg);}
-&[class*="instrument-flute"] {mask-image: url(../assets/icon/flute.svg);}
-&[class*="instrument-banjo"] {mask-image: url(../assets/icon/banjo.svg);}
-&[class*="instrument-snare-drum"] {mask-image: url(../assets/icon/snare-drum.svg);}
+  &[class*="instrument-piano"] {mask-image: url(../assets/icon/piano.svg);}
+  //&[class*="instrument-piano"] {mask-image: url(../assets/icon/teste0.svg);}
+  &[class*="instrument-vibraphone"] {mask-image: url(../assets/icon/vibraphone.svg);}
+  &[class*="instrument-xylophone"] {mask-image: url(../assets/icon/xylophone.svg);}
+  &[class*="instrument-accordion"] {mask-image: url(../assets/icon/accordion.svg);}
+  &[class*="instrument-acoustic-guitar"] {mask-image: url(../assets/icon/acoustic-guitar.svg);}
+  &[class*="instrument-electric-guitar"] {mask-image: url(../assets/icon/electric-guitar.svg);}
+  &[class*="instrument-bass-guitar"] {mask-image: url(../assets/icon/bass-guitar.svg);}
+  &[class*="instrument-violin"] {mask-image: url(../assets/icon/violin.svg);}
+  &[class*="instrument-harp"] {mask-image: url(../assets/icon/harp.svg);}
+  &[class*="instrument-trumpet"] {mask-image: url(../assets/icon/trumpet.svg);}
+  &[class*="instrument-trombone"] {mask-image: url(../assets/icon/trombone.svg);}
+  &[class*="instrument-tuba"] {mask-image: url(../assets/icon/tuba.svg);}
+  &[class*="instrument-saxophone"] {mask-image: url(../assets/icon/saxophone.svg);}
+  &[class*="instrument-flute"] {mask-image: url(../assets/icon/flute.svg);}
+  &[class*="instrument-banjo"] {mask-image: url(../assets/icon/banjo.svg);}
+  &[class*="instrument-snare-drum"] {mask-image: url(../assets/icon/snare-drum.svg);}
 
-&[class*="key_signature_"] {
+  &[class*="key_signature_"] {
+      mask-size: contain;
+      mask-position: 50% 50%;
+      mask-repeat: no-repeat;
+      background: currentColor;
+      width: 1em;
+      height: 1em;
+  }
+  // custom icons
+  &[class*="key_signature_-7"] {mask-image: url(../assets/icon/key_signature_-7.svg);}
+  &[class*="key_signature_-6"] {mask-image: url(../assets/icon/key_signature_-6.svg);}
+  &[class*="key_signature_-5"] {mask-image: url(../assets/icon/key_signature_-5.svg);}
+  &[class*="key_signature_-4"] {mask-image: url(../assets/icon/key_signature_-4.svg);}
+  &[class*="key_signature_-3"] {mask-image: url(../assets/icon/key_signature_-3.svg);}
+  &[class*="key_signature_-2"] {mask-image: url(../assets/icon/key_signature_-2.svg);}
+  &[class*="key_signature_-1"] {mask-image: url(../assets/icon/key_signature_-1.svg);}
+  &[class*="key_signature_0"] {mask-image: url(../assets/icon/key_signature_0.svg);}
+  &[class*="key_signature_1"] {mask-image: url(../assets/icon/key_signature_1.svg);}
+  &[class*="key_signature_2"] {mask-image: url(../assets/icon/key_signature_2.svg);}
+  &[class*="key_signature_3"] {mask-image: url(../assets/icon/key_signature_3.svg);}
+  &[class*="key_signature_4"] {mask-image: url(../assets/icon/key_signature_4.svg);}
+  &[class*="key_signature_5"] {mask-image: url(../assets/icon/key_signature_5.svg);}
+  &[class*="key_signature_6"] {mask-image: url(../assets/icon/key_signature_6.svg);}
+  &[class*="key_signature_7"] {mask-image: url(../assets/icon/key_signature_7.svg);}
+
+  &[class*="tempo"] {
     mask-size: contain;
     mask-position: 50% 50%;
     mask-repeat: no-repeat;
     background: currentColor;
     width: 1em;
     height: 1em;
-}
-// custom icons
-&[class*="key_signature_-7"] {mask-image: url(../assets/icon/key_signature_-7.svg);}
-&[class*="key_signature_-6"] {mask-image: url(../assets/icon/key_signature_-6.svg);}
-&[class*="key_signature_-5"] {mask-image: url(../assets/icon/key_signature_-5.svg);}
-&[class*="key_signature_-4"] {mask-image: url(../assets/icon/key_signature_-4.svg);}
-&[class*="key_signature_-3"] {mask-image: url(../assets/icon/key_signature_-3.svg);}
-&[class*="key_signature_-2"] {mask-image: url(../assets/icon/key_signature_-2.svg);}
-&[class*="key_signature_-1"] {mask-image: url(../assets/icon/key_signature_-1.svg);}
-&[class*="key_signature_0"] {mask-image: url(../assets/icon/key_signature_0.svg);}
-&[class*="key_signature_1"] {mask-image: url(../assets/icon/key_signature_1.svg);}
-&[class*="key_signature_2"] {mask-image: url(../assets/icon/key_signature_2.svg);}
-&[class*="key_signature_3"] {mask-image: url(../assets/icon/key_signature_3.svg);}
-&[class*="key_signature_4"] {mask-image: url(../assets/icon/key_signature_4.svg);}
-&[class*="key_signature_5"] {mask-image: url(../assets/icon/key_signature_5.svg);}
-&[class*="key_signature_6"] {mask-image: url(../assets/icon/key_signature_6.svg);}
-&[class*="key_signature_7"] {mask-image: url(../assets/icon/key_signature_7.svg);}
+  }
+  // custom icons
+  &[class*="tempo"] {mask-image: url(../assets/icon/tempo.svg);}
 
-&[class*="tempo"] {
-  mask-size: contain;
-  mask-position: 50% 50%;
-  mask-repeat: no-repeat;
-  background: currentColor;
-  width: 1em;
-  height: 1em;
-}
-// custom icons
-&[class*="tempo"] {mask-image: url(../assets/icon/tempo.svg);}
+
 
 }

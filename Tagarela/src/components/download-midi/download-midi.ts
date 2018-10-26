@@ -3,7 +3,6 @@ import { Midi } from '../../model/midi';
 import { GenericComponent } from '../../control/generic-component';
 import { NavController, NavParams, LoadingController, AlertController, PopoverController, ToastController } from 'ionic-angular';
 import { FileProvider } from '../../providers/file/file';
-import { MediaProvider } from '../../providers/media/media';
 import { MidiControl } from '../../control/midi';
 import { ValidatorFn, FormControl, Validators, FormGroup, FormBuilder } from '@angular/forms';
 
@@ -22,7 +21,6 @@ export class DownloadMidiComponent extends GenericComponent{
     constructor(private navCtrl: NavController, 
                 private navParams: NavParams, 
                 private fileProvider: FileProvider, 
-                private mediaProvider: MediaProvider,
                 private loadingCtrl: LoadingController,
                 private alertCtrl: AlertController,
                 private popoverCtrl: PopoverController,
@@ -144,7 +142,6 @@ export class DownloadMidiComponent extends GenericComponent{
                         "format_error": true
                     };    
                 }
-
             } catch (e) {
                 errorHandlerFunction(e);
                 return {

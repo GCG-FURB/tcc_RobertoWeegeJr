@@ -167,6 +167,13 @@ export class Midi {
         return keySignatures;
     }
 
+    public getTimeDivisionMetric(): number {
+        if (this.timeDivision.timeDivisionType != MidiTimeDivisionType.METRICAL_TYPE) 
+            return null;
+        let timeDivisionMetrical: MidiTimeDivisionMetrical = this.timeDivision as MidiTimeDivisionMetrical;
+        return timeDivisionMetrical.metric;
+    }
+
     //change functions
     public applyNoteTranspose(newKeySignatue: number){
         for (let midiTrack of this.midiTracks) {

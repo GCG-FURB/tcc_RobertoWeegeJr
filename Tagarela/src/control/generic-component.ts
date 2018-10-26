@@ -42,8 +42,8 @@ export class GenericComponent {
         }
     }
 
-    public async startPopover(popoverObject: any, popoverParams: any) {
-        let popover = this.popoverController.create(popoverObject, popoverParams);
+    public async startPopover(popoverObject: any, popoverParams: any, popoverSCSS?: any) {
+        let popover = this.popoverController.create(popoverObject, popoverParams, popoverSCSS);
         await popover.present();
     }
 

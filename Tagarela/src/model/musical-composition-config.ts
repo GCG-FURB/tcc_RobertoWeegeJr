@@ -1,14 +1,62 @@
 export class MusicalCompositionConfig {
 
-    numerator;
-    denominator;
-    timeDivisionMetric;
-    mode;
-    keySignature;
-    baseKeySignaturesAllowed 
-    keySignaturesAllowed;
+    private _numerator;
+    public get numerator() {
+        return this._numerator;
+    }
+    public set numerator(value) {
+        this._numerator = value;
+    }
+    private _denominator;
+    public get denominator() {
+        return this._denominator;
+    }
+    public set denominator(value) {
+        this._denominator = value;
+    }
+    private _timeDivisionMetric;
+    public get timeDivisionMetric() {
+        return this._timeDivisionMetric;
+    }
+    public set timeDivisionMetric(value) {
+        this._timeDivisionMetric = value;
+    }
+    private _mode;
+    public get mode() {
+        return this._mode;
+    }
+    public set mode(value) {
+        this._mode = value;
+    }
+    private _keySignature;
+    public get keySignature() {
+        return this._keySignature;
+    }
+    public set keySignature(value) {
+        this._keySignature = value;
+    }
+    private _baseKeySignaturesAllowed; 
+    public get baseKeySignaturesAllowed() {
+        return this._baseKeySignaturesAllowed;
+    }
+    public set baseKeySignaturesAllowed(value) {
+        this._baseKeySignaturesAllowed = value;
+    }
+    private _keySignaturesAllowed;
+    public get keySignaturesAllowed() {
+        return this._keySignaturesAllowed;
+    }
+    public set keySignaturesAllowed(value) {
+        this._keySignaturesAllowed = value;
+    }
 
-    showCompositionData: boolean;
+    private _showCompositionData: boolean;
+    public get showCompositionData(): boolean {
+        return this._showCompositionData;
+    }
+    public set showCompositionData(value: boolean) {
+        this._showCompositionData = value;
+    }
 
     // General Config
     private _baseFileSystem: string;           //Caminho relativo raiz da composição 

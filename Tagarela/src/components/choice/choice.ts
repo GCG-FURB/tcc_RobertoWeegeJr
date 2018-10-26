@@ -14,6 +14,10 @@ import { MidiSpectrumSvgProvider } from '../../providers/midi-spectrum-svg/midi-
 })
 export class ChoiceComponent extends GenericComponent{
 
+    //constants
+    private MIDI_TRACK: number = 0;
+    private SPECTRUM_SIZE_OF_QUARTER_NOTE: number = 4.0;
+
     //inputs
     private _composition: MusicalCompositionControl;
     private _midiChoice: MusicalCompositionOption;
@@ -23,6 +27,7 @@ export class ChoiceComponent extends GenericComponent{
 
     //local
     private _backgroundSVGImageURL: string;
+    private _widthSize: number;
 
     constructor(private loadingCtrl: LoadingController,
                 private alertCtrl: AlertController,
@@ -38,31 +43,31 @@ export class ChoiceComponent extends GenericComponent{
     
     }
     
-    public get composition(): MusicalCompositionControl {
+    get composition(): MusicalCompositionControl {
         return this._composition;
     }
     
     @Input()
-    public set composition(value: MusicalCompositionControl) {
-        this._composition = value;
+    set composition(composition: MusicalCompositionControl) {
+        this._composition = composition;
     }
 
-    public get midiChoice(): MusicalCompositionOption {
+    get midiChoice(): MusicalCompositionOption {
         return this._midiChoice;
     }
     
     @Input()
-    public set midiChoice(value: MusicalCompositionOption) {
-        this._midiChoice = value;
+    set midiChoice(midiChoice: MusicalCompositionOption) {
+        this._midiChoice = midiChoice;
     }
     
-    public get toChoice(): boolean {
+    get toChoice(): boolean {
         return this._toChoice;
     }
     
     @Input()
-    public set toChoice(value: boolean) {
-        this._toChoice = value;
+    set toChoice(toChoice: boolean) {
+        this._toChoice = toChoice;
     }
 
     get minNote(): number {
@@ -85,6 +90,14 @@ export class ChoiceComponent extends GenericComponent{
         if (this._maxNote != maxNote)
             this.backgroundSVGImageURL = null;
         this._maxNote = maxNote;
+    }
+
+    get widthSize(): number {
+        return this._widthSize;
+    }
+
+    set widthSize(widthSize: number) {
+        this._widthSize = widthSize;
     }
 
     get backgroundSVGImageURL(): string {
@@ -110,6 +123,7 @@ export class ChoiceComponent extends GenericComponent{
             this.backgroundSVGImageURL = this.midiSpectrumSvgProvider
                                              .getEncodedSVGSpectrum(this.midiChoice.spectrum, 
                                                                     this.midiChoice.musicalInstrument,
+                                                                    this.midiChoice.midi.getTimeDivisionMetric(),
                                                                     this.minNote,
                                                                     this.maxNote); 
         }
@@ -123,6 +137,13 @@ export class ChoiceComponent extends GenericComponent{
         }
     }
 
+    private getWidthSize(): number {
+        if (this.midiChoice && this.midiChoice.midi && !this.widthSize) {
+            this.widthSize = this.midiChoice.midi.getDeltaTimeSum(this.MIDI_TRACK) / this.midiChoice.midi.getTimeDivisionMetric() * this.SPECTRUM_SIZE_OF_QUARTER_NOTE;
+        }
+        return this.widthSize
+    }
+
     private playMidi() {
         try {
             this.composition.applyOptionChanges(this.midiChoice);
@@ -132,7 +153,12 @@ export class ChoiceComponent extends GenericComponent{
                     spectrum: this.getBackgroundImage(),
                     midi: this.midiChoice.midi,
                     midiId: this.midiChoice.midiId
-                });
+                },
+                {   
+                    cssClass: 'custom-popover',
+                    enableBackdropDismiss: false
+                }
+            );
         } catch (e) {
             this.errorHandler(e);
         }

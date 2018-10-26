@@ -53,9 +53,13 @@ export class LineControl extends GenericComponent {
             this.startPopover (
                 PlayMidiComponent, 
                 {
-                    spectrum: this.getSvgImageImage(),
+                    spectrum: this.getSVGMidiSpectrum(),
                     midi: this.compositionLine.midi,
                     midiId: this.compositionLine.midiId
+                },
+                {   
+                    cssClass: 'custom-popover',
+                    enableBackdropDismiss: false
                 }
             );
         } catch (e) {
@@ -74,7 +78,7 @@ export class LineControl extends GenericComponent {
                     minRangeValue: this.compositionLine.minVolume,
                     maxRangeValue: this.compositionLine.maxVolume,
                     stepRangeValue: this.compositionLine.stepVolume,
-                    snapsRange: false
+                    snapsRange: false,
                 }
             );
         } catch (e) {
@@ -104,7 +108,7 @@ export class LineControl extends GenericComponent {
         }
     }
 
-    private getSvgImageImage(): string {
+    private getSVGMidiSpectrum(): string {
         let spectrums: MidiSpectrum[][] = [];
         let musicalInstruments: number[][] = [];
 
@@ -123,7 +127,7 @@ export class LineControl extends GenericComponent {
         spectrums.push(lineSpectrums);
         musicalInstruments.push(lineMusicalInstruments);
 
-        return this.midiSpectrumSvgProvider.concatenateSpectrums(spectrums, musicalInstruments, minNotes, maxNotes);
+        return this.midiSpectrumSvgProvider.concatenateSpectrums(spectrums, musicalInstruments, this.compositionLine.midi.getTimeDivisionMetric(), minNotes, maxNotes);
     }
 
 }

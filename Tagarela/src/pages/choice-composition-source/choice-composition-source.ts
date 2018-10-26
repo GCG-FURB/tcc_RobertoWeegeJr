@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, LoadingController, AlertController, PopoverController, Loading, ToastController } from 'ionic-angular';
+import { NavController, LoadingController, AlertController, PopoverController, ToastController } from 'ionic-angular';
 import { SetupCompositionSourcePage } from '../setup-composition-source/setup-composition-source';
 import { MusicalCompositionConfigControl } from '../../control/musical-composition-config';
 import { Platform } from 'ionic-angular';
@@ -172,7 +172,7 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
                                         baseFileSystem: string, 
                                         relativePath: string) {
             
-        await this.createLoading('Carregando dados de composição');
+        await this.createLoading('Carregando Dados de Composição');
 
         let configControl: MusicalCompositionConfigControl = new MusicalCompositionConfigControl(
                                                                     this.fileProvider, 

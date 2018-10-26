@@ -1,8 +1,9 @@
 <ion-header>
 
-    <ion-navbar>
+    <ion-navbar color="primary">
         <ion-title>Configuração de Composição</ion-title>
     </ion-navbar>
+
     <ion-toolbar>
         <button ion-button full (click)="saveConfigAndStartComposition()" [disabled]="!generalForm.valid || !stepFormsIsValid() || !optionFormsIsValid()">
             Começar composição
@@ -12,30 +13,29 @@
         
         <ion-segment [(ngModel)]="configSegment" *ngIf="configControl && sourceControl && generalForm && stepForms && optionForms">
             <ion-segment-button value="general">
-                <p [class.invalid]="!generalForm.valid">Geral</p>
+                <p ion-text [class.invalid]="!generalForm.valid" class="segment-text">Geral</p>
             </ion-segment-button>
             <ion-segment-button value="lines">
-                <p [class.invalid]="!lineFormsIsValid()">Linhas</p>
+                <p [class.invalid]="!lineFormsIsValid()" class="segment-text">Linhas</p>
             </ion-segment-button>
             <ion-segment-button value="steps">
-                <p [class.invalid]="!stepFormsIsValid()">Passos</p>
+                <p [class.invalid]="!stepFormsIsValid()" class="segment-text">Passos</p>
             </ion-segment-button>
             <ion-segment-button value="options">
-                <p [class.invalid]="!optionFormsIsValid()">Opções</p>
+                <p [class.invalid]="!optionFormsIsValid()" class="segment-text">Opções</p>
             </ion-segment-button>
         </ion-segment>
 
     </ion-toolbar>
 
 </ion-header>
-
 <ion-content>
 
     <div [ngSwitch]="configSegment" *ngIf="configControl && sourceControl && generalForm && stepForms && optionForms">
         
         <div *ngSwitchCase="'general'">
-            <ion-label>Escolha os parâmetros gerais de composição:</ion-label>
-           
+            <h6 ion-text class="headers_margin">Escolha os parâmetros gerais de composição:</h6>
+
             <ion-item>
                 <ion-label>Valor mínimo e máximo de tempo (BPM) </ion-label>
                 <ion-badge item-end>{{tempoRange.lower}}</ion-badge>
@@ -82,7 +82,7 @@
 
             <form [formGroup]="generalForm">
                 
-                <ion-label>Escolha os parâmetros gerais de tonalidade:</ion-label>
+                <h6 ion-text class="headers_margin headers_margin_top">Escolha os parâmetros gerais de tonalidade:</h6>
 
                 <ion-item [class.input-invalid]= "!generalForm.controls.keySignaturesAllowed.valid">
                     <ion-label [class.invalid]  ="!generalForm.controls.keySignaturesAllowed.valid">Tonalidades para escolha:
@@ -91,7 +91,7 @@
                     </ion-label>
                     <ion-select [formControl]="generalForm.controls.keySignaturesAllowed" [(ngModel)]="configControl.config.keySignaturesAllowed" multiple="true">
                         <ion-option *ngFor=" let key of configControl.config.baseKeySignaturesAllowed" [value]="key">
-                                {{visualMidiProvider.getInstrumentNameKeySignatureNumber(key, configControl.config.mode)}}
+                                {{visualMidiProvider.getKeySignatureName(key, configControl.config.mode)}}
                         </ion-option> 
                     </ion-select>
                 </ion-item>
@@ -102,13 +102,13 @@
                     </ion-label>
                     <ion-select [formControl]="generalForm.controls.defaultKeySignature" [(ngModel)]="configControl.config.keySignature" multiple="false">
                         <ion-option *ngFor="let key of configControl.config.baseKeySignaturesAllowed" [value]="key">
-                                {{visualMidiProvider.getInstrumentNameKeySignatureNumber(key, configControl.config.mode)}}
+                                {{visualMidiProvider.getKeySignatureName(key, configControl.config.mode)}}
                         </ion-option>
                     </ion-select>
                 </ion-item>
             </form>
 
-            <ion-label>Escolha os parâmetros gerais de viualização:</ion-label>
+            <h6 ion-text class="headers_margin headers_margin_top">Escolha os parâmetros gerais de viualização:</h6>
             <ion-item>
                 <ion-label>Exibir dados de composição</ion-label>
                 <ion-checkbox [(ngModel)]="configControl.config.showCompositionData"></ion-checkbox>
@@ -117,9 +117,9 @@
         </div>       
 
         <div *ngSwitchCase="'lines'">
-            <ion-label>Escolha os parâmetros das linhas de composição:</ion-label>
+            <h6 ion-text class="headers_margin">Escolha os parâmetros das linhas de composição:</h6>
             <div *ngFor="let lineConfig of configControl.config.linesConfig; let i = index">
-                <ion-label>{{lineConfig.name}}</ion-label>
+                <h6 ion-text class="headers_margin headers_margin_top">{{lineConfig.name}}</h6>
                 <ion-item>
                     <ion-label>Valor mínimo e máximo de volume</ion-label>
                     <ion-badge item-end>{{volumeRange[i].lower}}</ion-badge>
@@ -168,10 +168,10 @@
         </div>
 
         <div *ngSwitchCase="'steps'">
-            <ion-label>Escolha os parâmetros de passos de composição:</ion-label>
+            <h6 ion-text class="headers_margin">Escolha os parâmetros de passos de composição:</h6>
             <div *ngFor="let stepConfig of configControl.config.stepsConfig; let i = index">
                 <form [formGroup]="stepForms[i]">
-                    <ion-label>{{stepConfig.relativePath}}</ion-label>
+                    <h6 ion-text  class="headers_margin headers_margin_top">{{stepConfig.relativePath}}</h6>
                     <ion-item [class.input-invalid]= "!stepForms[i].controls.quantityOfQuarterNote.valid">
                         <ion-label [class.invalid]=  "!stepForms[i].controls.quantityOfQuarterNote.valid" floating>Quantidade de quartos de nota
                             <p class="invalid" *ngIf="!stepForms[i].controls.quantityOfQuarterNote.valid && stepForms[i].controls.quantityOfQuarterNote.errors.validation_error">Ocorreu um erro no processo de validação</p>
@@ -188,15 +188,15 @@
         </div>
 
         <div *ngSwitchCase="'options'">
-            <ion-label>Escolha os parâmetros das opções de composição:</ion-label>
+            <h6 ion-text class="headers_margin">Escolha os parâmetros das opções de composição:</h6>
             <div *ngFor="let stepConfig of configControl.config.stepsConfig; let i = index">
-                <ion-label>Passo: {{stepConfig.relativePath}}</ion-label>
+                <h6 ion-text class="headers_margin">Passo: {{stepConfig.relativePath}}</h6>
                 
                 <div *ngFor="let groupConfig of stepConfig.groupsConfig; let j = index">
-                    <ion-label>Grupo: {{groupConfig.relativePath}}</ion-label>
+                    <h6 ion-text class="headers_margin">Grupo: {{groupConfig.relativePath}}</h6>
                 
                     <div *ngFor="let optionConfig of groupConfig.optionsConfig; let k = index">
-                        <ion-label>Option: {{optionConfig.fileName}}</ion-label>
+                        <h6 ion-text class="headers_margin headers_margin_top">Option: {{optionConfig.fileName}}</h6>
                         
                         <form [formGroup]="optionForms[i][j][k]">
 

@@ -1,8 +1,12 @@
 <div class="image2 flex-parent">
-    <button ion-button icon-only class="flex-child" (click)="playMidi()">
-        <ion-icon name="play"></ion-icon>
-    </button>      
-    <button ion-button icon-only class="flex-child" (click)="goToVolumePopover()">
-        <ion-icon [name]="getVolumeIcon()"></ion-icon>
-    </button>
+    <div class="flex-child">
+        <button ion-button small icon-only (click)="playMidi()" class="center">
+            <ion-icon name="play"></ion-icon>
+        </button>      
+    </div>
+    <div class="flex-child">
+        <button ion-button small icon-only (click)="goToVolumePopover()" class="center">
+            <ion-icon [name]="getVolumeIcon()"></ion-icon>
+        </button>
+    </div>
 </div>

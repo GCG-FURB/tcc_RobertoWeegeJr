@@ -1,11 +1,20 @@
 .image4 {
+    position: absolute;
+    height: 60vh;
+    left: 0vh;
     background-repeat: no-repeat;
-    background-size:100% 100%;
+    background-size: 100% 100%;
     background-position: center;
-    min-height: 100px;
-    max-height: 200px;
-    min-width: 100px;
-    max-width: 500px;
+    padding: 0 0 0 0;
+}
+
+.indicator {
+    position: absolute;
+    width: 1px;
+    height: 60vh;
+    border: 1px;
+    border-color: black;
+    border-style: solid;
 }
 
 .flex-parent {
@@ -15,3 +24,4 @@
 .flex-child {
     flex: 1;
 }
+

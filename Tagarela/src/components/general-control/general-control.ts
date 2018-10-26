@@ -8,9 +8,6 @@ import { VisualMidiProvider } from '../../providers/visual-midi/visual-midi';
 import { GenericComponent } from '../../control/generic-component';
 import { MidiSpectrum } from '../../model/midi-spectrum';
 import { MidiSpectrumSvgProvider } from '../../providers/midi-spectrum-svg/midi-spectrum-svg';
-import { Midi } from '../../model/midi';
-import { FileProvider } from '../../providers/file/file';
-import { MidiControl } from '../../control/midi';
 import { DownloadMidiComponent } from '../download-midi/download-midi';
 
 @Component({
@@ -26,7 +23,6 @@ export class GeneralControlComponent extends GenericComponent {
                 private popoverCtrl: PopoverController,
                 private visualMidiProvider: VisualMidiProvider,
                 private midiSpectrumSvgProvider: MidiSpectrumSvgProvider,
-                private fileProvider: FileProvider,
                 private toastCtrl: ToastController) {
 
         super(loadingCtrl,
@@ -36,13 +32,13 @@ export class GeneralControlComponent extends GenericComponent {
 
     }
    
-    public get compositionControl(): MusicalCompositionControl {
+    get compositionControl(): MusicalCompositionControl {
         return this._compositionControl;
     }
 
     @Input() 
-    public set compositionControl(value: MusicalCompositionControl) {
-        this._compositionControl = value;
+    set compositionControl(compositionControl: MusicalCompositionControl) {
+        this._compositionControl = compositionControl;
     }
 
     private playMidi() {
@@ -51,9 +47,13 @@ export class GeneralControlComponent extends GenericComponent {
             this.startPopover(
                 PlayMidiComponent, 
                 {
-                    spectrum: this.getSvgImageImage(),
+                    spectrum: this.getSVGMidiSpectrum(),
                     midi: this.compositionControl.composition.midi,
                     midiId: this.compositionControl.composition.midiId
+                },
+                {   
+                    cssClass: 'custom-popover',
+                    enableBackdropDismiss: false
                 }
             );
         } catch (e) {
@@ -61,7 +61,7 @@ export class GeneralControlComponent extends GenericComponent {
         }
     }
 
-    private getSvgImageImage(): string {
+    private getSVGMidiSpectrum(): string {
         let spectrums: MidiSpectrum[][] = [];
         let musicalInstruments: number[][] = [];
         let minNotes: number[] = [];
@@ -83,7 +83,7 @@ export class GeneralControlComponent extends GenericComponent {
             musicalInstruments.push(lineMusicalInstruments);
 
         }
-        return this.midiSpectrumSvgProvider.concatenateSpectrums(spectrums, musicalInstruments, minNotes, maxNotes);
+        return this.midiSpectrumSvgProvider.concatenateSpectrums(spectrums, musicalInstruments, this.compositionControl.composition.midi.getTimeDivisionMetric(), minNotes, maxNotes);
     }
 
     private changeKeySignature(){
@@ -105,7 +105,7 @@ export class GeneralControlComponent extends GenericComponent {
 
     private getKeySignatureName(mode: number) {
         return (keySignatureNumber: number): string => {
-            return this.visualMidiProvider.getInstrumentNameKeySignatureNumber(keySignatureNumber, mode);
+            return this.visualMidiProvider.getKeySignatureName(keySignatureNumber, mode);
         }
     }
 
@@ -175,6 +175,7 @@ export class GeneralControlComponent extends GenericComponent {
             this.startPopover(
                 DownloadMidiComponent,
                 {
+                    title: 'Baixar a Composição',
                     midi: this.compositionControl.composition.midi
                 }
             )

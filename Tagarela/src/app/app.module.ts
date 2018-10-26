@@ -18,7 +18,6 @@ import { SlidePopoverComponent } from '../components/slide-popover/slide-popover
 import { ListPopoverComponent } from '../components/list-popover/list-popover';
 import { PlayMidiComponent } from '../components/play-midi/play-midi';
 import { FileProvider } from '../providers/file/file';
-import { MediaProvider } from '../providers/media/media';
 import { VisualMidiProvider } from '../providers/visual-midi/visual-midi';
 import { MidiSpectrumSvgProvider } from '../providers/midi-spectrum-svg/midi-spectrum-svg';
 import { LineControl } from '../components/line-control/line-control';
@@ -61,7 +60,6 @@ import { DownloadMidiComponent } from '../components/download-midi/download-midi
     Media,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     FileProvider,
-    MediaProvider,
     VisualMidiProvider,
     MidiSpectrumSvgProvider
   ]

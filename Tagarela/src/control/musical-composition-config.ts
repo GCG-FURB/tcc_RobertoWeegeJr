@@ -1,7 +1,7 @@
 import { MusicalCompositionConfig, MusicalCompositionStepConfig, MusicalCompositionGroupConfig, MusicalCompositionOptionConfig, MusicalCompositionLineConfig } from "../model/musical-composition-config";
 import { MusicalCompositionSource } from "../model/musical-composition-source";
 import { FileProvider } from "../providers/file/file";
-import { Midi, MidiTimeDivisionMetrical, MidiEventDataType, TimeSignatureMidiEvent, KeySignatureMidiEvent } from "../model/midi";
+import { Midi, MidiTimeDivisionMetrical, MidiEventDataType, TimeSignatureMidiEvent, KeySignatureMidiEvent, NoteMidiEvent, MidiEvent, NoteOffMidiEvent } from "../model/midi";
 import { MidiControl } from "./midi";
 
 export class MusicalCompositionConfigControl {
@@ -410,6 +410,46 @@ export class MusicalCompositionConfigControl {
 
         this.config.timeDivisionMetric = maxTimeDivicionMetric;
 
+        let note: NoteMidiEvent;
+        let noteIndex: number;
+
+        for (let source of midiSource.stepsSource) {
+            for (let group of source.groupsSource) {
+                for (let option of group.optionsSource) { 
+                    for (let track of option.midi.midiTracks) {
+                        let noteOnEvents: NoteMidiEvent[] = [];
+                        for (let event of track.midiEvents) {
+                            if (event.isOfType(MidiEventDataType.NOTE_ON)) {
+                                note = <NoteMidiEvent> event;
+                                noteOnEvents.push(note);
+                            } else if (event.isOfType(MidiEventDataType.NOTE_OFF)) { 
+                                note = <NoteMidiEvent> event;
+                                noteIndex = noteOnEvents.findIndex((item: NoteMidiEvent) => {
+                                    return note.note == item.note 
+                                        && note.channel == item.channel 
+                                });
+                                if (noteIndex < 0) {
+                                    throw new Error('Foi encontrado um evento de início de nota que foi finalizada.');
+                                }
+                                noteOnEvents.splice(noteIndex, 1);
+                            }
+                        }
+                        if (noteOnEvents.length > 0) {
+                            let lastTrackEvent: MidiEvent = track.midiEvents.pop();
+                            let deltaTime: number = lastTrackEvent.deltaTime;
+                            for (let noteToFinalize of noteOnEvents) {
+                                let noteOffEvent: NoteOffMidiEvent = new NoteOffMidiEvent(deltaTime, noteToFinalize.channel, noteToFinalize.note, 0);
+                                track.midiEvents.push(noteOffEvent);
+                                deltaTime = 0;
+                            }
+                            lastTrackEvent.deltaTime = 0;
+                            track.midiEvents.push(lastTrackEvent);
+                        }
+
+                    }
+                }
+            }
+        }
     }
     
 }

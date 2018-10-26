@@ -65,8 +65,8 @@ export class VisualMidiProvider {
                 return 'Trompete';
             case 57:
                 return 'Trombone';
-            case 58:
-                return 'Tuba';
+            case 61:
+                return 'Trompa';
             case 65:
                 return 'Saxofone';
             case 73:
@@ -79,7 +79,7 @@ export class VisualMidiProvider {
         return 'Desconhecido'
     }
 
-    public getInstrumentNameKeySignatureNumber(keySignatureNumber: number, mode: number): string {
+    public getKeySignatureName(keySignatureNumber: number, mode: number): string {
         switch (keySignatureNumber) {
             case -7:
                 if (mode == 0)
@@ -225,7 +225,7 @@ export class VisualMidiProvider {
 				return 'instrument_type_strings';
 	        case 56:
             case 57:
-            case 58:		
+            case 61:		
 				return 'instrument_type_brass';
 			case 65:
             case 73:			
