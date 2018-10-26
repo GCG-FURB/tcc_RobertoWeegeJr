@@ -1,27 +1,22 @@
 import { MusicalComposition, MusicalCompositionOption, MusicalCompositionLine } from '../model/musical-composition';
 import { MusicalCompositionConfig, MusicalCompositionOptionConfig } from '../model/musical-composition-config';
 import { MusicalCompositionSource, MusicalCompositionOptionSource } from '../model/musical-composition-source';
-import { Midi, MidiTimeDivisionMetrical, MidiEventDataType, TimeSignatureMidiEvent, KeySignatureMidiEvent } from '../model/midi';
+import { Midi} from '../model/midi';
 import { MidiControl } from './midi';
-import { MidiSpectrum } from '../model/midi-spectrum';
+import { MidiSpectrum, CompositionMidiSpectrumsData } from '../model/midi-spectrum';
 
 export class MusicalCompositionControl {
 
-    public config: MusicalCompositionConfig;
-    public source: MusicalCompositionSource;
-
-    public composition: MusicalComposition;
-    
-    //composition control
+    private _config: MusicalCompositionConfig;
+    private _source: MusicalCompositionSource;
+    private _composition: MusicalComposition;
+    private _midiControl: MidiControl;
+    private _optionsMap: Map<number, Map<number, MusicalCompositionOption[]>>;
     private _stepIndex: number;
     private _lineIndex: number;
 
-    public midiControl: MidiControl = new MidiControl;
-
-    public optionsMap: Map<number, Map<number, MusicalCompositionOption[]>>;
-
     constructor(config: MusicalCompositionConfig, source: MusicalCompositionSource) {
-        
+        this.midiControl = new MidiControl();
         this.composition = new MusicalComposition();
         this.config = config;
         this.source = source;
@@ -29,6 +24,46 @@ export class MusicalCompositionControl {
         this.setupDefaultValues();
         this.populateOptionsMap();
 
+    }
+
+    get config(): MusicalCompositionConfig {
+        return this._config;
+    }
+    
+    set config(config: MusicalCompositionConfig) {
+        this._config = config;
+    }
+    
+    get source(): MusicalCompositionSource {
+        return this._source;
+    }
+    
+    set source(source: MusicalCompositionSource) {
+        this._source = source;
+    }
+
+    get composition(): MusicalComposition {
+        return this._composition;
+    }
+    
+    set composition(composition: MusicalComposition) {
+        this._composition = composition;
+    }
+
+    get midiControl(): MidiControl {
+        return this._midiControl;
+    }
+    
+    set midiControl(midiControl: MidiControl) {
+        this._midiControl = midiControl;
+    }
+
+    public get optionsMap(): Map<number, Map<number, MusicalCompositionOption[]>> {
+        return this._optionsMap;
+    }
+    
+    public set optionsMap(value: Map<number, Map<number, MusicalCompositionOption[]>>) {
+        this._optionsMap = value;
     }
 
     get stepIndex(): number {
@@ -54,7 +89,6 @@ export class MusicalCompositionControl {
         //indexes
         this.stepIndex = 0;
         this.lineIndex = 0;
-
 
         this.composition.numerator = this.config.numerator;
         this.composition.denominator = this.config.denominator;
@@ -135,40 +169,73 @@ export class MusicalCompositionControl {
         if (this.optionsMap.has(this.stepIndex) && this.optionsMap.get(this.stepIndex).has(this.lineIndex)) {
             return this.optionsMap.get(this.stepIndex).get(this.lineIndex)
         } 
-        return []
+        return [];
     }
 
     public applyOptionChanges(option: MusicalCompositionOption) {
-        option.applyMidiChanges();
-        this.applyMidiChanges(option.midi);
+        this.applyOptionChangesInMidi(option);
+        this.applyMidiNoteAndTempoChanges(option.midi);
+    }
+
+    public applyOptionChangesInMidi(option: MusicalCompositionOption) {
+        if (!option)
+            throw new Error('A opção não pode ser nula.');
+
+        option.midi.applyInstrumentChange(option.musicalInstrument);
     }
     
     public applyLineChanges(line: MusicalCompositionLine) {
-        line.applyMidiChanges();
-        this.applyMidiChanges(line.midi);
+        this.applyLineChangesInMidi(line);
+        this.applyMidiNoteAndTempoChanges(line.midi);
+    }
+
+    public applyLineChangesInMidi(line: MusicalCompositionLine) {
+        if (!line)
+            throw new Error('A linha não pode ser nula.');
+
+        let midi: Midi;
+        if (line.options.length > 0) {
+            this.applyOptionChangesInMidi(line.options[0]);
+            midi = line.options[0].midi.cloneMidi();
+        } else {
+            midi = null;
+        }
+        for (let i = 1; i < line.options.length; i++) {
+            this.applyOptionChangesInMidi(line.options[i]);
+            midi = this.midiControl.concatenateMidisChannels(midi, line.options[i].midi);
+        }        
+        if (midi) {
+            midi.applyVolumeChange(line.volume);
+        }
+        line.midi = midi;
     }
 
     public applyGeneralChanges() {
         let midiLines: Midi[] = [];
         for (let line of this.composition.lines) {
-            line.applyMidiChanges();
+            this.applyLineChangesInMidi(line);
             if (line.midi) {
-                this.applyMidiChanges(line.midi);
+                this.applyMidiNoteAndTempoChanges(line.midi);
                 midiLines.push(line.midi);
             }
         }
-        this.composition.midi = this.midiControl.
-        generateMidiType1(midiLines);
+        this.composition.midi = this.midiControl.concatenateMidisInTracks(midiLines);
     }
 
-    private applyMidiChanges(midi: Midi){
+    private applyMidiNoteAndTempoChanges(midi: Midi){
+        if (!midi)
+            throw new Error('O midi não pode ser nulo.');
+
         midi.applyNoteTranspose(this.composition.keySignature);
         midi.applyTempoChange(this.composition.getTempo());
     }
 
     public applyChoice(option: MusicalCompositionOption){
+        if (!option)
+            throw new Error('A opção não pode ser nula.');
+
         this.composition.lines[this.lineIndex].options.push(option);
-        this.composition.lines[this.lineIndex].applyMidiChanges();
+        this.applyLineChangesInMidi(this.composition.lines[this.lineIndex]);
         this.lineIndex++;
         if (this.lineIndex >= this.composition.lines.length) {
             this.lineIndex = 0;
@@ -212,54 +279,6 @@ export class MusicalCompositionControl {
         }
         return new CompositionMidiSpectrumsData(spectrums, musicalInstruments, minNotes, maxNotes);
 
-    }
-
-}
-
-export class CompositionMidiSpectrumsData {
-
-    private _spectrums: MidiSpectrum[][];
-    private _musicalInstruments: number[][];
-    private _minNotes: number[];
-    private _maxNotes: number[];
-
-    constructor(spectrums: MidiSpectrum[][], musicalInstruments: number[][], minNotes: number[], maxNotes: number[]) {
-        this.spectrums = spectrums;
-        this.musicalInstruments = musicalInstruments;
-        this.minNotes = minNotes;
-        this.maxNotes = maxNotes;
-    }
-
-    get spectrums(): MidiSpectrum[][] {
-        return this._spectrums;
-    }
-
-    set spectrums(value: MidiSpectrum[][]) {
-        this._spectrums = value;
-    }
-    
-    get musicalInstruments(): number[][] {
-        return this._musicalInstruments;
-    }
-    
-    set musicalInstruments(value: number[][]) {
-        this._musicalInstruments = value;
-    }
-    
-    get minNotes(): number[] {
-        return this._minNotes;
-    }
-    
-    set minNotes(value: number[]) {
-        this._minNotes = value;
-    }
-    
-    get maxNotes(): number[] {
-        return this._maxNotes;
-    }
-    
-    set maxNotes(value: number[]) {
-        this._maxNotes = value;
     }
 
 }

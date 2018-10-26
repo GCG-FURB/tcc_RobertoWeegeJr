@@ -10,35 +10,20 @@ export class MusicalComposition {
     private _maxTempo: number;               //Tempo minimo permitido para a composição (parâmatro utilizado em xxx)
     private _stepTempo: number;              //Passo a passo utilizado na composição
     private _tempo: number;                  //Tempo padrão aplicado no inicio da composição
-
     private _keySignature: number
+    private _keySignaturesAllowed: number[];
+    private _showCompositionData: boolean;
 
-    private _keySignaturesAllowed;
-    public get keySignaturesAllowed() {
-        return this._keySignaturesAllowed;
-    }
-    public set keySignaturesAllowed(value) {
-        this._keySignaturesAllowed = value;
-    }
-    private _showCompositionData;
-    public get showCompositionData() {
-        return this._showCompositionData;
-    }
-    public set showCompositionData(value) {
-        this._showCompositionData = value;
-    }
+    private _numerator: number;
+    private _denominator: number;
+    private _mode: number;
+    private _timeDivisionMetric: number;
 
     //midi
     private _midiId: string;
     private _midi: Midi;
 
     private _lines: MusicalCompositionLine[];
-
-    public numerator: number
-    public denominator: number
-    public mode: number
-
-    timeDivisionMetric: number;
 
     constructor() {
         this.lines = [];
@@ -50,7 +35,6 @@ export class MusicalComposition {
     }
     
     set minTempo(minTempo:number) {
-        minTempo = +minTempo
         if (!minTempo && minTempo != 0) 
             throw new Error(`O tempo mínimo não pode ser nulo.`);
 
@@ -77,7 +61,6 @@ export class MusicalComposition {
     }
     
     set maxTempo(maxTempo:number) {
-        maxTempo = +maxTempo;
         if (!maxTempo && maxTempo != 0) 
             throw new Error(`O tempo máximo não pode ser nulo.`);
         
@@ -104,7 +87,6 @@ export class MusicalComposition {
     }
     
     set stepTempo(stepTempo:number) {
-        stepTempo = +stepTempo
         if (!stepTempo && stepTempo != 0)
             throw new Error(`O intervalo de escolha de tempo não pode ser nulo.`);
         
@@ -142,8 +124,6 @@ export class MusicalComposition {
     }
     
     set keySignature(keySignature: number) {
-        keySignature=+keySignature
-
         if (!keySignature && keySignature != 0)
             throw new Error(`A armadura de clave não pode ser nula.`);
         
@@ -152,6 +132,95 @@ export class MusicalComposition {
 
         this._keySignature = keySignature;
         
+    }
+
+    get keySignaturesAllowed(): number[] {
+        return this._keySignaturesAllowed;
+    }
+    
+    set keySignaturesAllowed(keySignaturesAllowed: number[]) {
+        if (!keySignaturesAllowed)
+            throw new Error(`As armaduras de claves permitidas não podem ser nulas.`);
+
+        for (let keySignature of keySignaturesAllowed) {
+            if (!keySignature && keySignature != 0)
+                throw new Error(`A armadura de clave não pode ser nula.`);
+        
+            if (Midi.KEY_SIGNATURES_ARRAY.indexOf(keySignature) < 0) 
+                throw new Error(`A armadura de clave deve se um valor entre ${JSON.stringify(Midi.KEY_SIGNATURES_ARRAY)}.`);
+        }
+        
+        this._keySignaturesAllowed = keySignaturesAllowed;
+    }
+    
+    get showCompositionData(): boolean {
+        return this._showCompositionData;
+    }
+    
+    set showCompositionData(showCompositionData: boolean) {
+        this._showCompositionData = showCompositionData;
+    }
+    
+    get numerator(): number {
+        return this._numerator;
+    }
+    
+    set numerator(numerator: number) {
+        if (!numerator && numerator !== 0) 
+            throw new Error(`O numerador não pode ser nulo.`);
+
+        if (numerator < Midi.MIN_NUMERATOR) 
+            throw new Error(`O numerador não pode menor que ${Midi.MIN_NUMERATOR}.`);
+
+        this._numerator = numerator;
+    }
+    
+    get denominator(): number {
+        return this._denominator;
+    }
+    
+    set denominator(denominator: number) {
+        if (!denominator && denominator !== 0) 
+            throw new Error(`O denominador não pode ser nulo.`);
+
+        if (denominator < Midi.MIN_DENOMINATOR) 
+            throw new Error(`O denominador não pode menor que ${Midi.MIN_DENOMINATOR}.`);
+
+        this._denominator = denominator;
+    }
+    
+    get mode(): number {
+        return this._mode;
+    }
+    
+    set mode(mode: number) {
+        if (!mode && mode !== 0) 
+            throw new Error(`O modo não pode ser nulo.`);
+
+        if (mode < Midi.MIN_KEY_SIGNATURE_MODE_NUMBER) 
+            throw new Error(`O modo não pode menor que ${Midi.MIN_KEY_SIGNATURE_MODE_NUMBER}.`);
+
+        if (mode > Midi.MAX_KEY_SIGNATURE_MODE_NUMBER) 
+            throw new Error(`O modo não pode maior que ${Midi.MAX_KEY_SIGNATURE_MODE_NUMBER}.`);
+
+        this._mode = mode;
+    }
+    
+    get timeDivisionMetric(): number {
+        return this._timeDivisionMetric;
+    }
+   
+    set timeDivisionMetric(timeDivisionMetric: number) {
+        if (!timeDivisionMetric && timeDivisionMetric !== 0) 
+            throw new Error(`A metrica de time division modo não pode ser nula.`);
+
+        if (timeDivisionMetric < Midi.MIN_TIME_DIVISION_METRIC_VALUE) 
+            throw new Error(`A metrica de time division não pode menor que ${Midi.MIN_TIME_DIVISION_METRIC_VALUE}.`);
+
+        if (timeDivisionMetric > Midi.MAX_TIME_DIVISION_METRIC_VALUE) 
+            throw new Error(`A metrica de time division não pode menor que ${Midi.MAX_TIME_DIVISION_METRIC_VALUE}.`);
+
+        this._timeDivisionMetric = timeDivisionMetric;
     }
 
     get midiId(): string {
@@ -204,7 +273,7 @@ export class MusicalCompositionLine {
     private _midiId: string;
     private _midi: Midi;
 
-    public options: MusicalCompositionOption[];
+    private _options: MusicalCompositionOption[];
 
     constructor(){
         this.options = []
@@ -227,7 +296,6 @@ export class MusicalCompositionLine {
     }
     
     set minVolume(minVolume:number) {
-        minVolume = +minVolume
         if (!minVolume && minVolume != 0) 
             throw new Error(`O volume mínimo não pode ser nulo.`);
 
@@ -254,7 +322,6 @@ export class MusicalCompositionLine {
     }
     
     set maxVolume(maxVolume:number) {
-        maxVolume = +maxVolume
         if (!maxVolume && maxVolume != 0) 
             throw new Error(`O volume máximo não pode ser nulo.`);
 
@@ -281,7 +348,6 @@ export class MusicalCompositionLine {
     }
     
     set stepVolume(stepVolume:number) {
-        stepVolume = +stepVolume
         if (!stepVolume && stepVolume != 0) 
             throw new Error(`O intervalo de escolha de volume não pode ser nulo.`);
 
@@ -296,7 +362,6 @@ export class MusicalCompositionLine {
     }
     
     set volume(volume:number) {
-        volume = +volume
         if (!volume && volume != 0) 
             throw new Error(`O volume não pode ser nulo.`);
 
@@ -336,20 +401,15 @@ export class MusicalCompositionLine {
         this._midi = midi;
     }
 
-    public applyMidiChanges() {
-        if (this.options.length > 0) {
-            this.options[0].applyMidiChanges();
-            this.midi = this.options[0].midi.cloneMidi();
-        } else {
-            this.midi = null;
-        }
-        for (let i = 1; i < this.options.length; i++) {
-            this.options[i].applyMidiChanges();
-            this.midi.concatenateMidi(this.options[i].midi);
-        }        
-        if (this.midi) {
-            this.midi.applyVolumeChange(this.volume);
-        }
+    get options(): MusicalCompositionOption[] {
+        return this._options;
+    }
+
+    set options(options: MusicalCompositionOption[]) {
+        if (!options)
+            throw new Error(`As opções não podem ser nulas.`);
+    
+        this._options = options;
     }
 
     public getMinSpectrumNote() {
@@ -386,7 +446,6 @@ export class MusicalCompositionLine {
         return totalDeltaTime;
     }
 
-
 }
 
 export class MusicalCompositionOption {
@@ -398,7 +457,7 @@ export class MusicalCompositionOption {
 
     private _midiId: string;
     private _midi: Midi;
-    public spectrum: MidiSpectrum;
+    private _spectrum: MidiSpectrum;
 
     constructor() {
         this.midiId = uuid();
@@ -439,7 +498,6 @@ export class MusicalCompositionOption {
     }
     
     set musicalInstrument(musicalInstrument:number) {
-        musicalInstrument = +musicalInstrument
         if (!musicalInstrument && musicalInstrument !== 0) 
             throw new Error(`O instrumento musical padrão não pode ser nulo.`);
 
@@ -473,15 +531,18 @@ export class MusicalCompositionOption {
         this._midi = midi;
     }
 
-    public applyMidiChanges() {
-        this.midi.applyInstrumentChange(this.musicalInstrument);
+    public get spectrum(): MidiSpectrum {
+        return this._spectrum;
     }
 
+    public set spectrum(spectrum: MidiSpectrum) {
+        if (!spectrum)
+            throw new Error(`O espectro não pode ser nulo.`);
+        this._spectrum = spectrum;
+    }
 
     public getDeltaTimeSum(): number {
         return this.midi.getDeltaTimeSum(0);
     }
-
-
 
 }

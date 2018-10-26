@@ -2,19 +2,19 @@ import { MusicalCompositionSource, MusicalCompositionStepSource, MusicalComposit
 import { MusicalCompositionConfig, MusicalCompositionOptionConfig } from '../model/musical-composition-config';
 import { Midi } from '../model/midi';
 import { FileProvider } from '../providers/file/file';
-import { MidiControl } from "./midi";
+import { MidiControl, MidiFileControl } from "./midi";
 
 export class MusicalCompositionSourceControl {
 
     private _fileProvider: FileProvider;
     private _source: MusicalCompositionSource;
     private _baseFileSystem: string;
-    private _midiControl: MidiControl;
+    private _midiControl: MidiFileControl;
 
     constructor(fileProvider: FileProvider, baseFileSystem: string){
         this.fileProvider = fileProvider;
         this.baseFileSystem = baseFileSystem;
-        this.midiControl = new MidiControl();
+        this.midiControl = new MidiFileControl();
     }
 
     get fileProvider(): FileProvider {
@@ -41,13 +41,14 @@ export class MusicalCompositionSourceControl {
         this._baseFileSystem = baseFileSystem;
     }
     
-    public get midiControl(): MidiControl {
+    public get midiControl(): MidiFileControl {
         return this._midiControl;
     }
     
-    public set midiControl(value: MidiControl) {
+    public set midiControl(value: MidiFileControl) {
         this._midiControl = value;
     }    
+    
     public async loadSources(config: MusicalCompositionConfig){
         
         let source = new MusicalCompositionSource();

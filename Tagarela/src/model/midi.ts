@@ -7,6 +7,9 @@ export class Midi {
     public static DRUMS_MIDI_CHANNELS: string[] = ['9']
 
     //validations 
+    public static MIN_NUMERATOR: number = 1;
+    public static MIN_DENOMINATOR: number = 1;
+
     public static LOWER_ALLOWED_TEMPO: number = 1;
     public static HIGHEST_ALLOWED_TEMPO: number = 500;
 
@@ -104,43 +107,7 @@ export class Midi {
             throw new Error(`As tracks não podem ser nulas.`);
         this._midiTracks = midiTracks;
     }
-
-    public concatenateMidi(midiToConcatenate: Midi) {
-
-        if (this.midiType != midiToConcatenate.midiType)
-            throw Error('O tipo de midi deve ser o mesmo para realizar a concatenação.');
-
-        if (this.numberOfTracks != midiToConcatenate.numberOfTracks)
-            throw Error('A quanrtidade de tracks deve ser a mesma para realizar a concatenação.');
-
-        this.timeDivision.compareTimeDivision(midiToConcatenate.timeDivision)
-
-        for (let i = 0; i < this.midiTracks.length; i++) {
-            let lastTrackEvent: MidiEvent = this.midiTracks[i].midiEvents.pop();
-        
-            if (!lastTrackEvent.isOfType(MidiEventDataType.END_OF_TRACK))
-                throw new Error('O último evento da track deve ser o de finalização da track');
-    
-            let deltaTimeToSum: number = lastTrackEvent.deltaTime; 
-    
-            midiToConcatenate.midiTracks[i].applyNoteTranspose(this.getKeySignatureValues()[0]);
-            for (let midiEvent of midiToConcatenate.midiTracks[i].midiEvents) {
-                if (midiEvent.isOfType(MidiEventDataType.NOTE) || 
-                    midiEvent.isOfType(MidiEventDataType.DETERMINATE_MUSICAL_INSTRUMENT) ||
-                    midiEvent.isOfType(MidiEventDataType.END_OF_TRACK)) {
-                    let newEvent: MidiEvent = midiEvent.cloneEvent();
-                    newEvent.sumDeltaTime(deltaTimeToSum);
-                    deltaTimeToSum = 0;   
-                    this.midiTracks[i].midiEvents.push(newEvent.cloneEvent())
-                } else {
-                    deltaTimeToSum += midiEvent.deltaTime;
-                }
-            }
-        }
-    }
-    
-
-
+   
     //meta data
     public getAllUsedChannels(): string[] {
         let channels: string[] = [];
@@ -174,6 +141,29 @@ export class Midi {
         return timeDivisionMetrical.metric;
     }
 
+    public getDeltaTimeSum(trackIndex: number): number {
+        let deltaTime: number = 0;
+        for(let event of this.midiTracks[0].midiEvents) {
+            deltaTime += event.deltaTime;
+        }
+        return deltaTime;
+    }
+
+    public cloneMidi(): Midi{
+        let midi = new Midi();
+        midi.midiType = this.midiType;
+        midi.numberOfTracks = this.numberOfTracks;
+        midi.timeDivision = this.timeDivision;
+        midi.midiTracks = []; 
+        
+        for (let midiTrack of this.midiTracks) {
+            let newMidiTrack: MidiTrack = new MidiTrack()
+            newMidiTrack.midiEvents = Object.assign([], midiTrack.midiEvents);
+            midi.midiTracks.push(newMidiTrack);
+        }
+        return midi;
+    }
+    
     //change functions
     public applyNoteTranspose(newKeySignatue: number){
         for (let midiTrack of this.midiTracks) {
@@ -197,29 +187,6 @@ export class Midi {
         for (let midiTrack of this.midiTracks) {
             midiTrack.applyVolumeChange(volume);
         }
-    }
-
-    public cloneMidi(): Midi{
-        let midi = new Midi();
-        midi.midiType = this.midiType;
-        midi.numberOfTracks = this.numberOfTracks;
-        midi.timeDivision = this.timeDivision;
-        midi.midiTracks = []; 
-        
-        for (let midiTrack of this.midiTracks) {
-            let newMidiTrack: MidiTrack = new MidiTrack()
-            newMidiTrack.midiEvents = Object.assign([], midiTrack.midiEvents);
-            midi.midiTracks.push(newMidiTrack);
-        }
-        return midi;
-    }
-
-    public getDeltaTimeSum(trackIndex: number): number {
-        let deltaTime: number = 0;
-        for(let event of this.midiTracks[0].midiEvents) {
-            deltaTime += event.deltaTime;
-        }
-        return deltaTime;
     }
    
 }
@@ -246,11 +213,9 @@ export class MidiTimeDivision {
         this._timeDivisionType = timeDivisionType;
     }
 
-    public compareTimeDivision(timeDivisionToCompare: MidiTimeDivision): boolean {
+    public compareTimeDivisionType(timeDivisionToCompare: MidiTimeDivision): boolean {
         return this.timeDivisionType == timeDivisionToCompare.timeDivisionType
     }
-
-
 
 }
 
@@ -366,9 +331,7 @@ export class MidiTrack {
     }
 
     public applyInstrumentChange(instrumentNumber: number){
-        
         this.removeAllEventsByType(MidiEventDataType.DETERMINATE_MUSICAL_INSTRUMENT);
-        
         for (let channel of this.getAllUsedChannels()) {
             if (Midi.DRUMS_MIDI_CHANNELS.indexOf(channel) < 0) {
                 this.addStartEventToTrack(new MusicalInstrumentMidiEvent(0, channel, instrumentNumber));              
@@ -542,7 +505,7 @@ export abstract class NoteMidiEvent extends ChannelMidiEvent {
     
     set note(note: number) {
         if (!note && note != 0) 
-            throw new Error(`A nota não pode ser nulo.`);
+            throw new Error(`A nota não pode ser nula.`);
         
         if (note < Midi.MIN_NOTE_NUMBER) 
             throw new Error(`A nota não pode menor que ${Midi.MIN_NOTE_NUMBER}.`);

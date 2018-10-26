@@ -5,9 +5,6 @@ export class GenericComponent {
     //variaveis de coponentes visuais
     private _loading: Loading;
 
-    //tratativas de erro
-    private _error: string;
-    
     constructor(private loadingController: LoadingController,
                 private alertController: AlertController,
                 private popoverController: PopoverController,
@@ -19,14 +16,6 @@ export class GenericComponent {
     
     set loading(loading: Loading) {
         this._loading = loading;
-    }
-
-    public get error(): string {
-        return this._error;
-    }
-
-    public set error(value: string) {
-        this._error = value;
     }
 
     public async createLoading(content: string){
@@ -62,10 +51,11 @@ export class GenericComponent {
     }
 
     public errorHandler(e){
-        this.dismissLoading();
-        alert('error handler')
-        alert(e.message)
-        alert(e.stack)
+        this.startAlert({
+            title: 'Ocorreu um Erro',
+            subTitle: (e && e.message ? e.message : 'Erro não mapeado.'),
+            buttons: ['OK']
+        });
     }
 
 }

@@ -5,7 +5,8 @@ import { SlidePopoverComponent } from '../slide-popover/slide-popover';
 import { PlayMidiComponent } from '../play-midi/play-midi';
 import { GenericComponent } from '../../control/generic-component';
 import { MidiSpectrumSvgProvider } from '../../providers/midi-spectrum-svg/midi-spectrum-svg';
-import { MusicalCompositionControl, CompositionMidiSpectrumsData } from '../../control/musical-composition';
+import { MusicalCompositionControl } from '../../control/musical-composition';
+import { CompositionMidiSpectrumsData } from '../../model/midi-spectrum';
 
 @Component({
     selector: 'line-control-component',

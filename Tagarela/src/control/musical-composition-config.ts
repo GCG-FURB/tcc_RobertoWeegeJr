@@ -41,9 +41,10 @@ export class MusicalCompositionConfigControl {
     private _baseFileSystemConfig: string;
     private _relativePath: string;
 
-    midiControl = new MidiControl();
+    private _midiControl: MidiControl;
 
     constructor(file: FileProvider, baseFileSystem: string, relativePath: string, isCustomSource: boolean){
+        this.midiControl = new MidiControl();
         this.fileProvider = file;
         this.baseFileSystemComposition = baseFileSystem;
         this.baseFileSystemConfig = (isCustomSource ? baseFileSystem : file.file.dataDirectory);
@@ -89,7 +90,15 @@ export class MusicalCompositionConfigControl {
     set relativePath(relativePath:string) {
         this._relativePath = relativePath;
     }
+
+    get midiControl(): MidiControl {
+        return this._midiControl;
+    }
     
+    set midiControl(midiControl: MidiControl) {
+        this._midiControl = midiControl;
+    }
+
     public async persistConfig() {
         if (!this.config) {
             throw Error('As configurações não estão carregadas');
@@ -294,7 +303,7 @@ export class MusicalCompositionConfigControl {
         return true;
     }
 
-    public determinateMidiChannels(source: MusicalCompositionSource) {
+    public determinateMidiChannelsAttributesValues(source: MusicalCompositionSource) {
         if (!this.config) {
             throw Error('As configurações não estão carregadas');
         }
@@ -333,7 +342,57 @@ export class MusicalCompositionConfigControl {
         }
     }
 
+    public ajustNoteFinalizations(midiSource: MusicalCompositionSource){
+        
+        if (!midiSource)
+            throw new Error('A fonte de midis não pode ser nula.')
+
+        let note: NoteMidiEvent;
+        let noteIndex: number;
+
+        for (let source of midiSource.stepsSource) {
+            for (let group of source.groupsSource) {
+                for (let option of group.optionsSource) { 
+                    for (let track of option.midi.midiTracks) {
+                        let noteOnEvents: NoteMidiEvent[] = [];
+                        for (let event of track.midiEvents) {
+                            if (event.isOfType(MidiEventDataType.NOTE_ON)) {
+                                note = <NoteMidiEvent> event;
+                                noteOnEvents.push(note);
+                            } else if (event.isOfType(MidiEventDataType.NOTE_OFF)) { 
+                                note = <NoteMidiEvent> event;
+                                noteIndex = noteOnEvents.findIndex((item: NoteMidiEvent) => {
+                                    return note.note == item.note 
+                                        && note.channel == item.channel 
+                                });
+                                if (noteIndex < 0) {
+                                    throw new Error('Foi encontrado um evento de início de nota que foi finalizada.');
+                                }
+                                noteOnEvents.splice(noteIndex, 1);
+                            }
+                        }
+                        if (noteOnEvents.length > 0) {
+                            let lastTrackEvent: MidiEvent = track.midiEvents.pop();
+                            let deltaTime: number = lastTrackEvent.deltaTime;
+                            for (let noteToFinalize of noteOnEvents) {
+                                let noteOffEvent: NoteOffMidiEvent = new NoteOffMidiEvent(deltaTime, noteToFinalize.channel, noteToFinalize.note, 0);
+                                track.midiEvents.push(noteOffEvent);
+                                deltaTime = 0;
+                            }
+                            lastTrackEvent.deltaTime = 0;
+                            track.midiEvents.push(lastTrackEvent);
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
     public validateMidiEventsAndNormalizeTimeDivision(midiSource: MusicalCompositionSource) {
+        
+        if (!midiSource)
+            throw new Error('A fonte de midis não pode ser nula.')
 
         let maxTimeDivicionMetric: number = Midi.MIN_TIME_DIVISION_METRIC_VALUE;
 
@@ -410,46 +469,6 @@ export class MusicalCompositionConfigControl {
 
         this.config.timeDivisionMetric = maxTimeDivicionMetric;
 
-        let note: NoteMidiEvent;
-        let noteIndex: number;
-
-        for (let source of midiSource.stepsSource) {
-            for (let group of source.groupsSource) {
-                for (let option of group.optionsSource) { 
-                    for (let track of option.midi.midiTracks) {
-                        let noteOnEvents: NoteMidiEvent[] = [];
-                        for (let event of track.midiEvents) {
-                            if (event.isOfType(MidiEventDataType.NOTE_ON)) {
-                                note = <NoteMidiEvent> event;
-                                noteOnEvents.push(note);
-                            } else if (event.isOfType(MidiEventDataType.NOTE_OFF)) { 
-                                note = <NoteMidiEvent> event;
-                                noteIndex = noteOnEvents.findIndex((item: NoteMidiEvent) => {
-                                    return note.note == item.note 
-                                        && note.channel == item.channel 
-                                });
-                                if (noteIndex < 0) {
-                                    throw new Error('Foi encontrado um evento de início de nota que foi finalizada.');
-                                }
-                                noteOnEvents.splice(noteIndex, 1);
-                            }
-                        }
-                        if (noteOnEvents.length > 0) {
-                            let lastTrackEvent: MidiEvent = track.midiEvents.pop();
-                            let deltaTime: number = lastTrackEvent.deltaTime;
-                            for (let noteToFinalize of noteOnEvents) {
-                                let noteOffEvent: NoteOffMidiEvent = new NoteOffMidiEvent(deltaTime, noteToFinalize.channel, noteToFinalize.note, 0);
-                                track.midiEvents.push(noteOffEvent);
-                                deltaTime = 0;
-                            }
-                            lastTrackEvent.deltaTime = 0;
-                            track.midiEvents.push(lastTrackEvent);
-                        }
-
-                    }
-                }
-            }
-        }
     }
     
 }

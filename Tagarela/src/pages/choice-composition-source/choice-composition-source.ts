@@ -186,8 +186,9 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
         await configControl.loadConfigs();
         await sourceControl.loadSources(configControl.config);
         await configControl.loadSavedConfigs(); 
-        await configControl.determinateMidiChannels(sourceControl.source);
+        await configControl.determinateMidiChannelsAttributesValues(sourceControl.source);
         await configControl.validateMidiEventsAndNormalizeTimeDivision(sourceControl.source);
+        await configControl.ajustNoteFinalizations(sourceControl.source);
         await this.dismissLoading();
 
         this.navCtrl.setRoot(SetupCompositionSourcePage, {

@@ -1,7 +1,7 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { NavController, NavParams, LoadingController, AlertController, PopoverController, ToastController } from 'ionic-angular';
 import { FileProvider } from '../../providers/file/file';
-import { MidiControl } from '../../control/midi';
+import { MidiFileControl } from '../../control/midi';
 import { Midi } from '../../model/midi';
 import { GenericComponent } from '../../control/generic-component';
 import { Media, MediaObject } from '@ionic-native/media';
@@ -21,7 +21,7 @@ export class PlayMidiComponent extends GenericComponent{
     private _spectrum: string;
     private _midi: Midi;
     private _midiId: string;
-    private _midiControl: MidiControl;
+    private _midiControl: MidiFileControl;
 
     private _file: MediaObject;
 
@@ -74,11 +74,11 @@ export class PlayMidiComponent extends GenericComponent{
         this._midiId = midiId;
     }
 
-    get midiControl(): MidiControl {
+    get midiControl(): MidiFileControl {
         return this._midiControl;
     }
     
-    set midiControl(midiControl: MidiControl) {
+    set midiControl(midiControl: MidiFileControl) {
         this._midiControl = midiControl;
     }
 
@@ -143,7 +143,7 @@ export class PlayMidiComponent extends GenericComponent{
     
     private ngOnInit(): void {
         try { 
-            this.midiControl = new MidiControl();
+            this.midiControl = new MidiFileControl();
             this.spectrum = this.navParams.get("spectrum");
             this.midi = this.navParams.get("midi");
             this.midiId = this.navParams.get("midiId");

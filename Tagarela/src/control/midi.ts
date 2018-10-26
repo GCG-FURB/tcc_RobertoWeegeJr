@@ -4,19 +4,38 @@ import { MidiSpectrumLine, MidiSpectrum, MidiSpectrumNote } from "../model/midi-
 
 export class MidiControl {
 
-    public ajustMidiSize(midi: Midi, trackIndex: number, targetDeltaTimeSize) {
+    public ajustMidiSize(midi: Midi, trackIndex: number, targetDeltaTimeSize: number) {
+        if (!midi) 
+            throw new Error('Midi não pode ser nulo.')
+        
+        if (!trackIndex && trackIndex != 0) 
+            throw new Error('O indice de track não pode ser nulo.')
+
+        if (!targetDeltaTimeSize && targetDeltaTimeSize != 0) 
+            throw new Error('O tamanho alvo de track não pode ser nulo.')
+
+        if (!midi.midiTracks[trackIndex]) 
+            throw new Error(`O midi não possui track de indice ${trackIndex}.`)
+
         let midiDeltaTimeSum: number = midi.getDeltaTimeSum(trackIndex);
         if (midiDeltaTimeSum < targetDeltaTimeSize) {
             midi.midiTracks[trackIndex].midiEvents[midi.midiTracks[trackIndex].midiEvents.length - 1].sumDeltaTime(targetDeltaTimeSize - midiDeltaTimeSum);            
         }
     }
 
-    public ajustMidiTimeDivision(midi: Midi, maxTimeDivicionMetric: number){
+    public ajustMidiTimeDivision(midi: Midi, timeDivisionMetric: number){
+        
+        if (!midi) 
+            throw new Error('Midi não pode ser nulo.')
+
+        if (!timeDivisionMetric && timeDivisionMetric != 0) 
+            throw new Error('A metrica de time division não pode ser nula.')
+
         let midiTimeDivision: MidiTimeDivisionMetrical = <MidiTimeDivisionMetrical> midi.timeDivision;
-        let conversionFactor: number = (maxTimeDivicionMetric + 0.0) / midiTimeDivision.metric;
+        let conversionFactor: number = (timeDivisionMetric + 0.0) / midiTimeDivision.metric;
 
         if (conversionFactor != 1) {
-            midiTimeDivision.metric = maxTimeDivicionMetric;
+            midiTimeDivision.metric = timeDivisionMetric;
             midi.timeDivision = midiTimeDivision;
 
             for (let track of midi.midiTracks) {
@@ -25,8 +44,228 @@ export class MidiControl {
                 }
             }
         }
+
     }
 
+    public generateMidiSpectrum(midi: Midi): MidiSpectrum {
+        if(!midi) 
+            throw new Error('Midi não pode ser nulo.')
+
+        let actualKeySignatureValue: number[] = midi.getKeySignatureValues();
+        if (actualKeySignatureValue.length != 1)
+            throw new Error('Deve haver um, e somente um, evento de assinatuura de clave.');
+
+        let conversionFactor = Midi.KEY_SIGNATURE_CONVERSION_ARRAY[0+7]
+                             - Midi.KEY_SIGNATURE_CONVERSION_ARRAY[actualKeySignatureValue[0] + 7];
+
+        let spectrum: MidiSpectrum = new MidiSpectrum();
+
+        let midiTotalDeltaTime: number = 0;
+        let midiMinNote: number = 128;
+        let midiMaxNote: number = 0;
+
+        let spectrumLineMap: Map<number, MidiSpectrumLine> = new Map();
+        let spectrumNoteList: number[] = [];
+        let spectrumDeltaTimeList: number[] = [];
+
+        let note: number;
+        let spectrumLine: MidiSpectrumLine;
+        let spectrumNote: MidiSpectrumNote;
+
+        let noteOn: NoteOnMidiEvent;
+        let noteOFF: NoteOffMidiEvent;
+        
+        let noteIndex: number;
+
+        for (let midiEvent of midi.midiTracks[0].midiEvents) {
+            midiTotalDeltaTime += midiEvent.deltaTime; 
+            if (midiEvent.isOfType(MidiEventDataType.NOTE_ON)) {
+                noteOn = <NoteOnMidiEvent> midiEvent;
+                note = noteOn.note + conversionFactor;
+                while (note < Midi.MIN_NOTE_NUMBER) {
+                    note += Midi.OCTAVE_SEMI_TOM_QUANTITY;
+                }
+                while (note > Midi.MAX_NOTE_NUMBER) {
+                    note -= Midi.OCTAVE_SEMI_TOM_QUANTITY;
+                }
+                if (note < midiMinNote) {
+                    midiMinNote = note;
+                }
+                if (note > midiMaxNote) {
+                    midiMaxNote = note;
+                }
+                spectrumNoteList.push(note);
+                spectrumDeltaTimeList.push(midiTotalDeltaTime);
+
+            } else {
+                if (midiEvent.isOfType(MidiEventDataType.NOTE_OFF)) {
+                    noteOFF = <NoteOffMidiEvent> midiEvent;
+                    note = noteOFF.note + conversionFactor;
+                    while (note < Midi.MIN_NOTE_NUMBER) {
+                        note += Midi.OCTAVE_SEMI_TOM_QUANTITY;
+                    }
+                    while (note > Midi.MAX_NOTE_NUMBER) {
+                        note -= Midi.OCTAVE_SEMI_TOM_QUANTITY;
+                    }
+                    if (!spectrumLineMap.has(note)){
+                        spectrumLine = new MidiSpectrumLine();
+                        spectrumLine.noteValue = note;
+                        spectrumLineMap.set(note, spectrumLine);
+                    }
+                    noteIndex = spectrumNoteList.lastIndexOf(note);
+                    if (noteIndex >= 0) {
+                        spectrumNote = new MidiSpectrumNote();
+                        spectrumNote.deltaTimeStart = spectrumDeltaTimeList[noteIndex];
+                        spectrumNote.deltaTimeEnd = midiTotalDeltaTime;
+                        spectrumLineMap.get(note).notes.push(spectrumNote);
+                        spectrumNoteList.splice(noteIndex, 1);
+                        spectrumDeltaTimeList.splice(noteIndex, 1);
+                    }
+                }
+            }
+        }
+
+        spectrum.minNote = midiMinNote;
+        spectrum.maxNote = midiMaxNote;
+        spectrum.deltaTime = midiTotalDeltaTime;
+
+        for (let i = midiMinNote; i <= midiMaxNote; i++) {
+            if (spectrumLineMap.has(i)) {
+                spectrum.lines.push(spectrumLineMap.get(i));
+            } else {
+                spectrumLine = new MidiSpectrumLine();
+                spectrumLine.noteValue = i;
+                spectrum.lines.push(spectrumLine);
+            }
+        }
+        return spectrum;
+    }
+
+    public concatenateMidisChannels(originalMidi: Midi, midiToConcatenate: Midi): Midi {
+
+        if (!originalMidi)
+            throw Error('O original não pode ser nulo.');
+
+        if (!midiToConcatenate)
+            throw Error('O midi para concatenar não pode ser nulo.');
+            
+        if (originalMidi.midiType != midiToConcatenate.midiType)
+            throw Error('O tipo de midi deve ser o mesmo para realizar a concatenação.');
+
+        if (originalMidi.numberOfTracks != midiToConcatenate.numberOfTracks)
+            throw Error('A quantidade de tracks deve ser a mesma para realizar a concatenação.');
+
+        if (originalMidi.timeDivision.timeDivisionType != MidiTimeDivisionType.METRICAL_TYPE)
+            throw Error('Somente é possivel concatenar midis de time division métrico.');
+
+        if (!originalMidi.timeDivision.compareTimeDivisionType(midiToConcatenate.timeDivision))
+            throw Error('O tipo de time division deve ser o mesmo para realizar a concatenação.');
+
+        let newMidi: Midi = originalMidi.cloneMidi(); 
+        let toConcatenate: Midi = midiToConcatenate.cloneMidi();
+
+        let newMidiTimeDivision: MidiTimeDivisionMetrical = newMidi.timeDivision as MidiTimeDivisionMetrical;
+        let toConcatenateTimeDivision: MidiTimeDivisionMetrical = toConcatenate.timeDivision as MidiTimeDivisionMetrical;
+
+        if (newMidiTimeDivision.metric > toConcatenateTimeDivision.metric) {
+            this.ajustMidiTimeDivision(toConcatenate, newMidiTimeDivision.metric);
+        } else if (toConcatenateTimeDivision.metric > newMidiTimeDivision.metric) {
+            this.ajustMidiTimeDivision(newMidi, toConcatenateTimeDivision.metric);
+        }
+
+        for (let i = 0; i < newMidi.midiTracks.length; i++) {
+            let lastTrackEvent: MidiEvent = newMidi.midiTracks[i].midiEvents.pop();
+        
+            if (!lastTrackEvent.isOfType(MidiEventDataType.END_OF_TRACK))
+                throw new Error('O último evento da track deve ser o de finalização da track');
+    
+            let deltaTimeToSum: number = lastTrackEvent.deltaTime; 
+
+            let keySignatures: number[] = newMidi.getKeySignatureValues()
+            if (keySignatures.length != 1)
+                throw new Error('Deve haver um, e somente um, evento de assinatuura de clave.');
+            toConcatenate.midiTracks[i].applyNoteTranspose(keySignatures[0]);
+
+            let newEvent: MidiEvent;
+            
+            for (let midiEvent of toConcatenate.midiTracks[i].midiEvents) {
+                if (midiEvent.isOfType(MidiEventDataType.NOTE) || 
+                    midiEvent.isOfType(MidiEventDataType.DETERMINATE_MUSICAL_INSTRUMENT) ||
+                    midiEvent.isOfType(MidiEventDataType.END_OF_TRACK)) {
+                    newEvent = midiEvent.cloneEvent();
+                    newEvent.sumDeltaTime(deltaTimeToSum);
+                    deltaTimeToSum = 0;   
+                    newMidi.midiTracks[i].midiEvents.push(newEvent.cloneEvent())
+                } else {
+                    deltaTimeToSum += midiEvent.deltaTime;
+                }
+            }
+        }
+        return newMidi;
+    }
+
+    public concatenateMidisInTracks(midis: Midi[]) {
+        
+        if (!midis || midis.length < 0)
+            throw Error('Os midis não pode ser nulos.');
+        
+        let normalizedMidis: Midi[] = [];
+        let maxTimeDivisionMetric: number = 0;
+        let normalizedMidi: Midi;
+        let timeDivision: MidiTimeDivisionMetrical;
+
+        for (let midi of midis) {
+            if (midi.timeDivision.timeDivisionType != MidiTimeDivisionType.METRICAL_TYPE)
+                throw Error('Somente é possivel concatenar midis de time division métrico.');
+            timeDivision = midi.timeDivision as MidiTimeDivisionMetrical;
+            if (timeDivision.metric > maxTimeDivisionMetric ){
+                maxTimeDivisionMetric = timeDivision.metric;
+            }
+            normalizedMidi = midi.cloneMidi(); 
+            normalizedMidis.push(normalizedMidi);
+        }
+
+        for (let midi of normalizedMidis) {
+            this.ajustMidiTimeDivision(midi, maxTimeDivisionMetric);    
+        }
+
+        let newMidi: Midi = new Midi(); 
+        newMidi.midiType = MidiType.TYPE_1;
+        newMidi.midiTracks = [];
+        newMidi.timeDivision = normalizedMidis[0].timeDivision;
+        newMidi.numberOfTracks = 0;
+
+        let midiChannelIndex: number = 0 
+        let channelChanged: boolean;
+        let channel: string;
+
+        for (let midi of normalizedMidis) {
+            for (let midiTrack of midi.midiTracks) {
+                channel = Midi.MIDI_CHANNELS_ARRAY[midiChannelIndex]
+                while(Midi.DRUMS_MIDI_CHANNELS.indexOf(channel) > 0) {
+                    midiChannelIndex++
+                    if (midiChannelIndex >= Midi.MIDI_CHANNELS_ARRAY.length){
+                        midiChannelIndex = 0;
+                    }
+                    channel = Midi.MIDI_CHANNELS_ARRAY[midiChannelIndex]
+                }                
+                channelChanged = midiTrack.changeMidiChannel(channel);
+                if (channelChanged) {
+                    midiChannelIndex++;
+                    if (midiChannelIndex >= Midi.MIDI_CHANNELS_ARRAY.length){
+                        midiChannelIndex = 0;
+                    }
+                }
+                newMidi.midiTracks.push(midiTrack);
+                newMidi.numberOfTracks++
+            }
+        }
+        return newMidi;
+    }
+}
+
+export class MidiFileControl {
+    
     public setupMidiFromFile(binaryString: string, midiToCompare: Midi): Midi[] {
         
         if (!binaryString || binaryString.length <= 0)
@@ -257,12 +496,6 @@ export class MidiControl {
         }
         return parseInt(binaryDeltaTime, 2);
     }
-
-    /*
-    public getDeltaTimeStringFromNumber(deltaTime: number){
-        
-    }*/
-
     
     private getDeltaTimeStringFromNumber(deltaTime: number){
 
@@ -440,7 +673,6 @@ export class MidiControl {
         return new TempoMidiEvent(deltaTime, tempo);
     }
 
-
     private createTimeSignatureEvent(deltaTime: number, midiData: string): TimeSignatureMidiEvent {
         let numerator: number =
             NumberConversionUtil.convertBinaryStringToInteger(midiData.substr(MidiProtocolConstants.TIME_SIGNATURE_EVENT_NUMERATOR_INDEX, 
@@ -476,7 +708,6 @@ export class MidiControl {
     private createEndOfTrackEvent(deltaTime: number, midiData: string): EndOfTrackMidiEvent {
         return new EndOfTrackMidiEvent(deltaTime);
     }
-
 
     public getBinaryString(midi: Midi): string {
         
@@ -581,128 +812,6 @@ export class MidiControl {
             throw new Error('O evento não é suportado.')
         }
     }
-
-    public generateMidiSpectrum(midi: Midi): MidiSpectrum {
-        
-        if(!midi) 
-            throw new Error('Midi não pode ser nulo.')
-
-        let actualKeySignatureValue: number[] = midi.getKeySignatureValues();
-
-        let conversionFactor = Midi.KEY_SIGNATURE_CONVERSION_ARRAY[0+7]
-                             - Midi.KEY_SIGNATURE_CONVERSION_ARRAY[actualKeySignatureValue[0] + 7];
-
-        let spectrum: MidiSpectrum = new MidiSpectrum();
-
-        let midiTotalDeltaTime: number = 0;
-        let midiMinNote: number = 128;
-        let midiMaxNote: number = 0;
-
-        let spectrumLineMap: Map<number, MidiSpectrumLine> = new Map();
-        let spectrumNoteMap: Map<number, number> = new Map();
-
-        let note: number;
-        let spectrumLine: MidiSpectrumLine;
-        let spectrumNote: MidiSpectrumNote;
-
-        let noteOn: NoteOnMidiEvent;
-        let noteOFF: NoteOffMidiEvent;
-
-        for (let midiEvent of midi.midiTracks[0].midiEvents) {
-            midiTotalDeltaTime += midiEvent.deltaTime; 
-            if (midiEvent.isOfType(MidiEventDataType.NOTE_ON)) {
-                noteOn = <NoteOnMidiEvent> midiEvent;
-                note = noteOn.note + conversionFactor;
-                while (note < Midi.MIN_NOTE_NUMBER) {
-                    note += Midi.OCTAVE_SEMI_TOM_QUANTITY;
-                }
-                while (note > Midi.MAX_NOTE_NUMBER) {
-                    note -= Midi.OCTAVE_SEMI_TOM_QUANTITY;
-                }
-                if (note < midiMinNote) {
-                    midiMinNote = note;
-                }
-                if (note > midiMaxNote) {
-                    midiMaxNote = note;
-                }
-                spectrumNoteMap.set(note, midiTotalDeltaTime);
-            } else {
-                if (midiEvent.isOfType(MidiEventDataType.NOTE_OFF)) {
-                    noteOFF = <NoteOffMidiEvent> midiEvent;
-                    note = noteOFF.note + conversionFactor;
-                    while (note < Midi.MIN_NOTE_NUMBER) {
-                        note += Midi.OCTAVE_SEMI_TOM_QUANTITY;
-                    }
-                    while (note > Midi.MAX_NOTE_NUMBER) {
-                        note -= Midi.OCTAVE_SEMI_TOM_QUANTITY;
-                    }
-                    if (!spectrumLineMap.has(note)){
-                        spectrumLine = new MidiSpectrumLine();
-                        spectrumLine.noteValue = note;
-                        spectrumLineMap.set(note, spectrumLine);
-                    }
-                    spectrumNote = new MidiSpectrumNote();
-                    spectrumNote.deltaTimeStart = spectrumNoteMap.get(note);
-                    spectrumNoteMap.delete(note);
-
-                    spectrumNote.deltaTimeEnd = midiTotalDeltaTime;
-                    spectrumLineMap.get(note).notes.push(spectrumNote);
-                }
-            }
-        }
-
-        spectrum.minNote = midiMinNote;
-        spectrum.maxNote = midiMaxNote;
-        spectrum.deltaTime = midiTotalDeltaTime;
-
-        for (let i = midiMinNote; i <= midiMaxNote; i++) {
-            if (spectrumLineMap.has(i)) {
-                spectrum.lines.push(spectrumLineMap.get(i));
-            } else {
-                spectrumLine = new MidiSpectrumLine();
-                spectrumLine.noteValue = i;
-                spectrum.lines.push(spectrumLine);
-            }
-        }
-        return spectrum;
-    }
-
-    public generateMidiType1(midis: Midi[]) {
-        let newMidi: Midi = new Midi(); 
-        
-        newMidi.midiType = MidiType.TYPE_1;
-        newMidi.midiTracks = [];
-        newMidi.timeDivision = midis[0].timeDivision;
-        newMidi.numberOfTracks = 0;
-        
-        let midiChannelIndex: number = 0 
-        let channelChanged: boolean;
-        let channel: string;
-
-        for (let midi of midis) {
-            for (let midiTrack of midi.midiTracks) {
-                channel = Midi.MIDI_CHANNELS_ARRAY[midiChannelIndex]
-                while(Midi.DRUMS_MIDI_CHANNELS.indexOf(channel) > 0) {
-                    midiChannelIndex++
-                    if (midiChannelIndex >= Midi.MIDI_CHANNELS_ARRAY.length){
-                        midiChannelIndex = 0;
-                    }
-                    channel = Midi.MIDI_CHANNELS_ARRAY[midiChannelIndex]
-                }                
-                channelChanged = midiTrack.changeMidiChannel(channel);
-                if (channelChanged) {
-                    midiChannelIndex++;
-                    if (midiChannelIndex >= Midi.MIDI_CHANNELS_ARRAY.length){
-                        midiChannelIndex = 0;
-                    }
-                }
-                newMidi.midiTracks.push(midiTrack);
-                newMidi.numberOfTracks++
-            }
-        }
-        return newMidi;
-    }
-
 }
 
 class MidiCreatedEventModel {

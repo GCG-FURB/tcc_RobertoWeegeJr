@@ -1,70 +1,20 @@
 export class MusicalCompositionConfig {
-
-    private _numerator;
-    public get numerator() {
-        return this._numerator;
-    }
-    public set numerator(value) {
-        this._numerator = value;
-    }
-    private _denominator;
-    public get denominator() {
-        return this._denominator;
-    }
-    public set denominator(value) {
-        this._denominator = value;
-    }
-    private _timeDivisionMetric;
-    public get timeDivisionMetric() {
-        return this._timeDivisionMetric;
-    }
-    public set timeDivisionMetric(value) {
-        this._timeDivisionMetric = value;
-    }
-    private _mode;
-    public get mode() {
-        return this._mode;
-    }
-    public set mode(value) {
-        this._mode = value;
-    }
-    private _keySignature;
-    public get keySignature() {
-        return this._keySignature;
-    }
-    public set keySignature(value) {
-        this._keySignature = value;
-    }
-    private _baseKeySignaturesAllowed; 
-    public get baseKeySignaturesAllowed() {
-        return this._baseKeySignaturesAllowed;
-    }
-    public set baseKeySignaturesAllowed(value) {
-        this._baseKeySignaturesAllowed = value;
-    }
-    private _keySignaturesAllowed;
-    public get keySignaturesAllowed() {
-        return this._keySignaturesAllowed;
-    }
-    public set keySignaturesAllowed(value) {
-        this._keySignaturesAllowed = value;
-    }
-
-    private _showCompositionData: boolean;
-    public get showCompositionData(): boolean {
-        return this._showCompositionData;
-    }
-    public set showCompositionData(value: boolean) {
-        this._showCompositionData = value;
-    }
-
-    // General Config
+  
+   // General Config
     private _baseFileSystem: string;           //Caminho relativo raiz da composição 
     private _relativePath: string;           //Caminho relativo raiz da composição 
     private _minTempo: number;               //Tempo minimo permitido para a composição (parâmatro utilizado em xxx)
     private _maxTempo: number;               //Tempo minimo permitido para a composição (parâmatro utilizado em xxx)
     private _stepTempo: number;              //Passo a passo utilizado na composição
     private _defaultTempo: number;            //Tempo padrão aplicado no inicio da composição
+    private _numerator: number;
+    private _denominator: number;
+    private _timeDivisionMetric: number;
+    private _keySignature: number;
+    private _keySignaturesAllowed: number[];
+    private _baseKeySignaturesAllowed: number[]; 
+    private _mode: number;
+    private _showCompositionData: boolean;
 
     //Step config
     private _stepsConfig: MusicalCompositionStepConfig[];             //sdfsdfsdfsdf
@@ -98,6 +48,7 @@ export class MusicalCompositionConfig {
     }
     
     set minTempo(minTempo:number) {
+        minTempo = +minTempo;
         this._minTempo = minTempo;
     }
     
@@ -106,6 +57,7 @@ export class MusicalCompositionConfig {
     }
     
     set maxTempo(maxTempo:number) {
+        maxTempo = +maxTempo;
         this._maxTempo = maxTempo;
     }
     
@@ -113,7 +65,8 @@ export class MusicalCompositionConfig {
         return this._stepTempo;
     }
     
-    set stepTempo(stepTempo:number) {
+    set stepTempo(stepTempo: number) {
+        stepTempo = +stepTempo;
         this._stepTempo = stepTempo;
     }
     
@@ -122,6 +75,7 @@ export class MusicalCompositionConfig {
     }
     
     set defaultTempo(defaultTempo:number) {
+        defaultTempo = +defaultTempo;
         this._defaultTempo = defaultTempo;
     }
 
@@ -139,6 +93,75 @@ export class MusicalCompositionConfig {
     
     set linesConfig(linesConfig:MusicalCompositionLineConfig[]) {
         this._linesConfig = linesConfig;
+    }
+
+    get numerator(): number {
+        return this._numerator;
+    }
+    
+    set numerator(numerator: number) {
+        numerator = +numerator;
+        this._numerator = numerator;
+    }
+    
+    get denominator(): number {
+        return this._denominator;
+    }
+    
+    set denominator(denominator: number) {
+        denominator = +denominator;
+        this._denominator = denominator;
+    }
+    
+    get timeDivisionMetric(): number {
+        return this._timeDivisionMetric;
+    }
+    
+    set timeDivisionMetric(timeDivisionMetric: number) {
+        timeDivisionMetric = +timeDivisionMetric;
+        this._timeDivisionMetric = timeDivisionMetric;
+    }
+    
+    get keySignature(): number {
+        return this._keySignature;
+    }
+    
+    set keySignature(keySignature: number) {
+        keySignature = +keySignature;
+        this._keySignature = keySignature;
+    }
+    
+    get keySignaturesAllowed(): number[] {
+        return this._keySignaturesAllowed;
+    }
+    
+    set keySignaturesAllowed(keySignaturesAllowed: number[]) {
+        this._keySignaturesAllowed = keySignaturesAllowed;
+    }
+
+    get baseKeySignaturesAllowed(): number[] {
+        return this._baseKeySignaturesAllowed;
+    }
+    
+    set baseKeySignaturesAllowed(value: number[]) {
+        this._baseKeySignaturesAllowed = value;
+    }
+    
+    get showCompositionData(): boolean {
+        return this._showCompositionData;
+    }
+    
+    set showCompositionData(value: boolean) {
+        this._showCompositionData = value;
+    }
+
+    get mode(): number {
+        return this._mode;
+    }
+
+    set mode(mode: number) {
+        mode = +mode;
+        this._mode = mode;
     }
 
 }
@@ -181,6 +204,7 @@ export class MusicalCompositionStepConfig {
     }
 
     set quantityOfQuarterNote(quantityOfQuarterNote: number) {
+        quantityOfQuarterNote =+ quantityOfQuarterNote;
         this._quantityOfQuarterNote = quantityOfQuarterNote;
     }
 }
@@ -255,6 +279,7 @@ export class MusicalCompositionOptionConfig {
     }
     
     set defaultMusicalInstrument(defaultMusicalInstrument:number) {
+        defaultMusicalInstrument =+ defaultMusicalInstrument;
         this._defaultMusicalInstrument = defaultMusicalInstrument;
     }
 
@@ -283,7 +308,8 @@ export class MusicalCompositionLineConfig {
         return this._minVolume;
     }
     
-    set minVolume(minVolume:number) {
+    set minVolume(minVolume: number) {
+        minVolume = +minVolume;
         this._minVolume = minVolume;
     }
     
@@ -291,7 +317,8 @@ export class MusicalCompositionLineConfig {
         return this._maxVolume;
     }
     
-    set maxVolume(maxVolume:number) {
+    set maxVolume(maxVolume: number) {
+        maxVolume = +maxVolume;
         this._maxVolume = maxVolume;
     }
     
@@ -299,7 +326,8 @@ export class MusicalCompositionLineConfig {
         return this._stepVolume;
     }
     
-    set stepVolume(stepVolume:number) {
+    set stepVolume(stepVolume: number) {
+        stepVolume = +stepVolume;
         this._stepVolume = stepVolume;
     }
     
@@ -307,7 +335,8 @@ export class MusicalCompositionLineConfig {
         return this._defaultVolume;
     }
     
-    set defaultVolume(defaultVolume:number) {
+    set defaultVolume(defaultVolume: number) {
+        defaultVolume = +defaultVolume;
         this._defaultVolume = defaultVolume;
     }
 

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { MusicalCompositionControl, CompositionMidiSpectrumsData } from '../../control/musical-composition';
+import { MusicalCompositionControl } from '../../control/musical-composition';
 import { PopoverController, LoadingController, AlertController, ToastController } from 'ionic-angular';
 import { ListPopoverComponent } from '../list-popover/list-popover';
 import { SlidePopoverComponent } from '../slide-popover/slide-popover';
@@ -8,6 +8,7 @@ import { VisualMidiProvider } from '../../providers/visual-midi/visual-midi';
 import { GenericComponent } from '../../control/generic-component';
 import { MidiSpectrumSvgProvider } from '../../providers/midi-spectrum-svg/midi-spectrum-svg';
 import { DownloadMidiComponent } from '../download-midi/download-midi';
+import { CompositionMidiSpectrumsData } from '../../model/midi-spectrum';
 
 @Component({
     selector: 'general-control',

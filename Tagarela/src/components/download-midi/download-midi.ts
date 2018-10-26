@@ -3,7 +3,7 @@ import { Midi } from '../../model/midi';
 import { GenericComponent } from '../../control/generic-component';
 import { NavController, NavParams, LoadingController, AlertController, PopoverController, ToastController } from 'ionic-angular';
 import { FileProvider } from '../../providers/file/file';
-import { MidiControl } from '../../control/midi';
+import { MidiControl, MidiFileControl } from '../../control/midi';
 import { ValidatorFn, FormControl, Validators, FormGroup, FormBuilder } from '@angular/forms';
 
 @Component({
@@ -15,7 +15,7 @@ export class DownloadMidiComponent extends GenericComponent{
     private _title: string;
     private _fileName: string;
     private _midi: Midi;
-    private _midiControl: MidiControl;
+    private _midiControl: MidiFileControl;
     private _fileNameForm: FormGroup;
 
     constructor(private navCtrl: NavController, 
@@ -58,11 +58,11 @@ export class DownloadMidiComponent extends GenericComponent{
         this._midi = midi;
     }
 
-    get midiControl(): MidiControl {
+    get midiControl(): MidiFileControl {
         return this._midiControl;
     }
     
-    set midiControl(midiControl: MidiControl) {
+    set midiControl(midiControl: MidiFileControl) {
         this._midiControl = midiControl;
     }
 
@@ -76,7 +76,7 @@ export class DownloadMidiComponent extends GenericComponent{
 
     private ngOnInit(): void {
         try { 
-            this.midiControl = new MidiControl();
+            this.midiControl = new MidiFileControl();
             this.midi = this.navParams.get("midi");
             this.title = 'Baixar Composição';
             this.fileName = 'Minha Composição';
