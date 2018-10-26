@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
-import { NavController, NavParams, LoadingController, AlertController, PopoverController, ToastController, NavOptions } from 'ionic-angular';
+import { NavController, NavParams, LoadingController, AlertController, PopoverController, ToastController } from 'ionic-angular';
 import { FileProvider } from '../../providers/file/file';
 import { MidiControl } from '../../control/midi';
 import { Midi } from '../../model/midi';
@@ -174,7 +174,7 @@ export class PlayMidiComponent extends GenericComponent{
     private async playMidi() {
         try { 
             let midiString = this.midiControl.getBinaryString(this.midi);
-            await this.fileProvider.writeBinaryStringToTempArea(this.midiId, midiString);
+            await this.fileProvider.writeMidiBinaryStringToTempArea(this.midiId, midiString);
             this.file = await this.nativeMedia.create(this.fileProvider.tempAreaFullDir + this.midiId + '.mid');
             
             await this.file.onSuccess.subscribe(() => {

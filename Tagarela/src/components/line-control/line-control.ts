@@ -5,8 +5,7 @@ import { SlidePopoverComponent } from '../slide-popover/slide-popover';
 import { PlayMidiComponent } from '../play-midi/play-midi';
 import { GenericComponent } from '../../control/generic-component';
 import { MidiSpectrumSvgProvider } from '../../providers/midi-spectrum-svg/midi-spectrum-svg';
-import { MidiSpectrum } from '../../model/midi-spectrum';
-import { MusicalCompositionControl } from '../../control/musical-composition';
+import { MusicalCompositionControl, CompositionMidiSpectrumsData } from '../../control/musical-composition';
 
 @Component({
     selector: 'line-control-component',
@@ -49,19 +48,21 @@ export class LineControl extends GenericComponent {
 
     private playMidi() {
         try {
-            this.compositionControl.applyLineChanges(this.compositionLine);
-            this.startPopover (
-                PlayMidiComponent, 
-                {
-                    spectrum: this.getSVGMidiSpectrum(),
-                    midi: this.compositionLine.midi,
-                    midiId: this.compositionLine.midiId
-                },
-                {   
-                    cssClass: 'custom-popover',
-                    enableBackdropDismiss: false
-                }
-            );
+            if (this.compositionLine.options.length > 0) {
+                this.compositionControl.applyLineChanges(this.compositionLine);
+                this.startPopover (
+                    PlayMidiComponent, 
+                    {
+                        spectrum: this.getSVGMidiSpectrum(),
+                        midi: this.compositionLine.midi,
+                        midiId: this.compositionLine.midiId
+                    },
+                    {   
+                        cssClass: 'custom-popover',
+                        enableBackdropDismiss: false
+                    }
+                );
+            }
         } catch (e) {
             this.errorHandler(e)
         }
@@ -109,25 +110,12 @@ export class LineControl extends GenericComponent {
     }
 
     private getSVGMidiSpectrum(): string {
-        let spectrums: MidiSpectrum[][] = [];
-        let musicalInstruments: number[][] = [];
-
-        let lineSpectrums: MidiSpectrum[] = []; 
-        let lineMusicalInstruments: number[] = [];
-        let minNotes: number[] = [];
-        let maxNotes: number[] = [];
-
-        for (let option of this.compositionLine.options) {
-            lineSpectrums.push(option.spectrum);
-            lineMusicalInstruments.push(option.musicalInstrument);
-        }
-
-        minNotes.push(this.compositionLine.getMinSpectrumNote())
-        maxNotes.push(this.compositionLine.getMaxSpectrumNote())
-        spectrums.push(lineSpectrums);
-        musicalInstruments.push(lineMusicalInstruments);
-
-        return this.midiSpectrumSvgProvider.concatenateSpectrums(spectrums, musicalInstruments, this.compositionLine.midi.getTimeDivisionMetric(), minNotes, maxNotes);
+        let compositionMidiSpectrumsData: CompositionMidiSpectrumsData = this.compositionControl.getCompositionMidiSpectrums(this.compositionLine);
+        return this.midiSpectrumSvgProvider.concatenateSpectrums(compositionMidiSpectrumsData.spectrums, 
+                                                                 compositionMidiSpectrumsData.musicalInstruments, 
+                                                                 this.compositionLine.midi.getTimeDivisionMetric(), 
+                                                                 compositionMidiSpectrumsData.minNotes, 
+                                                                 compositionMidiSpectrumsData.maxNotes);
     }
 
 }

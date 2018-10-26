@@ -22,10 +22,9 @@ export class SetupCompositionSourcePage extends GenericComponent {
     private _generalForm: FormGroup;
     private _stepForms: FormGroup[];
     private _optionForms: FormGroup[][][];
-
-    tempoRange
-    volumeRange = []
-
+    private _tempoRange: IonRangeDualKnobsModel;
+    private _volumeRange: IonRangeDualKnobsModel[];
+    
     constructor(private navCtrl: NavController, 
                 private navParams: NavParams,
                 private formBuilder: FormBuilder,
@@ -90,17 +89,34 @@ export class SetupCompositionSourcePage extends GenericComponent {
         this._optionForms = optionForms;
     }
     
+    public get tempoRange(): IonRangeDualKnobsModel {
+        return this._tempoRange;
+    }
+
+    public set tempoRange(value: IonRangeDualKnobsModel) {
+        this._tempoRange = value;
+    }
+
+    public get volumeRange(): IonRangeDualKnobsModel[] {
+        return this._volumeRange;
+    }
+    
+    public set volumeRange(value: IonRangeDualKnobsModel[]) {
+        this._volumeRange = value;
+    }
+
     private ngOnInit(){
         try {
             this.configSegment = 'general';
             let configControl = this.navParams.get('configControl');
-            this.loadForms(configControl);
             this.configControl = configControl
             this.sourceControl = this.navParams.get('sourceControl');
-
+            
             this.configureTempoValues();
             this.configureVolumeValues();
-            
+
+            this.loadForms(configControl);
+
             this.updateGeneralFormControl();
             this.updateAllLineFormControl();
 
@@ -109,7 +125,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         }
     }
 
-    private configureTempoValues(){
+    private configureTempoValues() {
 
         if (!this.configControl.config.minTempo || this.configControl.config.minTempo < this.getLowerAllowedTempo()) {
             this.configControl.config.minTempo = this.getLowerAllowedTempo();
@@ -131,12 +147,11 @@ export class SetupCompositionSourcePage extends GenericComponent {
             this.configControl.config.defaultTempo = this.getLowerAllowedTempo();;
         }
 
-        this.tempoRange = {lower: this.configControl.config.minTempo,
-                           upper: this.configControl.config.maxTempo}
+        this.tempoRange = new IonRangeDualKnobsModel(this.configControl.config.minTempo, this.configControl.config.maxTempo);
 
     }
 
-    private configureVolumeValues(){
+    private configureVolumeValues() {
         this.volumeRange = [];
         for (let line of this.configControl.config.linesConfig) {
             
@@ -160,13 +175,11 @@ export class SetupCompositionSourcePage extends GenericComponent {
                 line.defaultVolume = this.getLowerAllowedVolume();
             }
             
-            this.volumeRange.push({lower: line.minVolume,
-                                    upper: line.maxVolume})
+            this.volumeRange.push(new IonRangeDualKnobsModel(line.minVolume, line.maxVolume));
         }
     }
 
-
-    private loadForms(configControl: MusicalCompositionConfigControl){
+    private loadForms(configControl: MusicalCompositionConfigControl) {
 
         let generalForm: FormGroup = this.formBuilder.group({
             defaultKeySignature: [configControl.config.keySignature, Validators.compose([this.required(this.errorHandler.bind(this))])],
@@ -212,10 +225,21 @@ export class SetupCompositionSourcePage extends GenericComponent {
 
     private async saveConfigAndStartComposition() {    
         try {
+            
             this.createLoading('Iniciando Composição');
+            
+            this.configControl.config.minTempo = this.tempoRange.lower; 
+            this.configControl.config.maxTempo = this.tempoRange.upper;
+            
+            for (let i = 0; i < this.volumeRange.length; i++) {
+                this.configControl.config.linesConfig[i].minVolume = this.volumeRange[i].lower;
+                this.configControl.config.linesConfig[i].maxVolume = this.volumeRange[i].upper;
+            }
+
             await this.configControl.persistConfig();
             await this.fileProvider.cleanTempArea();
             let compositionControl: MusicalCompositionControl = await new MusicalCompositionControl(this.configControl.config, this.sourceControl.source);
+            
             this.dismissLoading();
             this.navCtrl.setRoot(CompositionPage, {
                 compositionControl: compositionControl
@@ -298,20 +322,6 @@ export class SetupCompositionSourcePage extends GenericComponent {
         }
     }
 
-    private updateAlloptionFormControl() {
-        try {        
-            for (let i = 0; i < this.optionForms.length; i++) {
-                for (let j = 0; j < this.optionForms[i].length; j++) {
-                    for (let k = 0; k < this.optionForms[i][j].length; k++) {
-                        this.updateoptionFormControl(i, j ,k);
-                    }
-                }
-            }
-        } catch (e) {
-            this.errorHandler(e);
-        }
-    }
-
     private lineFormsIsValid(): boolean {
         try {
             return true;
@@ -345,15 +355,6 @@ export class SetupCompositionSourcePage extends GenericComponent {
                 }
             }
             return true;
-        } catch (e) {
-            this.errorHandler(e);
-        }
-    }
-
-    private updateoptionFormControl(iIndex: number, jIndex: number, kIndex: number) {
-        try {
-            this.optionForms[iIndex][jIndex][kIndex].controls.musicalInstrumentsAllowed.updateValueAndValidity(); 
-            this.optionForms[iIndex][jIndex][kIndex].controls.defaultMusicalInstrument.updateValueAndValidity(); 
         } catch (e) {
             this.errorHandler(e);
         }
@@ -434,3 +435,31 @@ export class SetupCompositionSourcePage extends GenericComponent {
     }    
 
 }
+
+class IonRangeDualKnobsModel {
+    
+    private _lower: number;
+    private _upper: number;
+
+    constructor(lower: number, upper: number) {
+        this.lower = lower;
+        this.upper = upper;
+    }
+
+    get lower(): number {
+        return this._lower;
+    }
+
+    set lower(lower: number) {
+        this._lower = lower;
+    }
+
+    get upper(): number {
+        return this._upper;
+    }
+
+    set upper(upper: number) {
+        this._upper = upper;
+    }
+
+} 

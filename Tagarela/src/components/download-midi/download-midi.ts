@@ -12,10 +12,10 @@ import { ValidatorFn, FormControl, Validators, FormGroup, FormBuilder } from '@a
 })
 export class DownloadMidiComponent extends GenericComponent{
 
+    private _title: string;
     private _fileName: string;
     private _midi: Midi;
     private _midiControl: MidiControl;
-
     private _fileNameForm: FormGroup;
 
     constructor(private navCtrl: NavController, 
@@ -32,6 +32,14 @@ export class DownloadMidiComponent extends GenericComponent{
             popoverCtrl,
             toastCtrl);
     
+    }
+    
+    get title(): string {
+        return this._title;
+    }
+    
+    set title(title: string) {
+        this._title = title;
     }
 
     get fileName(): string {
@@ -70,8 +78,8 @@ export class DownloadMidiComponent extends GenericComponent{
         try { 
             this.midiControl = new MidiControl();
             this.midi = this.navParams.get("midi");
+            this.title = 'Baixar Composição';
             this.fileName = 'Minha Composição';
-
             this.fileNameForm = this.formBuilder.group({
                 fileName: [this.fileName, Validators.compose([this.required(this.errorHandler.bind(this)), this.fileNameRegex(this.errorHandler.bind(this))])],
             });
@@ -112,7 +120,7 @@ export class DownloadMidiComponent extends GenericComponent{
             this.createLoading('Baixando Arquivo');
             await this.fileProvider.writeBinaryStringDownloadArea(this.fileName, this.midiControl.getBinaryString(this.midi));
             this.dismissLoading();
-            this.createDefaultToast('Arquivo salvo com sucesso');
+            this.createDefaultToast('Arquivo Salvo com Sucesso!');
             this.navCtrl.pop();
         } catch (e) {
             this.errorHandler(e);

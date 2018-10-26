@@ -7,14 +7,13 @@
                                                                     compositionControl.composition.denominator)}}</h6>
         <h6 ion-text>Tom: {{visualMidiProvider.getKeySignatureName(compositionControl.composition.keySignature, compositionControl.composition.mode)}}</h6>
         <div *ngIf="!compositionHasEnded()">
-            <h6 ion-text>Passo: {{(compositionControl.stepIndex + 1) + '/' + compositionControl.config.stepsConfig.length}}</h6>
-            <h6 ion-text>Linha: {{(compositionControl.lineIndex + 1) + '/' + compositionControl.config.linesConfig.length}}</h6>
+            <h6 ion-text>Passo: {{(compositionControl.stepIndex + 1)}}/{{compositionControl.config.stepsConfig.length}}</h6>
+            <h6 ion-text>Linha: {{(compositionControl.lineIndex + 1)}}/{{compositionControl.config.linesConfig.length}}</h6>
             <h6 ion-text>Opções: {{getOptionsList().length}}</h6>
         </div>
         <div *ngFor="let line of compositionControl.config.linesConfig; let i = index">
             <h6 ion-text >Linha {{i + 1}}: {{line.name}}</h6>
         </div>
-        
 
     </ion-card-content>
 </ion-card>
@@ -32,16 +31,16 @@
     </ion-card-content>
 </ion-card>
 
-<ion-card *ngIf="compositionControl">
+<ion-card>
     <ion-card-content>
         <h6 ion-text>Linhas de composição:</h6>
         <div class="flex-parent-composition-control">
-                <div class="scroll-2-control">
+                <div #scroll2Control class="scroll-2-control">
                     <div  class="composition-line-control" *ngFor="let compositionLine of getCompositionLinesList()">
                         <line-control-component #controlScroll [compositionControl]="compositionControl" [compositionLine]="compositionLine"></line-control-component>
                     </div>
                 </div>
-                <ion-scroll scrollX="true" class="scroll-2">
+                <ion-scroll #scroll2 scrollX="true" class="scroll-2">
                     <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
                         <choice-component class="float-left-child" *ngFor="let compositionOption of compositionLine.options"
                         [midiChoice]="compositionOption" [composition]="compositionControl" [minNote]="compositionLine.getMinSpectrumNote()" [maxNote]="compositionLine.getMaxSpectrumNote()">

@@ -28,7 +28,7 @@ export class CompositionPage extends GenericComponent{
         return this._compositionControl;
     }
     
-    set compositionControl(compositionControl:MusicalCompositionControl) {
+    set compositionControl(compositionControl: MusicalCompositionControl) {
         this._compositionControl = compositionControl;
     }
 

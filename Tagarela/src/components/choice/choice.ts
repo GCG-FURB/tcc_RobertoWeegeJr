@@ -141,7 +141,7 @@ export class ChoiceComponent extends GenericComponent{
         if (this.midiChoice && this.midiChoice.midi && !this.widthSize) {
             this.widthSize = this.midiChoice.midi.getDeltaTimeSum(this.MIDI_TRACK) / this.midiChoice.midi.getTimeDivisionMetric() * this.SPECTRUM_SIZE_OF_QUARTER_NOTE;
         }
-        return this.widthSize
+        return this.widthSize;
     }
 
     private playMidi() {

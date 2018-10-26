@@ -3,6 +3,7 @@ import { MusicalCompositionConfig, MusicalCompositionOptionConfig } from '../mod
 import { MusicalCompositionSource, MusicalCompositionOptionSource } from '../model/musical-composition-source';
 import { Midi, MidiTimeDivisionMetrical, MidiEventDataType, TimeSignatureMidiEvent, KeySignatureMidiEvent } from '../model/midi';
 import { MidiControl } from './midi';
+import { MidiSpectrum } from '../model/midi-spectrum';
 
 export class MusicalCompositionControl {
 
@@ -184,6 +185,81 @@ export class MusicalCompositionControl {
             }
             this.composition.lines[this.lineIndex].options.pop();
         }
+    }
+
+    public getCompositionMidiSpectrums(compositionLine?: MusicalCompositionLine): CompositionMidiSpectrumsData {
+
+        let spectrums: MidiSpectrum[][] = [];
+        let musicalInstruments: number[][] = [];
+        let minNotes: number[] = [];
+        let maxNotes: number[] = [];
+    
+        let line: MusicalCompositionLine;
+        let lineSpectrums: MidiSpectrum[]; 
+        let lineMusicalInstruments: number[];
+
+        for (let line of (!compositionLine ? this.composition.lines : [compositionLine])) {
+            lineSpectrums = []; 
+            lineMusicalInstruments = [];
+            for (let option of line.options) {
+                lineSpectrums.push(option.spectrum);
+                lineMusicalInstruments.push(option.musicalInstrument);
+            }
+            minNotes.push(line.getMinSpectrumNote())
+            maxNotes.push(line.getMaxSpectrumNote())
+            spectrums.push(lineSpectrums);
+            musicalInstruments.push(lineMusicalInstruments);
+        }
+        return new CompositionMidiSpectrumsData(spectrums, musicalInstruments, minNotes, maxNotes);
+
+    }
+
+}
+
+export class CompositionMidiSpectrumsData {
+
+    private _spectrums: MidiSpectrum[][];
+    private _musicalInstruments: number[][];
+    private _minNotes: number[];
+    private _maxNotes: number[];
+
+    constructor(spectrums: MidiSpectrum[][], musicalInstruments: number[][], minNotes: number[], maxNotes: number[]) {
+        this.spectrums = spectrums;
+        this.musicalInstruments = musicalInstruments;
+        this.minNotes = minNotes;
+        this.maxNotes = maxNotes;
+    }
+
+    get spectrums(): MidiSpectrum[][] {
+        return this._spectrums;
+    }
+
+    set spectrums(value: MidiSpectrum[][]) {
+        this._spectrums = value;
+    }
+    
+    get musicalInstruments(): number[][] {
+        return this._musicalInstruments;
+    }
+    
+    set musicalInstruments(value: number[][]) {
+        this._musicalInstruments = value;
+    }
+    
+    get minNotes(): number[] {
+        return this._minNotes;
+    }
+    
+    set minNotes(value: number[]) {
+        this._minNotes = value;
+    }
+    
+    get maxNotes(): number[] {
+        return this._maxNotes;
+    }
+    
+    set maxNotes(value: number[]) {
+        this._maxNotes = value;
     }
 
 }

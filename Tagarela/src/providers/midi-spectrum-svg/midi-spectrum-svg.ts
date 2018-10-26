@@ -8,7 +8,7 @@ export class MidiSpectrumSvgProvider {
 
     private DEFAULT_WIDTH_BLOCK_SIZE: number = 30;
     private DEFAULT_HEIGHT_BLOCK_SIZE: number = 30;
-    private NOTE_CHANGE_AJUST_FRACTION: number = 32;
+    private NOTE_CHANGE_AJUST_FRACTION: number = 16;
 
     constructor (private visualMidiProvider: VisualMidiProvider) {}
   

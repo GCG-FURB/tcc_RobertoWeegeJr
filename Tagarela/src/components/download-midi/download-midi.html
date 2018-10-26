@@ -1,4 +1,10 @@
-<div>
+<ion-header>
+    <ion-navbar color="primary">
+        <ion-title>{{title}}</ion-title>
+    </ion-navbar>
+</ion-header>
+
+<ion-content padding>
     
     <ion-item [class.input-invalid]= "!fileNameForm.controls.fileName.valid">
         <ion-label floating>Nome do arquivo
@@ -12,5 +18,5 @@
     <button ion-button (click)="downloadMidi()" [disabled]="!fileNameForm.valid">
         Download
     </button>
-
-</div>
+    
+</ion-content>

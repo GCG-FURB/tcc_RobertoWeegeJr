@@ -3,80 +3,16 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class VisualMidiProvider {
 
-    public getIonIconToMidiNumber(midiNumber: number): string {
-        switch (midiNumber) {
-            case 0:
-                return 'instrument-piano';
-            case 11:
-                return 'instrument-vibraphone';
-            case 13:
-                return 'instrument-xylophone';
-            case 21:
-                return 'instrument-accordion';
-            case 24:
-                return 'instrument-acoustic-guitar';
-            case 26:
-                return 'instrument-electric-guitar';
-            case 33:
-                return 'instrument-bass-guitar';
-            case 41:
-                return 'instrument-violin';
-            case 46:
-                return 'instrument-harp';
-            case 56:
-                return 'instrument-trumpet';
-            case 57:
-                return 'instrument-trombone';
-            case 58:
-                return 'instrument-tuba';
-            case 65:
-                return 'instrument-saxophone';
-            case 73:
-                return 'instrument-flute';
-            case 105:
-                return 'instrument-banjo';
-            case -1:
-                return 'instrument-snare-drum';
-        }
-        return ''
+    public getCompassFormula(numerator: number, denominator: number) {
+        return numerator + '/' + Math.pow(2, denominator)
     }
 
-    public getInstrumentNameToMidiNumber(midiNumber: number): string {
-        switch (midiNumber) {
-           case 0:
-                return 'Piano';
-            case 11:
-                return 'Vibrafone';
-            case 13:
-                return 'Xylofone';
-            case 21:
-                return 'Acordeon';
-            case 24:
-                return 'Violão';
-            case 26:
-                return 'Guitarra';
-            case 33:
-                return 'Contrabaixo elétrico';
-            case 41:
-                return 'Violino';
-            case 46:
-                return 'Harpa';
-            case 56:
-                return 'Trompete';
-            case 57:
-                return 'Trombone';
-            case 61:
-                return 'Trompa';
-            case 65:
-                return 'Saxofone';
-            case 73:
-                return 'Flauta';
-            case 105:
-                return 'Banjo';
-            case -1:
-                return 'Bateria';
+    public getMode(mode: number) {
+        switch (mode) {
+            case 0: return 'Maior'
+            case 1: return 'Menor'
+            default: return 'Desconhecido'
         }
-        return 'Desconhecido'
     }
 
     public getKeySignatureName(keySignatureNumber: number, mode: number): string {
@@ -194,21 +130,80 @@ export class VisualMidiProvider {
         return 'key_signature_' + keySignatureNumber;
     }
 
-    public getSpectrumPaleteByInstrumentType(instrumentType: string){
-
-        switch(instrumentType){
-            case 'instrument_type_keys':
-                return ['#F44336', '#D32F2F', '#B71C1C'];
-            case 'instrument_type_strings':
-                return ['#4CAF50', '#388E3C', '#1B5E20'];
-            case 'instrument_type_brass':
-                return ['#2196F3', '#1976D2', '#0D47A1'];
-            case 'instrument_type_woods':
-                return ['#FFEB3B', '#FBC02D', '#F57F17'];
-            case 'instrument_type_percussion':
-                return ['#FFC107', '#FFA000', '#FF6F00'];
+    public getIonIconToMidiNumber(midiNumber: number): string {
+        switch (midiNumber) {
+            case 0:
+                return 'instrument-piano';
+            case 11:
+                return 'instrument-vibraphone';
+            case 13:
+                return 'instrument-xylophone';
+            case 21:
+                return 'instrument-accordion';
+            case 24:
+                return 'instrument-acoustic-guitar';
+            case 26:
+                return 'instrument-electric-guitar';
+            case 33:
+                return 'instrument-bass-guitar';
+            case 41:
+                return 'instrument-violin';
+            case 46:
+                return 'instrument-harp';
+            case 56:
+                return 'instrument-trumpet';
+            case 57:
+                return 'instrument-trombone';
+            case 61:
+                return 'instrument-horn';
+            case 65:
+                return 'instrument-saxophone';
+            case 73:
+                return 'instrument-flute';
+            case 105:
+                return 'instrument-banjo';
+            case -1:
+                return 'instrument-snare-drum';
         }
-        return ['#000000', '#888888', '#FFFFFF'];
+        return ''
+    }
+
+    public getInstrumentNameToMidiNumber(midiNumber: number): string {
+        switch (midiNumber) {
+           case 0:
+                return 'Piano';
+            case 11:
+                return 'Vibrafone';
+            case 13:
+                return 'Xylofone';
+            case 21:
+                return 'Acordeon';
+            case 24:
+                return 'Violão';
+            case 26:
+                return 'Guitarra';
+            case 33:
+                return 'Contrabaixo elétrico';
+            case 41:
+                return 'Violino';
+            case 46:
+                return 'Harpa';
+            case 56:
+                return 'Trompete';
+            case 57:
+                return 'Trombone';
+            case 61:
+                return 'Trompa';
+            case 65:
+                return 'Saxofone';
+            case 73:
+                return 'Flauta';
+            case 105:
+                return 'Banjo';
+            case -1:
+                return 'Bateria';
+        }
+        return 'Desconhecido'
     }
 
     public getInstrumentType(midiNumber: number): string {
@@ -239,17 +234,21 @@ export class VisualMidiProvider {
         return 'none'
     }
 
-    public getCompassFormula(numerator: number, denominator: number) {
-        return numerator + '/' + Math.pow(2, denominator)
-    }
+    public getSpectrumPaleteByInstrumentType(instrumentType: string){
 
-    public getMode(mode: number) {
-        switch (mode) {
-            case 0: return 'Maior'
-            case 1: return 'Menor'
-            default: return 'Desconhecido'
+        switch(instrumentType){
+            case 'instrument_type_keys':
+                return ['#F44336', '#D32F2F', '#B71C1C'];
+            case 'instrument_type_strings':
+                return ['#4CAF50', '#388E3C', '#1B5E20'];
+            case 'instrument_type_brass':
+                return ['#2196F3', '#1976D2', '#0D47A1'];
+            case 'instrument_type_woods':
+                return ['#FFEB3B', '#FBC02D', '#F57F17'];
+            case 'instrument_type_percussion':
+                return ['#FFC107', '#FFA000', '#FF6F00'];
         }
+        return ['#000000', '#888888', '#FFFFFF'];
     }
-
 
 }

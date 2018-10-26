@@ -1,12 +1,11 @@
 import { Component, Input } from '@angular/core';
-import { MusicalCompositionControl } from '../../control/musical-composition';
+import { MusicalCompositionControl, CompositionMidiSpectrumsData } from '../../control/musical-composition';
 import { PopoverController, LoadingController, AlertController, ToastController } from 'ionic-angular';
 import { ListPopoverComponent } from '../list-popover/list-popover';
 import { SlidePopoverComponent } from '../slide-popover/slide-popover';
 import { PlayMidiComponent } from '../play-midi/play-midi';
 import { VisualMidiProvider } from '../../providers/visual-midi/visual-midi';
 import { GenericComponent } from '../../control/generic-component';
-import { MidiSpectrum } from '../../model/midi-spectrum';
 import { MidiSpectrumSvgProvider } from '../../providers/midi-spectrum-svg/midi-spectrum-svg';
 import { DownloadMidiComponent } from '../download-midi/download-midi';
 
@@ -62,28 +61,12 @@ export class GeneralControlComponent extends GenericComponent {
     }
 
     private getSVGMidiSpectrum(): string {
-        let spectrums: MidiSpectrum[][] = [];
-        let musicalInstruments: number[][] = [];
-        let minNotes: number[] = [];
-        let maxNotes: number[] = [];
-    
-        for (let line of this.compositionControl.composition.lines) {
-
-            let lineSpectrums: MidiSpectrum[] = []; 
-            let lineMusicalInstruments: number[] = [];
-
-            for (let option of line.options) {
-                lineSpectrums.push(option.spectrum);
-                lineMusicalInstruments.push(option.musicalInstrument);
-            }
-
-            minNotes.push(line.getMinSpectrumNote())
-            maxNotes.push(line.getMaxSpectrumNote())
-            spectrums.push(lineSpectrums);
-            musicalInstruments.push(lineMusicalInstruments);
-
-        }
-        return this.midiSpectrumSvgProvider.concatenateSpectrums(spectrums, musicalInstruments, this.compositionControl.composition.midi.getTimeDivisionMetric(), minNotes, maxNotes);
+        let compositionMidiSpectrumsData: CompositionMidiSpectrumsData = this.compositionControl.getCompositionMidiSpectrums();
+        return this.midiSpectrumSvgProvider.concatenateSpectrums(compositionMidiSpectrumsData.spectrums, 
+                                                                 compositionMidiSpectrumsData.musicalInstruments, 
+                                                                 this.compositionControl.composition.midi.getTimeDivisionMetric(), 
+                                                                 compositionMidiSpectrumsData.minNotes, 
+                                                                 compositionMidiSpectrumsData.maxNotes);
     }
 
     private changeKeySignature(){
@@ -169,13 +152,12 @@ export class GeneralControlComponent extends GenericComponent {
         }
     }
 
-    private async downloadComposition() {
+    private downloadComposition() {
         try {
             this.compositionControl.applyGeneralChanges();
             this.startPopover(
                 DownloadMidiComponent,
                 {
-                    title: 'Baixar a Composição',
                     midi: this.compositionControl.composition.midi
                 }
             )

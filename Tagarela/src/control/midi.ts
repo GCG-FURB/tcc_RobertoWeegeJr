@@ -1,5 +1,5 @@
 import { Midi, MidiTrack, MidiEvent, MidiType, MidiTimeDivisionType, MidiTimeDivisionMetrical, NoteOffMidiEvent, NoteOnMidiEvent, TempoMidiEvent, TimeSignatureMidiEvent, KeySignatureMidiEvent, EndOfTrackMidiEvent, MidiEventDataType, MusicalInstrumentMidiEvent, ChannelMidiEvent, NoteMidiEvent } from "../model/midi";
-import { ConvertionUtil } from "../util/hexa";
+import { NumberConversionUtil } from "../util/number-conversion";
 import { MidiSpectrumLine, MidiSpectrum, MidiSpectrumNote } from "../model/midi-spectrum";
 
 export class MidiControl {
@@ -44,30 +44,30 @@ export class MidiControl {
 
         actualByte += MidiProtocolConstants.HEADER_START_VALUE.length;
 
-        if (ConvertionUtil.convertBinaryStringToNumber(binaryString.substr(actualByte, MidiProtocolConstants.MIDI_HEADER_LENGTH_VALUE_LENGTH)) != MidiProtocolConstants.MIDI_HEADER_LENGTH_VALUE) 
+        if (NumberConversionUtil.convertBinaryStringToInteger(binaryString.substr(actualByte, MidiProtocolConstants.MIDI_HEADER_LENGTH_VALUE_LENGTH)) != MidiProtocolConstants.MIDI_HEADER_LENGTH_VALUE) 
             throw Error(`A indicação de tamanho definido para o cabeçalho deve ser ${MidiProtocolConstants.MIDI_HEADER_LENGTH_VALUE_LENGTH}.`);
         
         actualByte += MidiProtocolConstants.MIDI_HEADER_LENGTH_VALUE_LENGTH;
 
-        let midiType: number = ConvertionUtil.convertBinaryStringToNumber(binaryString.substr(actualByte, MidiProtocolConstants.MIDI_TYPE_VALUE_LENGTH));
+        let midiType: number = NumberConversionUtil.convertBinaryStringToInteger(binaryString.substr(actualByte, MidiProtocolConstants.MIDI_TYPE_VALUE_LENGTH));
         if (midiType != MidiType.TYPE_0 && midiType != MidiType.TYPE_1) 
             throw Error(`O tipo de Midi ${midiType} não é suportado. Somente é suportado os tipos ${MidiType.TYPE_0} e ${MidiType.TYPE_1}.`);
         midi.midiType = midiType;
 
         actualByte += MidiProtocolConstants.MIDI_TYPE_VALUE_LENGTH;
 
-        let numberOfTracks: number = ConvertionUtil.convertBinaryStringToNumber(binaryString.substr(actualByte, MidiProtocolConstants.MIDI_TRACK_QUANTITY_VALUE_LENGTH));
+        let numberOfTracks: number = NumberConversionUtil.convertBinaryStringToInteger(binaryString.substr(actualByte, MidiProtocolConstants.MIDI_TRACK_QUANTITY_VALUE_LENGTH));
         if (numberOfTracks < 1) 
             throw Error(`A quantidade de tracks deve ser maior que 0.`);
         midi.numberOfTracks = numberOfTracks;
 
         actualByte += MidiProtocolConstants.MIDI_TRACK_QUANTITY_VALUE_LENGTH;
        
-        let timeDividionType: number = ConvertionUtil.getFistBit(ConvertionUtil.convertBinaryStringToHexString(binaryString.substr(actualByte, MidiProtocolConstants.MIDI_TIME_DIVISION_VALUE_LENGTH))); 
+        let timeDividionType: number = NumberConversionUtil.getHexaStringFirstBit(NumberConversionUtil.convertBinaryStringToHexString(binaryString.substr(actualByte, MidiProtocolConstants.MIDI_TIME_DIVISION_VALUE_LENGTH))); 
         if (timeDividionType != MidiTimeDivisionType.METRICAL_TYPE) 
             throw Error(`O tipo de Time Division ${timeDividionType} não é suportado. Somente é suportado o tipo ${MidiTimeDivisionType.METRICAL_TYPE}.`);
 
-        let timeDividionMetric: number = ConvertionUtil.convertBinaryStringToNumber(binaryString.substr(actualByte, MidiProtocolConstants.MIDI_TIME_DIVISION_VALUE_LENGTH));
+        let timeDividionMetric: number = NumberConversionUtil.convertBinaryStringToInteger(binaryString.substr(actualByte, MidiProtocolConstants.MIDI_TIME_DIVISION_VALUE_LENGTH));
         midi.timeDivision = new MidiTimeDivisionMetrical(timeDividionMetric);
 
         actualByte += MidiProtocolConstants.MIDI_TIME_DIVISION_VALUE_LENGTH;
@@ -93,7 +93,7 @@ export class MidiControl {
                 throw Error(`O track deve começar com a indicação ${MidiProtocolConstants.TRACK_START_VALUE}. Track: ${i}`);
             
             actualByte += MidiProtocolConstants.TRACK_START_VALUE.length;
-            let taskLength: number = ConvertionUtil.convertBinaryStringToNumber(binaryString.substr(actualByte, MidiProtocolConstants.MIDI_TRACK_LENGTH_VALUE_LENGTH))
+            let taskLength: number = NumberConversionUtil.convertBinaryStringToInteger(binaryString.substr(actualByte, MidiProtocolConstants.MIDI_TRACK_LENGTH_VALUE_LENGTH))
         
             actualByte += MidiProtocolConstants.MIDI_TRACK_LENGTH_VALUE_LENGTH;
             let finishLength: number = actualByte + taskLength;
@@ -113,14 +113,14 @@ export class MidiControl {
                 let deltaTimeStart: number = actualByte;
                 let deltaTimeLength: number = 1;
 
-                while (!ConvertionUtil.isLastDeltaTimeByte(binaryString.charAt(deltaTimeStart + deltaTimeLength - 1))) {
+                while (!this.isLastDeltaTimeByte(binaryString.charAt(deltaTimeStart + deltaTimeLength - 1))) {
                     deltaTimeLength++;
                     if (deltaTimeLength > MidiProtocolConstants.MIDI_DELTA_TIME_MAX_LENGTH) 
                         throw Error(`Delta time não pode ocupar mais de 4 bytes. Track: ${i} - Byte ${actualByte}`);
                 }
 
                 //calcula delta time
-                deltaTime += ConvertionUtil.calculateDeltaTime(binaryString.substr(deltaTimeStart, deltaTimeLength));
+                deltaTime += this.calculateDeltaTime(binaryString.substr(deltaTimeStart, deltaTimeLength));
                 actualByte += deltaTimeLength;
 
                 //create event or sum delta time
@@ -244,6 +244,44 @@ export class MidiControl {
         return midis;
     }
 
+    private isLastDeltaTimeByte(binaryString: string): boolean {
+        return NumberConversionUtil.getHexaStringFirstBit(binaryString) == 0;
+    }
+
+    private calculateDeltaTime(binaryString: string) : number {
+        let binaryDeltaTime: string = '';
+        for (let str of binaryString) {
+            binaryDeltaTime += NumberConversionUtil.completeOrRemoveChars(
+                NumberConversionUtil.convertBinaryStringToBinaryArray(str), 
+                MidiProtocolConstants.DELTA_TIME_VALID_BITS);
+        }
+        return parseInt(binaryDeltaTime, 2);
+    }
+
+    /*
+    public getDeltaTimeStringFromNumber(deltaTime: number){
+        
+    }*/
+
+    
+    private getDeltaTimeStringFromNumber(deltaTime: number){
+
+        let tempDeltaTimeBinary: string = NumberConversionUtil.convertIntegerToBinaryArray(deltaTime);
+        let deltaTimeBinary: string = '';
+
+        let numberOfBitsToCompleteBytes: number = MidiProtocolConstants.DELTA_TIME_VALID_BITS - (tempDeltaTimeBinary.length % MidiProtocolConstants.DELTA_TIME_VALID_BITS)
+        for (let i = 0; i < numberOfBitsToCompleteBytes; i++) {
+            tempDeltaTimeBinary = '0' + tempDeltaTimeBinary;
+        }
+        let numberOfBytes: number = tempDeltaTimeBinary.length / MidiProtocolConstants.DELTA_TIME_VALID_BITS;
+        for (let i = 0; i < numberOfBytes; i++) {
+            deltaTimeBinary += (i == numberOfBytes-1 ? '0' : '1') + tempDeltaTimeBinary.substr(i * MidiProtocolConstants.DELTA_TIME_VALID_BITS, MidiProtocolConstants.DELTA_TIME_VALID_BITS);
+        }
+        
+        return NumberConversionUtil.convertBinaryArrayToHexString(deltaTimeBinary);
+
+    }
+
     public generateMidiEventFromBinaryString(deltaTime: number, midiData: string): MidiCreatedEventModel {
         
         if ((!deltaTime && deltaTime !== 0) || deltaTime < 0) {
@@ -253,7 +291,7 @@ export class MidiControl {
             throw new Error('Os dados Midi devem possuir ao menos dois bytes.')
         }
 
-        let firstEventByte: string = ConvertionUtil.convertBinaryStringToHexString(midiData.substr(0, 1)); 
+        let firstEventByte: string = NumberConversionUtil.convertBinaryStringToHexString(midiData.substr(0, 1)); 
         
         switch (firstEventByte.charAt(0)) {
             case MidiProtocolConstants._0_EVENT_FIRST_CHAR:
@@ -324,7 +362,7 @@ export class MidiControl {
                 if (firstEventByte == MidiProtocolConstants.SYSTEM_EXCLUSIVE_EVENTS_FIRST_BYTE_F0 || firstEventByte == MidiProtocolConstants.SYSTEM_EXCLUSIVE_EVENTS_FIRST_BYTE_F7) {
                     return new MidiCreatedEventModel(
                         MidiProtocolConstants.SYSTEM_EXCLUSIVE_EVENT_MIN_LENGTH + 
-                        ConvertionUtil.convertBinaryStringToNumber(
+                        NumberConversionUtil.convertBinaryStringToInteger(
                             midiData.substr(
                                MidiProtocolConstants.SYSTEM_EXCLUSIVE_EVENT_LENGTH_BYTE_INDEX, 
                                MidiProtocolConstants.SYSTEM_EXCLUSIVE_EVENT_LENGTH_BYTE_LENGTH
@@ -333,7 +371,7 @@ export class MidiControl {
                     );
                 }
                 if (firstEventByte == MidiProtocolConstants.META_EVENT_FIRST_BYTE) {
-                    let eventTypeByte: string = ConvertionUtil.convertBinaryStringToHexString(midiData.charAt(1)); 
+                    let eventTypeByte: string = NumberConversionUtil.convertBinaryStringToHexString(midiData.charAt(1)); 
                     switch (eventTypeByte) {
                         case MidiProtocolConstants.META_EVENT_TEMPO_TYPE_BYTE:
                             return new MidiCreatedEventModel(MidiProtocolConstants.TEMPO_EVENT_LENGTH, this.createTempoEvent(deltaTime, midiData)); 
@@ -346,7 +384,7 @@ export class MidiControl {
                         default:
                             return new MidiCreatedEventModel(
                                 MidiProtocolConstants.META_EVENT_MIN_LENGTH + 
-                                ConvertionUtil.convertBinaryStringToNumber(
+                                NumberConversionUtil.convertBinaryStringToInteger(
                                     midiData.substr(
                                     MidiProtocolConstants.META_EVENT_LENGTH_BYTE_INDEX, 
                                     MidiProtocolConstants.META_EVENT_LENGTH_BYTE_LENGTH
@@ -363,16 +401,16 @@ export class MidiControl {
 
     private createNoteOffEvent(deltaTime: number, midiData: string): NoteOffMidiEvent {
         let channel: string = 
-            ConvertionUtil.convertBinaryStringToHexString(midiData.substr(MidiProtocolConstants.NOTE_OFF_CHANNEL_BYTE_INDEX, 
+            NumberConversionUtil.convertBinaryStringToHexString(midiData.substr(MidiProtocolConstants.NOTE_OFF_CHANNEL_BYTE_INDEX, 
                                                                           MidiProtocolConstants.NOTE_OFF_CHANNEL_BYTE_LENGTH))
                                                                             .substr(MidiProtocolConstants.NOTE_OFF_CHANNEL_INDEX, 
                                                                                     MidiProtocolConstants.NOTE_OFF_CHANNEL_LENGTH);
         let note: number = 
-            ConvertionUtil.convertBinaryStringToNumber(midiData.substr(MidiProtocolConstants.NOTE_OFF_NOTE_BYTE_INDEX, 
+            NumberConversionUtil.convertBinaryStringToInteger(midiData.substr(MidiProtocolConstants.NOTE_OFF_NOTE_BYTE_INDEX, 
                                                                        MidiProtocolConstants.NOTE_OFF_NOTE_BYTE_LENGTH));
         
         let velocity: number =
-            ConvertionUtil.convertBinaryStringToNumber(midiData.substr(MidiProtocolConstants.NOTE_OFF_VELOCITY_BYTE_INDEX, 
+            NumberConversionUtil.convertBinaryStringToInteger(midiData.substr(MidiProtocolConstants.NOTE_OFF_VELOCITY_BYTE_INDEX, 
                                                                        MidiProtocolConstants.NOTE_OFF_VELOCITY_BYTE_LENGTH));
 
         return new NoteOffMidiEvent(deltaTime, channel, note, velocity);
@@ -380,16 +418,16 @@ export class MidiControl {
 
     private createNoteOnEvent(deltaTime: number, midiData: string): NoteOnMidiEvent {
         let channel: string = 
-            ConvertionUtil.convertBinaryStringToHexString(midiData.substr(MidiProtocolConstants.NOTE_ON_CHANNEL_BYTE_INDEX, 
+            NumberConversionUtil.convertBinaryStringToHexString(midiData.substr(MidiProtocolConstants.NOTE_ON_CHANNEL_BYTE_INDEX, 
                                                                           MidiProtocolConstants.NOTE_ON_CHANNEL_BYTE_LENGTH))
                                                                             .substr(MidiProtocolConstants.NOTE_ON_CHANNEL_INDEX, 
                                                                                     MidiProtocolConstants.NOTE_ON_CHANNEL_LENGTH);
         let note: number = 
-            ConvertionUtil.convertBinaryStringToNumber(midiData.substr(MidiProtocolConstants.NOTE_ON_NOTE_BYTE_INDEX, 
+            NumberConversionUtil.convertBinaryStringToInteger(midiData.substr(MidiProtocolConstants.NOTE_ON_NOTE_BYTE_INDEX, 
                                                                        MidiProtocolConstants.NOTE_ON_NOTE_BYTE_LENGTH));
         
         let velocity: number =
-            ConvertionUtil.convertBinaryStringToNumber(midiData.substr(MidiProtocolConstants.NOTE_ON_VELOCITY_BYTE_INDEX, 
+            NumberConversionUtil.convertBinaryStringToInteger(midiData.substr(MidiProtocolConstants.NOTE_ON_VELOCITY_BYTE_INDEX, 
                                                                        MidiProtocolConstants.NOTE_ON_VELOCITY_BYTE_LENGTH));
 
         return new NoteOnMidiEvent(deltaTime, channel, note, velocity);
@@ -397,7 +435,7 @@ export class MidiControl {
 
     private createTempoEvent(deltaTime: number, midiData: string): TempoMidiEvent {
         let tempo: number =
-            ConvertionUtil.convertBinaryStringToNumber(midiData.substr(MidiProtocolConstants.TEMPO_EVENT_TEMPO_INDEX, 
+            NumberConversionUtil.convertBinaryStringToInteger(midiData.substr(MidiProtocolConstants.TEMPO_EVENT_TEMPO_INDEX, 
                                                                        MidiProtocolConstants.TEMPO_EVENT_TEMPO_LENGTH));
         return new TempoMidiEvent(deltaTime, tempo);
     }
@@ -405,16 +443,16 @@ export class MidiControl {
 
     private createTimeSignatureEvent(deltaTime: number, midiData: string): TimeSignatureMidiEvent {
         let numerator: number =
-            ConvertionUtil.convertBinaryStringToNumber(midiData.substr(MidiProtocolConstants.TIME_SIGNATURE_EVENT_NUMERATOR_INDEX, 
+            NumberConversionUtil.convertBinaryStringToInteger(midiData.substr(MidiProtocolConstants.TIME_SIGNATURE_EVENT_NUMERATOR_INDEX, 
                                                                        MidiProtocolConstants.TIME_SIGNATURE_EVENT_NUMERATOR_LENGTH));
         let denominator: number =
-            ConvertionUtil.convertBinaryStringToNumber(midiData.substr(MidiProtocolConstants.TIME_SIGNATURE_EVENT_DENOMINATOR_INDEX, 
+            NumberConversionUtil.convertBinaryStringToInteger(midiData.substr(MidiProtocolConstants.TIME_SIGNATURE_EVENT_DENOMINATOR_INDEX, 
                                                                        MidiProtocolConstants.TIME_SIGNATURE_EVENT_DENOMINATOR_LENGTH));
         let midiClocks: number =
-            ConvertionUtil.convertBinaryStringToNumber(midiData.substr(MidiProtocolConstants.TIME_SIGNATURE_EVENT_MIDI_CLOCKS_INDEX, 
+            NumberConversionUtil.convertBinaryStringToInteger(midiData.substr(MidiProtocolConstants.TIME_SIGNATURE_EVENT_MIDI_CLOCKS_INDEX, 
                                                                        MidiProtocolConstants.TIME_SIGNATURE_EVENT_MIDI_CLOCKS_LENGTH));        
         let notes32in4note: number =
-            ConvertionUtil.convertBinaryStringToNumber(midiData.substr(MidiProtocolConstants.TIME_SIGNATURE_EVENT_NOTES_32_IN_4_NOTE_INDEX, 
+            NumberConversionUtil.convertBinaryStringToInteger(midiData.substr(MidiProtocolConstants.TIME_SIGNATURE_EVENT_NOTES_32_IN_4_NOTE_INDEX, 
                                                                        MidiProtocolConstants.TIME_SIGNATURE_EVENT_NOTES_32_IN_4_NOTE_LENGTH));
 
         return new TimeSignatureMidiEvent(deltaTime, numerator, denominator, midiClocks, notes32in4note);    
@@ -422,14 +460,14 @@ export class MidiControl {
     
     private createKeySignatureEvent(deltaTime: number, midiData: string): KeySignatureMidiEvent {
         let tone: number =
-            ConvertionUtil.convertBinaryStringToNumber(midiData.substr(MidiProtocolConstants.KEY_SIGNATURE_EVENT_TONE_INDEX, 
+            NumberConversionUtil.convertBinaryStringToInteger(midiData.substr(MidiProtocolConstants.KEY_SIGNATURE_EVENT_TONE_INDEX, 
                                                                        MidiProtocolConstants.KEY_SIGNATURE_EVENT_TONE_LENGTH));
 
         if (tone >= MidiProtocolConstants.KEY_SIGNATURE_NEGATIVE_KEY_START)
             tone = (MidiProtocolConstants.KEY_SIGNATURE_NEGATIVE_KEY_CONTROL - tone) * -1;
 
         let mode: number =
-            ConvertionUtil.convertBinaryStringToNumber(midiData.substr(MidiProtocolConstants.KEY_SIGNATURE_EVENT_MODE_INDEX, 
+            NumberConversionUtil.convertBinaryStringToInteger(midiData.substr(MidiProtocolConstants.KEY_SIGNATURE_EVENT_MODE_INDEX, 
                                                                        MidiProtocolConstants.KEY_SIGNATURE_EVENT_MODE_LENGTH));
                                                                
         return new KeySignatureMidiEvent(deltaTime, tone, mode);    
@@ -460,10 +498,10 @@ export class MidiControl {
         let timeDivision: MidiTimeDivisionMetrical = <MidiTimeDivisionMetrical> midi.timeDivision;
 
         binaryString = MidiProtocolConstants.HEADER_START_VALUE 
-                     + ConvertionUtil.convertNumberToBinararyString(MidiProtocolConstants.MIDI_HEADER_LENGTH_VALUE, MidiProtocolConstants.MIDI_HEADER_LENGTH_VALUE_LENGTH) 
-                     + ConvertionUtil.convertNumberToBinararyString(midi.midiType, MidiProtocolConstants.MIDI_TYPE_VALUE_LENGTH)
-                     + ConvertionUtil.convertNumberToBinararyString(midi.numberOfTracks, MidiProtocolConstants.MIDI_TYPE_VALUE_LENGTH)
-                     + ConvertionUtil.convertNumberToBinararyString(timeDivision.metric, MidiProtocolConstants.MIDI_TIME_DIVISION_VALUE_LENGTH)
+                     + NumberConversionUtil.convertIntegerToBinararyString(MidiProtocolConstants.MIDI_HEADER_LENGTH_VALUE, MidiProtocolConstants.MIDI_HEADER_LENGTH_VALUE_LENGTH) 
+                     + NumberConversionUtil.convertIntegerToBinararyString(midi.midiType, MidiProtocolConstants.MIDI_TYPE_VALUE_LENGTH)
+                     + NumberConversionUtil.convertIntegerToBinararyString(midi.numberOfTracks, MidiProtocolConstants.MIDI_TYPE_VALUE_LENGTH)
+                     + NumberConversionUtil.convertIntegerToBinararyString(timeDivision.metric, MidiProtocolConstants.MIDI_TIME_DIVISION_VALUE_LENGTH)
 
         for (let midiTrack of midi.midiTracks) {
             dataString = '';
@@ -472,12 +510,12 @@ export class MidiControl {
                 if(!midiEvent.deltaTime && midiEvent.deltaTime != 0) 
                     throw new Error('Delta Time não pode ser nulo ou vazio.')
 
-                dataString += ConvertionUtil.getDeltaTimeStringFromNumber(midiEvent.deltaTime) + this.convertEventDataToHexaData(midiEvent);
+                dataString += this.getDeltaTimeStringFromNumber(midiEvent.deltaTime) + this.convertEventDataToHexaData(midiEvent);
 
             }
             binaryString += MidiProtocolConstants.TRACK_START_VALUE 
-                         + ConvertionUtil.convertNumberToBinararyString(dataString.length/2 , MidiProtocolConstants.MIDI_TRACK_LENGTH_VALUE_LENGTH) 
-                         + ConvertionUtil.convertHexStringToBinararyString(dataString);
+                         + NumberConversionUtil.convertIntegerToBinararyString(dataString.length/2 , MidiProtocolConstants.MIDI_TRACK_LENGTH_VALUE_LENGTH) 
+                         + NumberConversionUtil.convertHexStringToBinararyString(dataString);
         }
         return binaryString;
     }
@@ -488,56 +526,56 @@ export class MidiControl {
             let event: NoteOffMidiEvent = <NoteOffMidiEvent> midiEvent; 
             return MidiProtocolConstants.NOTE_OFF_FIRST_CHAR 
                  + event.channel
-                 + ConvertionUtil.convertNumberToHexString(event.note,     MidiProtocolConstants.NOTE_OFF_NOTE_BYTE_LENGTH)
-                 + ConvertionUtil.convertNumberToHexString(event.velocity, MidiProtocolConstants.NOTE_OFF_VELOCITY_BYTE_LENGTH);
+                 + NumberConversionUtil.convertIntegerToHexString(event.note,     MidiProtocolConstants.NOTE_OFF_NOTE_BYTE_LENGTH)
+                 + NumberConversionUtil.convertIntegerToHexString(event.velocity, MidiProtocolConstants.NOTE_OFF_VELOCITY_BYTE_LENGTH);
 
         } else if (midiEvent.isOfType(MidiEventDataType.NOTE_ON)) {
 
             let event: NoteOnMidiEvent = <NoteOnMidiEvent> midiEvent; 
             return MidiProtocolConstants.NOTE_ON_FIRST_CHAR 
                  + event.channel
-                 + ConvertionUtil.convertNumberToHexString(event.note,     MidiProtocolConstants.NOTE_OFF_NOTE_BYTE_LENGTH)
-                 + ConvertionUtil.convertNumberToHexString(event.velocity, MidiProtocolConstants.NOTE_OFF_VELOCITY_BYTE_LENGTH); 
+                 + NumberConversionUtil.convertIntegerToHexString(event.note,     MidiProtocolConstants.NOTE_OFF_NOTE_BYTE_LENGTH)
+                 + NumberConversionUtil.convertIntegerToHexString(event.velocity, MidiProtocolConstants.NOTE_OFF_VELOCITY_BYTE_LENGTH); 
 
         } else if (midiEvent.isOfType(MidiEventDataType.TEMPO)) {
 
             let event: TempoMidiEvent = <TempoMidiEvent> midiEvent; 
             return MidiProtocolConstants.META_EVENT_FIRST_BYTE
                  + MidiProtocolConstants.META_EVENT_TEMPO_TYPE_BYTE
-                 + ConvertionUtil.convertNumberToHexString(MidiProtocolConstants.TEMPO_EVENT_DATA_LENGTH, MidiProtocolConstants.TEMPO_EVENT_DATA_LENGTH_LENGTH)
-                 + ConvertionUtil.convertNumberToHexString(event.tempo, MidiProtocolConstants.TEMPO_EVENT_TEMPO_LENGTH);
+                 + NumberConversionUtil.convertIntegerToHexString(MidiProtocolConstants.TEMPO_EVENT_DATA_LENGTH, MidiProtocolConstants.TEMPO_EVENT_DATA_LENGTH_LENGTH)
+                 + NumberConversionUtil.convertIntegerToHexString(event.tempo, MidiProtocolConstants.TEMPO_EVENT_TEMPO_LENGTH);
 
         } else if (midiEvent.isOfType(MidiEventDataType.TIME_SIGNATURE)) {
 
             let event: TimeSignatureMidiEvent = <TimeSignatureMidiEvent> midiEvent; 
             return MidiProtocolConstants.META_EVENT_FIRST_BYTE
                  + MidiProtocolConstants.META_EVENT_TIME_SIGNATURE_TYPE_BYTE
-                 + ConvertionUtil.convertNumberToHexString(MidiProtocolConstants.TIME_SIGNATURE_EVENT_DATA_LENGTH, MidiProtocolConstants.TIME_SIGNATURE_EVENT_DATA_LENGTH_LENGTH)
-                 + ConvertionUtil.convertNumberToHexString(event.numerator,      MidiProtocolConstants.TIME_SIGNATURE_EVENT_NUMERATOR_LENGTH)
-                 + ConvertionUtil.convertNumberToHexString(event.denominator,    MidiProtocolConstants.TIME_SIGNATURE_EVENT_DENOMINATOR_LENGTH)
-                 + ConvertionUtil.convertNumberToHexString(event.midiClocks,     MidiProtocolConstants.TIME_SIGNATURE_EVENT_MIDI_CLOCKS_LENGTH)
-                 + ConvertionUtil.convertNumberToHexString(event.notes32in4note, MidiProtocolConstants.TIME_SIGNATURE_EVENT_NOTES_32_IN_4_NOTE_LENGTH);
+                 + NumberConversionUtil.convertIntegerToHexString(MidiProtocolConstants.TIME_SIGNATURE_EVENT_DATA_LENGTH, MidiProtocolConstants.TIME_SIGNATURE_EVENT_DATA_LENGTH_LENGTH)
+                 + NumberConversionUtil.convertIntegerToHexString(event.numerator,      MidiProtocolConstants.TIME_SIGNATURE_EVENT_NUMERATOR_LENGTH)
+                 + NumberConversionUtil.convertIntegerToHexString(event.denominator,    MidiProtocolConstants.TIME_SIGNATURE_EVENT_DENOMINATOR_LENGTH)
+                 + NumberConversionUtil.convertIntegerToHexString(event.midiClocks,     MidiProtocolConstants.TIME_SIGNATURE_EVENT_MIDI_CLOCKS_LENGTH)
+                 + NumberConversionUtil.convertIntegerToHexString(event.notes32in4note, MidiProtocolConstants.TIME_SIGNATURE_EVENT_NOTES_32_IN_4_NOTE_LENGTH);
         } else if (midiEvent.isOfType(MidiEventDataType.KEY_SIGNATURE)) {
 
             let event: KeySignatureMidiEvent = <KeySignatureMidiEvent> midiEvent; 
             return MidiProtocolConstants.META_EVENT_FIRST_BYTE
                  + MidiProtocolConstants.META_EVENT_KEY_SIGNATURE_TYPE_BYTE
-                 + ConvertionUtil.convertNumberToHexString(MidiProtocolConstants.KEY_SIGNATURE_EVENT_DATA_LENGTH, MidiProtocolConstants.KEY_SIGNATURE_EVENT_DATA_LENGTH_LENGTH)
-                 + ConvertionUtil.convertNumberToHexString((event.tone < 0 ? MidiProtocolConstants.KEY_SIGNATURE_NEGATIVE_KEY_CONTROL + event.tone : event.tone), MidiProtocolConstants.KEY_SIGNATURE_EVENT_TONE_LENGTH)
-                 + ConvertionUtil.convertNumberToHexString(event.mode, MidiProtocolConstants.KEY_SIGNATURE_EVENT_MODE_LENGTH);
+                 + NumberConversionUtil.convertIntegerToHexString(MidiProtocolConstants.KEY_SIGNATURE_EVENT_DATA_LENGTH, MidiProtocolConstants.KEY_SIGNATURE_EVENT_DATA_LENGTH_LENGTH)
+                 + NumberConversionUtil.convertIntegerToHexString((event.tone < 0 ? MidiProtocolConstants.KEY_SIGNATURE_NEGATIVE_KEY_CONTROL + event.tone : event.tone), MidiProtocolConstants.KEY_SIGNATURE_EVENT_TONE_LENGTH)
+                 + NumberConversionUtil.convertIntegerToHexString(event.mode, MidiProtocolConstants.KEY_SIGNATURE_EVENT_MODE_LENGTH);
 
         } else if (midiEvent.isOfType(MidiEventDataType.DETERMINATE_MUSICAL_INSTRUMENT)) {
             let event: MusicalInstrumentMidiEvent = <MusicalInstrumentMidiEvent> midiEvent; 
             return MidiProtocolConstants.C_EVENT_FIRST_CHAR
                  + event.channel
-                 + ConvertionUtil.convertNumberToHexString(event.musicalInstrument, MidiProtocolConstants.MUSICAL_INSTRUMENT_EVENT_INSTRUMENT_BYTE_LENGTH);
+                 + NumberConversionUtil.convertIntegerToHexString(event.musicalInstrument, MidiProtocolConstants.MUSICAL_INSTRUMENT_EVENT_INSTRUMENT_BYTE_LENGTH);
             
 
         } else if (midiEvent.isOfType(MidiEventDataType.END_OF_TRACK)) {
 
             return MidiProtocolConstants.META_EVENT_FIRST_BYTE
                     + MidiProtocolConstants.META_EVENT_END_OF_TRACK_TYPE_BYTE
-                    + ConvertionUtil.convertNumberToHexString(MidiProtocolConstants.END_OF_TRACK_EVENT_DATA_LENGTH, MidiProtocolConstants.END_OF_TRACK_EVENT_DATA_LENGTH_LENGTH);
+                    + NumberConversionUtil.convertIntegerToHexString(MidiProtocolConstants.END_OF_TRACK_EVENT_DATA_LENGTH, MidiProtocolConstants.END_OF_TRACK_EVENT_DATA_LENGTH_LENGTH);
 
         } else {
             throw new Error('O evento não é suportado.')
@@ -866,5 +904,7 @@ class MidiProtocolConstants {
     public static END_OF_TRACK_EVENT_LENGTH: number = 3;
     public static END_OF_TRACK_EVENT_DATA_LENGTH: number = 0;
     public static END_OF_TRACK_EVENT_DATA_LENGTH_LENGTH: number = 1;
+
+    public static DELTA_TIME_VALID_BITS: number = 7;
 
 }

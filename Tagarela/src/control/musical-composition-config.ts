@@ -98,7 +98,7 @@ export class MusicalCompositionConfigControl {
     }
 
     public async getConfig(): Promise<string> {
-        return await this.fileProvider.getFileContentIfExists(this.baseFileSystemConfig, this.relativePath, this.CONFIG_FILE_NAME);
+        return await this.fileProvider.readFileTextContentIfExists(this.baseFileSystemConfig, this.relativePath, this.CONFIG_FILE_NAME);
     }
 
     public async removeConfig(){
