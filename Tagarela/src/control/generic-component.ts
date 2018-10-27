@@ -53,7 +53,7 @@ export class GenericComponent {
     public errorHandler(e){
         this.startAlert({
             title: 'Ocorreu um Erro',
-            subTitle: (e && e.message ? e.message : 'Erro não mapeado.'),
+            subTitle: e.stack,// (e && e.message ? e.message : 'Erro não mapeado.'),
             buttons: ['OK']
         });
     }

@@ -8,13 +8,17 @@ import { ChoiceCompositionSourcePage } from '../pages/choice-composition-source/
   templateUrl: 'app.html'
 })
 export class Tagarela {
-    rootPage:any = ChoiceCompositionSourcePage;
+    
+    rootPage: any = ChoiceCompositionSourcePage;
+    readyPlatform: boolean = false;
     
     constructor(platform: Platform, statusBar: StatusBar, splashScreen: SplashScreen) {
-        platform.ready().then(() => {
+        platform.ready().then(() => {       
+            //alert('aqui')
             statusBar.styleDefault();
             splashScreen.hide();
             statusBar.backgroundColorByHexString('#01579B');
+            this.readyPlatform = true;
         });
     }
 }

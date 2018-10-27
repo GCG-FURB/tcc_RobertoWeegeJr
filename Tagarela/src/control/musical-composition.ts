@@ -192,31 +192,29 @@ export class MusicalCompositionControl {
     public applyLineChangesInMidi(line: MusicalCompositionLine) {
         if (!line)
             throw new Error('A linha não pode ser nula.');
-
-        let midi: Midi;
+        
         if (line.options.length > 0) {
+            let midi: Midi;
             this.applyOptionChangesInMidi(line.options[0]);
             midi = line.options[0].midi.cloneMidi();
-        } else {
-            midi = null;
-        }
-        for (let i = 1; i < line.options.length; i++) {
-            this.applyOptionChangesInMidi(line.options[i]);
-            midi = this.midiControl.concatenateMidisChannels(midi, line.options[i].midi);
-        }        
-        if (midi) {
+            for (let i = 1; i < line.options.length; i++) {
+                this.applyOptionChangesInMidi(line.options[i]);
+                midi = this.midiControl.concatenateMidisChannels(midi, line.options[i].midi);
+            }        
             midi.applyVolumeChange(line.volume);
-        }
-        line.midi = midi;
+            line.midi = midi;
+        } 
     }
 
     public applyGeneralChanges() {
         let midiLines: Midi[] = [];
         for (let line of this.composition.lines) {
-            this.applyLineChangesInMidi(line);
-            if (line.midi) {
-                this.applyMidiNoteAndTempoChanges(line.midi);
-                midiLines.push(line.midi);
+            if (line.options.length > 0) {
+                this.applyLineChangesInMidi(line);
+                if (line.midi) {
+                    this.applyMidiNoteAndTempoChanges(line.midi);
+                    midiLines.push(line.midi);
+                }
             }
         }
         this.composition.midi = this.midiControl.concatenateMidisInTracks(midiLines);
@@ -261,21 +259,22 @@ export class MusicalCompositionControl {
         let minNotes: number[] = [];
         let maxNotes: number[] = [];
     
-        let line: MusicalCompositionLine;
         let lineSpectrums: MidiSpectrum[]; 
         let lineMusicalInstruments: number[];
 
         for (let line of (!compositionLine ? this.composition.lines : [compositionLine])) {
-            lineSpectrums = []; 
-            lineMusicalInstruments = [];
-            for (let option of line.options) {
-                lineSpectrums.push(option.spectrum);
-                lineMusicalInstruments.push(option.musicalInstrument);
+            if (line.options.length > 0) {
+                lineSpectrums = []; 
+                lineMusicalInstruments = [];
+                for (let option of line.options) {
+                    lineSpectrums.push(option.spectrum);
+                    lineMusicalInstruments.push(option.musicalInstrument);
+                }
+                minNotes.push(line.getMinSpectrumNote())
+                maxNotes.push(line.getMaxSpectrumNote())
+                spectrums.push(lineSpectrums);
+                musicalInstruments.push(lineMusicalInstruments);
             }
-            minNotes.push(line.getMinSpectrumNote())
-            maxNotes.push(line.getMaxSpectrumNote())
-            spectrums.push(lineSpectrums);
-            musicalInstruments.push(lineMusicalInstruments);
         }
         return new CompositionMidiSpectrumsData(spectrums, musicalInstruments, minNotes, maxNotes);
 

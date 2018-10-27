@@ -31,6 +31,8 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
               alertCtrl,
               popoverCtrl,
               toastCtrl);
+
+              //alert('não não, aqui')    
     }
 
     //gets e sets - variaveis locais
@@ -59,6 +61,7 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
     }
 
     private ngOnInit(): void {
+        //alert('não, aqui')
         try {
             if (this.plataform.is('android')) {
                 this.customCompositionSystemFileSystem = this.fileProvider.file.externalRootDirectory;
