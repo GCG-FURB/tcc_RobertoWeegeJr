@@ -8,7 +8,7 @@ export class MidiSpectrumSvgProvider {
 
     private DEFAULT_WIDTH_BLOCK_SIZE: number = 30;
     private DEFAULT_HEIGHT_BLOCK_SIZE: number = 30;
-    private NOTE_CHANGE_AJUST_FRACTION: number = 16;
+    private NOTE_CHANGE_AJUST_FRACTION: number = 32;
 
     constructor (private visualMidiProvider: VisualMidiProvider) {}
   
@@ -35,7 +35,7 @@ export class MidiSpectrumSvgProvider {
             for (let j = 0; j < spectrum.lines[i].notes.length; j++) {
                 svg += `<rect x="${deltaTimeWidthUnit * spectrum.lines[i].notes[j].deltaTimeStart}cm" ` 
                            + `y="${((spectrum.lines.length - 1 - i + deslocationFactor) * lineHeightUnit)}cm" `
-                           + `width="${(deltaTimeWidthUnit * (spectrum.lines[i].notes[j].deltaTimeEnd - spectrum.lines[i].notes[j].deltaTimeStart - adjustNoteChangeFactor))}cm" `
+                           + `width="${(deltaTimeWidthUnit * (spectrum.lines[i].notes[j].deltaTimeEnd - spectrum.lines[i].notes[j].deltaTimeStart) - adjustNoteChangeFactor)}cm" `
                            + `height="${lineHeightUnit}cm" ` 
                            + `fill="${paleteColors[1]}"/>`;
             }
@@ -105,7 +105,7 @@ export class MidiSpectrumSvgProvider {
                     for (let j = 0; j < spectrums[k][l].lines[i].notes.length; j++) {
                         svg += `<rect x="${widthDeslocation + (deltaTimeWidthUnit * spectrums[k][l].lines[i].notes[j].deltaTimeStart)}cm" ` 
                                    + `y="${heightDeslocation + ((spectrums[k][l].lines.length - 1 - i + deslocationFactor) * lineHeightUnit)}cm" `
-                                   + `width="${(deltaTimeWidthUnit * (spectrums[k][l].lines[i].notes[j].deltaTimeEnd - spectrums[k][l].lines[i].notes[j].deltaTimeStart - adjustNoteChangeFactor))}cm" `
+                                   + `width="${(deltaTimeWidthUnit * (spectrums[k][l].lines[i].notes[j].deltaTimeEnd - spectrums[k][l].lines[i].notes[j].deltaTimeStart) - adjustNoteChangeFactor)}cm" `
                                    + `height="${lineHeightUnit}cm" ` 
                                    + `fill="${paleteColors[1]}"/>`;
                     }

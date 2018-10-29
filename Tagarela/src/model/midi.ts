@@ -567,22 +567,24 @@ export abstract class NoteMidiEvent extends ChannelMidiEvent {
     }  
 
     public applyNoteTranspose(convesionFactor: number) {
-        if (!convesionFactor && convesionFactor != 0) 
-            throw new Error('O fator de conversão não deve ser nulo.')
-        
-        let octaveTranspose: number = 0;
-        let note: number = this.note + (((this.octaveTranspose ? this.octaveTranspose : 0) * Midi.OCTAVE_SEMI_TOM_QUANTITY) + convesionFactor); 
+        if (Midi.DRUMS_MIDI_CHANNELS.indexOf(this.channel) < 0) {
+            if (!convesionFactor && convesionFactor != 0) 
+                throw new Error('O fator de conversão não deve ser nulo.')
+            
+            let octaveTranspose: number = 0;
+            let note: number = this.note + (((this.octaveTranspose ? this.octaveTranspose : 0) * Midi.OCTAVE_SEMI_TOM_QUANTITY) + convesionFactor); 
 
-        while (note < Midi.MIN_NOTE_NUMBER) {
-            note += Midi.OCTAVE_SEMI_TOM_QUANTITY;
-            octaveTranspose++;
+            while (note < Midi.MIN_NOTE_NUMBER) {
+                note += Midi.OCTAVE_SEMI_TOM_QUANTITY;
+                octaveTranspose++;
+            }
+            while (note > Midi.MAX_NOTE_NUMBER) {
+                note -= Midi.OCTAVE_SEMI_TOM_QUANTITY;
+                octaveTranspose--;
+            }
+            this.octaveTranspose = octaveTranspose;
+            this.note = note;
         }
-        while (note > Midi.MAX_NOTE_NUMBER) {
-            note -= Midi.OCTAVE_SEMI_TOM_QUANTITY;
-            octaveTranspose--;
-        }
-        this.octaveTranspose = octaveTranspose;
-        this.note = note;
     }
 
     public applyVolumeChange(volumePercent: number) {

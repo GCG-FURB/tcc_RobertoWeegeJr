@@ -1,4 +1,5 @@
-<div [ngStyle]="{'background-image':'url('+ this.getBackgroundImage() +')', 'width': getWidthSize()+'vw'}" class="flex-parent image">
+<div [ngStyle]="{'background-image':'url('+ this.getBackgroundImage() +')', 'width': getWidthSize()+'vw'}" class="flex-parent image"
+     [class.image-choice]="toChoice">
     <div class="flex-child">
         <button ion-button icon-only class="center" (click)="playMidi()" [color]="getColor()">
             <ion-icon name="play"></ion-icon>
