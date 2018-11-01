@@ -10,7 +10,7 @@ import { Media, MediaObject } from '@ionic-native/media';
   selector: 'play-midi',
   templateUrl: 'play-midi.html'
 })
-export class PlayMidiComponent extends GenericComponent{
+export class PlayMidiComponent extends GenericComponent {
 
     @ViewChild('spectrumDiv') spectrumDiv: ElementRef;
     @ViewChild('indicator') indicator: ElementRef;
@@ -48,6 +48,7 @@ export class PlayMidiComponent extends GenericComponent{
               popoverCtrl,
               toastCtrl);
     
+
     }
 
     get spectrum(): string {
@@ -173,8 +174,10 @@ export class PlayMidiComponent extends GenericComponent{
 
     private async playMidi() {
         try { 
+
             let midiString = this.midiControl.getBinaryString(this.midi);
             await this.fileProvider.writeMidiBinaryStringToTempArea(this.midiId, midiString);
+
             this.file = await this.nativeMedia.create(this.fileProvider.tempAreaFullDir + this.midiId + '.mid');
             
             await this.file.onSuccess.subscribe(() => {
@@ -196,6 +199,21 @@ export class PlayMidiComponent extends GenericComponent{
             this.errorHandler(e);
         }
     }
+
+
+    StringToUint8Array(string) {
+        var binary, binLen, buffer, chars, i, _i;
+        binary = string;
+        binLen = binary.length;
+        buffer = new ArrayBuffer(binLen);
+        chars  = new Uint8Array(buffer);
+        for (i = _i = 0; 0 <= binLen ? _i < binLen : _i > binLen; i = 0 <= binLen ? ++_i : --_i) {
+            chars[i] = String.prototype.charCodeAt.call(binary, i);
+        }
+        return chars;
+    }
+
+
 
     private goBack() {
         try { 

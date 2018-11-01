@@ -86,8 +86,6 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
                                                         this.fileProvider.file.applicationDirectory, 
                                                         MusicalCompositionConfigControl.DEFAULT_COMPOSITION_SOURCES_RELATIVE_PATH
                                                    );
-            
-            alert(JSON.stringify(this.defaultCompositionSources))
 
             let callbackFunction = this.getCompositionSetupFunction (
                                         false, 

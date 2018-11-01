@@ -37,7 +37,7 @@ export class NumberConversionUtil {
         return parseInt(hexString, 16);
     }
 
-    public convertHexStringToBinararyString(hexString: string): string{
+    public convertHexStringToBinaryString(hexString: string): string{
         if (!hexString || hexString.length <= 0)
             throw new Error(`A string de hexadecimal não pode ser nula ou vazia.`);
         
@@ -56,7 +56,7 @@ export class NumberConversionUtil {
     //convert decimal
     public convertIntegerToBinararyString(integer: number, numberOfBytes: number) {
         let hexNum: string = this.convertIntegerToHexString(integer, numberOfBytes);
-        return this.convertHexStringToBinararyString(hexNum);
+        return this.convertHexStringToBinaryString(hexNum);
     }
 
     public convertIntegerToHexString(integer: number, numberOfBytes?: number): string {

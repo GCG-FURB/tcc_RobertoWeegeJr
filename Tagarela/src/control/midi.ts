@@ -932,7 +932,7 @@ export class MidiFileControl {
             }
             binaryString += this.TRACK_START_VALUE 
                          + this.numberConversion.convertIntegerToBinararyString(dataString.length/2 , this.MIDI_TRACK_LENGTH_VALUE_LENGTH) 
-                         + this.numberConversion.convertHexStringToBinararyString(dataString);
+                         + this.numberConversion.convertHexStringToBinaryString(dataString);
         }
         return binaryString;
     }

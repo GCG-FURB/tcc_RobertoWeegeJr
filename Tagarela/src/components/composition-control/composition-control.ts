@@ -27,7 +27,6 @@ export class CompositionControlComponent extends GenericComponent {
                 private popoverCtrl: PopoverController,
                 private visualMidiProvider: VisualMidiProvider,
                 private toastCtrl: ToastController) {
-
         super(loadingCtrl,
               alertCtrl,
               popoverCtrl,
