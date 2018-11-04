@@ -15,11 +15,11 @@
             <ion-segment-button value="general">
                 <p ion-text [class.invalid]="!generalForm.valid" class="segment-text">Geral</p>
             </ion-segment-button>
-            <ion-segment-button value="lines">
-                <p [class.invalid]="!lineFormsIsValid()" class="segment-text">Linhas</p>
-            </ion-segment-button>
             <ion-segment-button value="steps">
                 <p [class.invalid]="!stepFormsIsValid()" class="segment-text">Passos</p>
+            </ion-segment-button>
+            <ion-segment-button value="lines">
+                <p [class.invalid]="!lineFormsIsValid()" class="segment-text">Linhas</p>
             </ion-segment-button>
             <ion-segment-button value="options">
                 <p [class.invalid]="!optionFormsIsValid()" class="segment-text">Opções</p>
@@ -193,10 +193,10 @@
                 <h6 ion-text class="headers_margin">Passo: {{stepConfig.relativePath}}</h6>
                 
                 <div *ngFor="let groupConfig of stepConfig.groupsConfig; let j = index">
-                    <h6 ion-text class="headers_margin">Grupo: {{groupConfig.relativePath}}</h6>
+                    <h6 ion-text class="headers_margin">Linha: {{groupConfig.relativePath}}</h6>
                 
                     <div *ngFor="let optionConfig of groupConfig.optionsConfig; let k = index">
-                        <h6 ion-text class="headers_margin headers_margin_top">Option: {{optionConfig.fileName}}</h6>
+                        <h6 ion-text class="headers_margin headers_margin_top">Opção: {{optionConfig.fileName}}</h6>
                         
                         <form [formGroup]="optionForms[i][j][k]">
 
