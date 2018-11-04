@@ -125,6 +125,19 @@ export class MidiControl {
             }
         }
 
+        for (let i = 0; spectrumNoteList.length; i++) {
+            note = spectrumNoteList[i];
+            if (!spectrumLineMap.has(note)){
+                spectrumLine = new MidiSpectrumLine();
+                spectrumLine.noteValue = note;
+                spectrumLineMap.set(note, spectrumLine);
+            }
+            spectrumNote = new MidiSpectrumNote();
+            spectrumNote.deltaTimeStart = spectrumDeltaTimeList[i];
+            spectrumNote.deltaTimeEnd = midiTotalDeltaTime;
+            spectrumLineMap.get(note).notes.push(spectrumNote);
+        }
+
         spectrum.minNote = midiMinNote;
         spectrum.maxNote = midiMaxNote;
         spectrum.deltaTime = midiTotalDeltaTime;
@@ -628,7 +641,7 @@ export class MidiFileControl {
             }
 
             if (actualByte != finishLength) 
-                throw Error(`A definiçã de tamanho de track está errada. Track: ${i}`);
+                throw Error(`A definição de tamanho de track está errada. Track: ${i}`);
 
             if (!endOfTrackEvent)
                 throw Error(`Não foi encontrado evento de finalização de track. Track: ${i}`);

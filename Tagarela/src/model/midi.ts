@@ -149,6 +149,21 @@ export class Midi {
         return deltaTime;
     }
 
+    public getNumerator(trackIndex: number): number {
+        return this.midiTracks[trackIndex].getNumerator();
+    }
+
+    public getDenominator(trackIndex: number): number {
+        return this.midiTracks[trackIndex].getDenominator();
+    }
+
+    
+    public getKeyMode(trackIndex: number): number {
+        return this.midiTracks[trackIndex].getKeyMode();
+    }
+
+    
+
     public cloneMidi(): Midi{
         let midi = new Midi();
         midi.midiType = this.midiType;
@@ -399,6 +414,35 @@ export class MidiTrack {
         return midiEvents;
     }
 
+    public getNumerator(): number {
+        for(let midiEvent of this.midiEvents) {
+            if (midiEvent.isOfType(MidiEventDataType.TIME_SIGNATURE)){
+                let midiEventTime: TimeSignatureMidiEvent = midiEvent as TimeSignatureMidiEvent
+                return midiEventTime.numerator;
+            }
+        }
+        return null;
+    }
+
+    public getDenominator(): number {
+        for(let midiEvent of this.midiEvents) {
+            if (midiEvent.isOfType(MidiEventDataType.TIME_SIGNATURE)){
+                let midiEventTime: TimeSignatureMidiEvent = midiEvent as TimeSignatureMidiEvent
+                return midiEventTime.denominator;
+            }
+        }
+        return null;
+    }
+
+    public getKeyMode(): number {
+        for(let midiEvent of this.midiEvents) {
+            if (midiEvent.isOfType(MidiEventDataType.KEY_SIGNATURE)){
+                let midiEventKey: KeySignatureMidiEvent = midiEvent as KeySignatureMidiEvent
+                return midiEventKey.mode;
+            }
+        }
+        return null;
+    }
 }
 
 export abstract class MidiEvent {

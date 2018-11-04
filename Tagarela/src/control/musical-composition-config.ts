@@ -1,7 +1,7 @@
 import { MusicalCompositionConfig, MusicalCompositionStepConfig, MusicalCompositionGroupConfig, MusicalCompositionOptionConfig, MusicalCompositionLineConfig } from "../model/musical-composition-config";
 import { MusicalCompositionSource } from "../model/musical-composition-source";
 import { FileProvider } from "../providers/file/file";
-import { Midi, MidiTimeDivisionMetrical, MidiEventDataType, TimeSignatureMidiEvent, KeySignatureMidiEvent, NoteMidiEvent, MidiEvent, NoteOffMidiEvent } from "../model/midi";
+import { Midi, MidiTimeDivisionMetrical } from "../model/midi";
 import { MidiControl } from "./midi";
 
 export class MusicalCompositionConfigControl {
@@ -337,54 +337,27 @@ export class MusicalCompositionConfigControl {
         }
     }
 
-    public ajustNoteFinalizations(midiSource: MusicalCompositionSource){
+    public setTempoAndKeySignatureValues(midiSource: MusicalCompositionSource) {
         
         if (!midiSource)
-            throw new Error('A fonte de midis não pode ser nula.')
+            throw new Error('A fonte de midis não pode ser nula.');
 
-        let note: NoteMidiEvent;
-        let noteIndex: number;
+        if (midiSource.stepsSource.length <= 0) 
+            throw new Error('A quantidade de passos deve ser maior que 1.');
 
-        for (let source of midiSource.stepsSource) {
-            for (let group of source.groupsSource) {
-                for (let option of group.optionsSource) { 
-                    for (let track of option.midi.midiTracks) {
-                        let noteOnEvents: NoteMidiEvent[] = [];
-                        for (let event of track.midiEvents) {
-                            if (event.isOfType(MidiEventDataType.NOTE_ON)) {
-                                note = <NoteMidiEvent> event;
-                                noteOnEvents.push(note);
-                            } else if (event.isOfType(MidiEventDataType.NOTE_OFF)) { 
-                                note = <NoteMidiEvent> event;
-                                noteIndex = noteOnEvents.findIndex((item: NoteMidiEvent) => {
-                                    return note.note == item.note 
-                                        && note.channel == item.channel 
-                                });
-                                if (noteIndex < 0) {
-                                    throw new Error('Foi encontrado um evento de início de nota que foi finalizada.');
-                                }
-                                noteOnEvents.splice(noteIndex, 1);
-                            }
-                        }
-                        if (noteOnEvents.length > 0) {
-                            let lastTrackEvent: MidiEvent = track.midiEvents.pop();
-                            let deltaTime: number = lastTrackEvent.deltaTime;
-                            for (let noteToFinalize of noteOnEvents) {
-                                let noteOffEvent: NoteOffMidiEvent = new NoteOffMidiEvent(deltaTime, noteToFinalize.channel, noteToFinalize.note, 0);
-                                track.midiEvents.push(noteOffEvent);
-                                deltaTime = 0;
-                            }
-                            lastTrackEvent.deltaTime = 0;
-                            track.midiEvents.push(lastTrackEvent);
-                        }
+        if (midiSource.stepsSource[0].groupsSource.length <= 0) 
+            throw new Error('A quantidade de linhas deve ser maior que 1.')
+        
+        if (midiSource.stepsSource[0].groupsSource[0].optionsSource.length <= 0) 
+            throw new Error('A quantidade de opções deve ser maior que 1.')
 
-                    }
-                }
-            }
-        }
+        this.config.numerator = midiSource.stepsSource[0].groupsSource[0].optionsSource[0].midi.getNumerator(0);
+        this.config.denominator = midiSource.stepsSource[0].groupsSource[0].optionsSource[0].midi.getDenominator(0);
+        this.config.mode = midiSource.stepsSource[0].groupsSource[0].optionsSource[0].midi.getKeyMode(0);
+    
     }
 
-    public validateMidiEventsAndNormalizeTimeDivision(midiSource: MusicalCompositionSource) {
+    public normalizeTimeDivision(midiSource: MusicalCompositionSource) {
         
         if (!midiSource)
             throw new Error('A fonte de midis não pode ser nula.')
@@ -394,61 +367,9 @@ export class MusicalCompositionConfigControl {
         for (let source of midiSource.stepsSource) {
             for (let group of source.groupsSource) {
                 for (let option of group.optionsSource) {
-                    
                     let metricalTimeDivion: MidiTimeDivisionMetrical =  <MidiTimeDivisionMetrical> option.midi.timeDivision;
-                   
                     if (metricalTimeDivion.metric > maxTimeDivicionMetric) {
                         maxTimeDivicionMetric = metricalTimeDivion.metric;
-                    }
-
-                    for (let track of option.midi.midiTracks) {
-                        let timeSignatureEventExists: boolean = false
-                        let keySignatureEventExists: boolean = false
-                        let tempoEventExists: boolean = false
-                        for (let event of track.midiEvents) {
-                            if (event.isOfType(MidiEventDataType.TIME_SIGNATURE)) {
-                            
-                                let timeEvent: TimeSignatureMidiEvent = event as TimeSignatureMidiEvent;
-                                this.config.numerator = timeEvent.numerator
-                                this.config.denominator = timeEvent.denominator
-                            
-                                if (timeSignatureEventExists) {
-                                    throw new Error(`Mais de um evento de assinatura de tempo não é suportado. `+
-                                    `Fonte: ${source.relativePath} - Grupo: ${group.relativePath} - Opção: ${option.fileName}`)
-                                }
-                                timeSignatureEventExists = true;
-                            } else if (event.isOfType(MidiEventDataType.KEY_SIGNATURE)) {
-                                
-                                let keyEvent: KeySignatureMidiEvent = event as KeySignatureMidiEvent;
-                                this.config.mode = keyEvent.mode
-                            
-                                if (keySignatureEventExists) {
-                                    throw new Error(`Mais de um evento de assinatura de clave não é suportado. `+
-                                    `Fonte: ${source.relativePath} - Grupo: ${group.relativePath} - Opção: ${option.fileName}`)
-                                }
-                                keySignatureEventExists = true;
-                            } else if (event.isOfType(MidiEventDataType.TEMPO)) {
-                                if (tempoEventExists) {
-                                    throw new Error(`Mais de um evento de definição de tempo não é suportado. `+
-                                    `Fonte: ${source.relativePath} - Grupo: ${group.relativePath} - Opção: ${option.fileName}`)
-                                }
-                                tempoEventExists = true;
-                            } else if (event.isOfType(MidiEventDataType.NOTE)) {
-                                break;
-                            }
-                        }
-                        if (!timeSignatureEventExists) {
-                            throw new Error(`Não foi encontrado evento de assinatura de tempo. `+
-                            `Fonte: ${source.relativePath} - Grupo: ${group.relativePath} - Opção: ${option.fileName}`)
-                        } 
-                        if (!keySignatureEventExists) {
-                            throw new Error(`Não foi encontrado evento de assinatura de clave. `+
-                            `Fonte: ${source.relativePath} - Grupo: ${group.relativePath} - Opção: ${option.fileName}`)
-                        } 
-                        if (!tempoEventExists) {
-                            throw new Error(`Não foi encontrado evento de definição de tempo. `+
-                            `Fonte: ${source.relativePath} - Grupo: ${group.relativePath} - Opção: ${option.fileName}`)
-                        } 
                     }
                 }
             }
@@ -463,7 +384,6 @@ export class MusicalCompositionConfigControl {
         }
 
         this.config.timeDivisionMetric = maxTimeDivicionMetric;
-
     }
     
 }
