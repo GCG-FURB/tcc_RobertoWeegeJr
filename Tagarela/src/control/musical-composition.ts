@@ -11,7 +11,7 @@ export class MusicalCompositionControl {
     private _source: MusicalCompositionSource;
     private _composition: MusicalComposition;
     private _midiControl: MidiControl;
-    private _optionsMap: Map<number, Map<number, MusicalCompositionOption[]>>;
+    private _options: MusicalCompositionOption[][][];
     private _stepIndex: number;
     private _lineIndex: number;
 
@@ -58,12 +58,12 @@ export class MusicalCompositionControl {
         this._midiControl = midiControl;
     }
 
-    public get optionsMap(): Map<number, Map<number, MusicalCompositionOption[]>> {
-        return this._optionsMap;
+    public get options(): MusicalCompositionOption[][][] {
+        return this._options;
     }
     
-    public set optionsMap(value: Map<number, Map<number, MusicalCompositionOption[]>>) {
-        this._optionsMap = value;
+    public set options(value: MusicalCompositionOption[][][]) {
+        this._options = value;
     }
 
     get stepIndex(): number {
@@ -122,17 +122,21 @@ export class MusicalCompositionControl {
         if (!this.config)
             throw new Error('O objeto de configuração não pode ser nulo.');
         
-        this.optionsMap = new Map();
-        let optionMap: Map<number, MusicalCompositionOption[]>;
+        this.options = [];
+
+        let steps: MusicalCompositionOption[][][] = [];
+        let lines: MusicalCompositionOption[][];
         let options: MusicalCompositionOption[];
+
         for(let i = 0; i < this.config.stepsConfig.length; i++){
-            optionMap = new Map();
+            lines = [];
             for(let j = 0; j < this.config.stepsConfig[i].groupsConfig.length; j++) {
                 options = this.generateOptionsToChoice(i, j);
-                optionMap.set(j, options);
+                lines.push(options);
             }
-            this.optionsMap.set(i, optionMap);
+            steps.push(lines);
         }
+        this.options = steps;
     }
     
     private generateOptionsToChoice(stepIndex: number, lineIndex: number): MusicalCompositionOption[] {
@@ -162,12 +166,12 @@ export class MusicalCompositionControl {
     }
 
     public compositionHasEnded(): boolean {
-        return this.stepIndex > this.source.stepsSource.length -1
+        return this.stepIndex > this.source.stepsSource.length-1
     }
 
     public getOptionsToChoice(): MusicalCompositionOption[] {
-        if (this.optionsMap.has(this.stepIndex) && this.optionsMap.get(this.stepIndex).has(this.lineIndex)) {
-            return this.optionsMap.get(this.stepIndex).get(this.lineIndex)
+        if (this.options.length > this.stepIndex && this.options[this.stepIndex].length > this.lineIndex) {
+            return this.options[this.stepIndex][this.lineIndex];
         } 
         return [];
     }

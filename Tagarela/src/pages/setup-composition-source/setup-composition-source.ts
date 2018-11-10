@@ -244,6 +244,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
             this.navCtrl.setRoot(CompositionPage, {
                 compositionControl: compositionControl
             });
+            
         } catch (e) {
             this.errorHandler(e);
         }

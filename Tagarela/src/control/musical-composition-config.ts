@@ -20,7 +20,7 @@ export class MusicalCompositionConfigControl {
 
     private CONFIG_DEFAULT_QUANTITY_OF_QUARTER_NOTE: number = 8
 
-    private CONFIG_DEFAULT_MUSICAL_INSTRUMENTS_ALLOWED: number[] = [0, 11, 13, 21, 24, 26, 33, 41, 46, 56, 57, 58, 65, 73, 105]
+    private CONFIG_DEFAULT_MUSICAL_INSTRUMENTS_ALLOWED: number[] = [0, 11, 13, 21, 24, 26, 33, 41, 46, 56, 57, 61, 65, 73, 105]
     private CONFIG_DEFAULT_DRUMS_MUSICAL_INSTRUMENTS_ALLOWED: number[] = [-1]
 
     private CONFIG_DEFAULT_MIN_VOLUME: number = 0 
@@ -42,6 +42,8 @@ export class MusicalCompositionConfigControl {
     private _relativePath: string;
 
     private _midiControl: MidiControl;
+
+    private isCustomSource
 
     constructor(file: FileProvider, baseFileSystem: string, relativePath: string, isCustomSource: boolean){
         this.midiControl = new MidiControl();
@@ -100,18 +102,22 @@ export class MusicalCompositionConfigControl {
     }
 
     public async persistConfig() {
-        if (!this.config) {
+        if (!this.config)
             throw Error('As configurações não estão carregadas');
-        }
+        
         await this.fileProvider.writeFile(this.baseFileSystemConfig, this.relativePath, this.CONFIG_FILE_NAME, JSON.stringify(this.config));
     }
 
-    public async getConfig(): Promise<string> {
-        return await this.fileProvider.readFileTextContentIfExists(this.baseFileSystemConfig, this.relativePath, this.CONFIG_FILE_NAME);
+    public async getConfig(baseFileSystem: string): Promise<string> {
+        if (!baseFileSystem)
+            throw Error('A base do caminho é necessária');
+        return await this.fileProvider.readFileTextContentIfExists(baseFileSystem, this.relativePath, this.CONFIG_FILE_NAME);
     }
 
-    public async removeConfig(){
-        await this.fileProvider.removeFile(this.baseFileSystemConfig, this.relativePath, this.CONFIG_FILE_NAME);
+    public async removeConfig(baseFileSystem: string) {
+        if (!baseFileSystem)
+            throw Error('A base do caminho é necessária');
+        await this.fileProvider.removeFile(baseFileSystem, this.relativePath, this.CONFIG_FILE_NAME);
     }
 
     public async loadConfigs(){
@@ -215,48 +221,62 @@ export class MusicalCompositionConfigControl {
 
     public async loadSavedConfigs(){
         
-        let actualConfigString = await this.getConfig();
+        let defaultConfigFile: boolean = false;
+        let actualConfigString = await this.getConfig(this.baseFileSystemConfig);
+
+        if (!actualConfigString && !this.isCustomSource) { 
+            defaultConfigFile = true;
+            actualConfigString = await this.getConfig(this.baseFileSystemComposition);
+        }
 
         if (actualConfigString) {
             try {
-
-                let actualConfig = JSON.parse(actualConfigString);
-
-                if (this.validateSavedConfig(this.config, actualConfig)) {
-                
-                    this.config.minTempo = +actualConfig._minTempo;
-                    this.config.maxTempo = +actualConfig._maxTempo;
-                    this.config.stepTempo = +actualConfig._stepTempo;
-                    this.config.defaultTempo = +actualConfig._defaultTempo;
-
-                    this.config.keySignaturesAllowed = actualConfig._keySignaturesAllowed;
-                    this.config.keySignature = +actualConfig._keySignature;
-                    this.config.showCompositionData = actualConfig._showCompositionData;
-    
-                    for (let i = 0; i < this.config.stepsConfig.length; i++) {
-                        this.config.stepsConfig[i].quantityOfQuarterNote = +actualConfig._stepsConfig[i]._quantityOfQuarterNote;
-                        for (let j = 0; j < this.config.stepsConfig[i].groupsConfig.length; j++) {
-                            for (let k = 0; k < this.config.stepsConfig[i].groupsConfig[j].optionsConfig.length; k++) {
-                                this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].baseMusicalInstrumentsAllowed = actualConfig._stepsConfig[i]._groupsConfig[j]._optionsConfig[k]._baseMusicalInstrumentsAllowed.map((item) => {return parseInt(item, 10);});
-                                this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].defaultMusicalInstrument = +actualConfig._stepsConfig[i]._groupsConfig[j]._optionsConfig[k]._defaultMusicalInstrument;
-                                this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].musicalInstrumentsAllowed = actualConfig._stepsConfig[i]._groupsConfig[j]._optionsConfig[k]._musicalInstrumentsAllowed.map((item) => {return parseInt(item, 10);});
-                            }
-                        }
-                    }
-    
-                    for (let i = 0; i < this.config.linesConfig.length; i++) {
-                        this.config.linesConfig[i].minVolume = +actualConfig._linesConfig[i]._minVolume;
-                        this.config.linesConfig[i].maxVolume = +actualConfig._linesConfig[i]._maxVolume;
-                        this.config.linesConfig[i].stepVolume = +actualConfig._linesConfig[i]._stepVolume;
-                        this.config.linesConfig[i].defaultVolume = +actualConfig._linesConfig[i]._defaultVolume;
-                    }
-                } else {
-                    throw new Error('Arquivo em formato inválido');
-                }
+                this.loadConfigFromJSON(actualConfigString);
             } catch (e) {
-                this.removeConfig();
-                throw new Error('O arquivo de configuração continha inconsistências, portanto foi removido. Temte novamente.');
+                if (!defaultConfigFile) {
+                    this.removeConfig(this.baseFileSystemConfig);
+                    throw new Error('O arquivo de configuração continha inconsistências, portanto foi removido. Temte novamente.');
+                } else {
+                    throw e;
+                }
             }
+        } 
+    }
+
+    private loadConfigFromJSON(actualConfigString: string) {
+        
+        let actualConfig = JSON.parse(actualConfigString);
+
+        if (this.validateSavedConfig(this.config, actualConfig)) {
+        
+            this.config.minTempo = +actualConfig._minTempo;
+            this.config.maxTempo = +actualConfig._maxTempo;
+            this.config.stepTempo = +actualConfig._stepTempo;
+            this.config.defaultTempo = +actualConfig._defaultTempo;
+
+            this.config.keySignaturesAllowed = actualConfig._keySignaturesAllowed;
+            this.config.keySignature = +actualConfig._keySignature;
+            this.config.showCompositionData = actualConfig._showCompositionData;
+
+            for (let i = 0; i < this.config.stepsConfig.length; i++) {
+                this.config.stepsConfig[i].quantityOfQuarterNote = +actualConfig._stepsConfig[i]._quantityOfQuarterNote;
+                for (let j = 0; j < this.config.stepsConfig[i].groupsConfig.length; j++) {
+                    for (let k = 0; k < this.config.stepsConfig[i].groupsConfig[j].optionsConfig.length; k++) {
+                        this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].baseMusicalInstrumentsAllowed = actualConfig._stepsConfig[i]._groupsConfig[j]._optionsConfig[k]._baseMusicalInstrumentsAllowed.map((item) => {return parseInt(item, 10);});
+                        this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].defaultMusicalInstrument = +actualConfig._stepsConfig[i]._groupsConfig[j]._optionsConfig[k]._defaultMusicalInstrument;
+                        this.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].musicalInstrumentsAllowed = actualConfig._stepsConfig[i]._groupsConfig[j]._optionsConfig[k]._musicalInstrumentsAllowed.map((item) => {return parseInt(item, 10);});
+                    }
+                }
+            }
+
+            for (let i = 0; i < this.config.linesConfig.length; i++) {
+                this.config.linesConfig[i].minVolume = +actualConfig._linesConfig[i]._minVolume;
+                this.config.linesConfig[i].maxVolume = +actualConfig._linesConfig[i]._maxVolume;
+                this.config.linesConfig[i].stepVolume = +actualConfig._linesConfig[i]._stepVolume;
+                this.config.linesConfig[i].defaultVolume = +actualConfig._linesConfig[i]._defaultVolume;
+            }
+        } else {
+            throw new Error('Arquivo em formato inválido');
         }
     }
 
