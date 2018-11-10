@@ -40,13 +40,13 @@
                         <line-control-component #controlScroll [compositionControl]="compositionControl" [compositionLine]="compositionLine"></line-control-component>
                     </div>
                 </div>
-                <ion-scroll #scroll2 scrollX="true" class="scroll-2">
+                <div #scroll2 class="scroll-2">
                     <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
                         <choice-component class="float-left-child" *ngFor="let compositionOption of compositionLine.options"
                         [midiChoice]="compositionOption" [composition]="compositionControl" [minNote]="compositionLine.getMinSpectrumNote()" [maxNote]="compositionLine.getMaxSpectrumNote()">
                         </choice-component>
                     </div>
-                </ion-scroll>
+                </div>
         </div>
     </ion-card-content>
 </ion-card>

@@ -22,12 +22,15 @@
 .scroll-2-control {
     white-space: nowrap;
     margin-right: 0;
-    padding-top: 16px;
+    padding-top: 1vh;
 }
 
 .scroll-2 {
+    padding-top: 1vh;
+    margin-left: 1vw;
     white-space: nowrap;
     width: 100%;
+    overflow-x: scroll;
 }
 
 .composition-line {

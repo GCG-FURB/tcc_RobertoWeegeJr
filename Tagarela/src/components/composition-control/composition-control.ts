@@ -1,7 +1,7 @@
 import { Component, Input, ViewChild, ElementRef } from '@angular/core';
 import { MusicalCompositionControl } from '../../control/musical-composition';
-import { MusicalCompositionOption } from '../../model/musical-composition';
-import { LoadingController, AlertController, PopoverController, ToastController } from 'ionic-angular';
+import { MusicalCompositionOption, MusicalCompositionLine } from '../../model/musical-composition';
+import { LoadingController, AlertController, PopoverController, ToastController, Content } from 'ionic-angular';
 import { GenericComponent } from '../../control/generic-component';
 import { VisualMidiProvider } from '../../providers/visual-midi/visual-midi';
 
@@ -10,17 +10,12 @@ import { VisualMidiProvider } from '../../providers/visual-midi/visual-midi';
   templateUrl: 'composition-control.html'
 })
 export class CompositionControlComponent extends GenericComponent {
-
-    @ViewChild('scroll2Control') scroll2Control: ElementRef;
     @ViewChild('scroll2') scroll2: ElementRef;
 
-    //height
-    private LINE_DASHBOARD_HEIGHT: number = 12;
-    private LINE_DASHBOARD_HEIGHT_ADJUST: number = 2;
-
     private _compositionControl: MusicalCompositionControl;
-
     private _lineDashboardHeight: number;
+
+    private _optionsInLines: number[];
 
     constructor(private loadingCtrl: LoadingController,
                 private alertCtrl: AlertController,
@@ -41,7 +36,6 @@ export class CompositionControlComponent extends GenericComponent {
     set compositionControl(compositionControl: MusicalCompositionControl) {
         this._compositionControl = compositionControl;
         this.lineDashboardHeight = null;
-        this.calcLinesDashboardHeigth();
     }
 
     public get lineDashboardHeight(): number {
@@ -52,17 +46,11 @@ export class CompositionControlComponent extends GenericComponent {
         this._lineDashboardHeight = value;
     }
 
-    private calcLinesDashboardHeigth(){
-        if ((this.lineDashboardHeight || this.lineDashboardHeight == 0)
-            &&  this.scroll2Control.nativeElement && this.scroll2.nativeElement) {
-            this.lineDashboardHeight = this.getLineDashboardHeigth();
-            this.scroll2Control.nativeElement.style.height = this.lineDashboardHeight;
-            this.scroll2.nativeElement.style.height = this.lineDashboardHeight
-        }
+    public get optionsInLines(): number[] {
+        return this._optionsInLines;
     }
-
-    private getLineDashboardHeigth(): number {
-        return (this.LINE_DASHBOARD_HEIGHT * this.getCompositionLinesList.length) + this.LINE_DASHBOARD_HEIGHT_ADJUST;
+    public set optionsInLines(value: number[]) {
+        this._optionsInLines = value;
     }
 
     private getOptionsList(): MusicalCompositionOption[] {
@@ -79,7 +67,7 @@ export class CompositionControlComponent extends GenericComponent {
     private getCompositionLinesList(){
         try {
             if (this.compositionControl && this.compositionControl.composition) {
-                this.calcLinesDashboardHeigth();
+                this.manageLinesScroll(this.compositionControl.composition.lines);
                 return this.compositionControl.composition.lines;
             }
             return []
@@ -88,15 +76,30 @@ export class CompositionControlComponent extends GenericComponent {
         }
     }
 
-    private getCompositionOptionsList(lineIndex: number){
-        try {
-            if (this.compositionControl && this.compositionControl.composition) {
-                return this.compositionControl.composition.lines[lineIndex].options;
+    private manageLinesScroll(lines: MusicalCompositionLine[]) {
+        let actualOptionsInLines: number[] = [];
+        let changed: boolean = false;
+        if (this.optionsInLines && lines) {
+            if (this.optionsInLines.length != lines.length) {
+                changed = true;
             }
-            return []
-        } catch (e) {
-            this.errorHandler(e)
+            for (let i = 0; i < lines.length; i++) {
+                actualOptionsInLines.push(lines[i].options.length)
+                if (!changed && this.optionsInLines[i] != actualOptionsInLines[i]) {
+                    changed = true;
+                }
+            }
+        } else {
+            changed = true;
         }
+
+        if (changed) {
+            if (this.scroll2 && this.scroll2.nativeElement) {
+                setTimeout(() => {this.scroll2.nativeElement.scrollLeft = this.scroll2.nativeElement.scrollWidth;}, 100)
+            }
+            this.optionsInLines = actualOptionsInLines;
+        }
+        
     }
 
     private compositionHasStarted(): boolean{
