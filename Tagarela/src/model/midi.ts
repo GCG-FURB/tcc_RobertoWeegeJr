@@ -125,7 +125,7 @@ export class Midi {
         return midiEvents;
     }
 
-    public getKeySignatureValues() {
+    public getKeySignatureValues(): number[] {
         let events: KeySignatureMidiEvent[] = <KeySignatureMidiEvent[]> this.getEventsByType(MidiEventDataType.KEY_SIGNATURE);
         let keySignatures: number[] = [];
         for (let event of events) {
@@ -143,7 +143,7 @@ export class Midi {
 
     public getDeltaTimeSum(trackIndex: number): number {
         let deltaTime: number = 0;
-        for(let event of this.midiTracks[0].midiEvents) {
+        for(let event of this.midiTracks[trackIndex].midiEvents) {
             deltaTime += event.deltaTime;
         }
         return deltaTime;
@@ -157,14 +157,11 @@ export class Midi {
         return this.midiTracks[trackIndex].getDenominator();
     }
 
-    
     public getKeyMode(trackIndex: number): number {
         return this.midiTracks[trackIndex].getKeyMode();
     }
 
-    
-
-    public cloneMidi(): Midi{
+    public cloneMidi(): Midi {
         let midi = new Midi();
         midi.midiType = this.midiType;
         midi.numberOfTracks = this.numberOfTracks;
@@ -180,25 +177,25 @@ export class Midi {
     }
     
     //change functions
-    public applyNoteTranspose(newKeySignatue: number){
+    public applyNoteTranspose(newKeySignatue: number): void {
         for (let midiTrack of this.midiTracks) {
             midiTrack.applyNoteTranspose(newKeySignatue);
         }
     }
 
-    public applyTempoChange(newTempo: number){
+    public applyTempoChange(newTempo: number): void {
         for (let midiTrack of this.midiTracks) {
             midiTrack.applyTempoChange(newTempo);
         }
     }
 
-    public applyInstrumentChange(instrumentNumber: number){
+    public applyInstrumentChange(instrumentNumber: number): void {
         for (let midiTrack of this.midiTracks) {
             midiTrack.applyInstrumentChange(instrumentNumber);
         }
     }
 
-    public applyVolumeChange(volume: number){
+    public applyVolumeChange(volume: number): void {
         for (let midiTrack of this.midiTracks) {
             midiTrack.applyVolumeChange(volume);
         }
@@ -281,21 +278,21 @@ export class MidiTrack {
         this._midiEvents = midiEvents;
     }
 
-    public addMidiEvent(midiEvent: MidiEvent){
+    public addMidiEvent(midiEvent: MidiEvent): void {
         if (!midiEvent) 
             throw new Error(`O evento Midi não pode ser nulo.`);
 
         this.midiEvents.push(midiEvent);
     }
 
-    public addStartEventToTrack(event){
+    public addStartEventToTrack(event): void {
         if (!event) 
             throw new Error(`O evento Midi não pode ser nulo.`);
             
         this.midiEvents.unshift(event);
     }
 
-    public applyNoteTranspose(newKeySignature: number) {
+    public applyNoteTranspose(newKeySignature: number): void {
 
         if (!newKeySignature && newKeySignature != 0) 
             throw new Error('A assinatura de clave não deve ser nula.')
@@ -335,7 +332,7 @@ export class MidiTrack {
 
     }
 
-    public applyTempoChange(newTempo: number) {
+    public applyTempoChange(newTempo: number): void {
         let tempoEvent: TempoMidiEvent;
         for (let event of this.midiEvents) {
             if (event.isOfType(MidiEventDataType.TEMPO)) {
@@ -345,7 +342,7 @@ export class MidiTrack {
         }
     }
 
-    public applyInstrumentChange(instrumentNumber: number){
+    public applyInstrumentChange(instrumentNumber: number): void {
         this.removeAllEventsByType(MidiEventDataType.DETERMINATE_MUSICAL_INSTRUMENT);
         for (let channel of this.getAllUsedChannels()) {
             if (Midi.DRUMS_MIDI_CHANNELS.indexOf(channel) < 0) {
@@ -354,7 +351,7 @@ export class MidiTrack {
         }
     }
 
-    public applyVolumeChange(volumePercent: number){       
+    public applyVolumeChange(volumePercent: number): void {       
         let noteEvent: NoteMidiEvent;
         for (let event of this.midiEvents) {
             if (event.isOfType(MidiEventDataType.NOTE_ON)) {
@@ -364,7 +361,7 @@ export class MidiTrack {
         }
     }
 
-    private removeAllEventsByType(eventType: MidiEventDataType) {
+    private removeAllEventsByType(eventType: MidiEventDataType): void {
         let deltaTime: number = 0;
         for (let i = 0; i < this.midiEvents.length; i++) {
             if (this.midiEvents[i].isOfType(eventType)){
@@ -376,7 +373,7 @@ export class MidiTrack {
         }
     }
 
-    public getAllUsedChannels():string[] {
+    public getAllUsedChannels(): string[] {
         let chanels: string[] = [];
         let channelEvent: ChannelMidiEvent;
         for (let event of this.midiEvents) {
@@ -405,7 +402,7 @@ export class MidiTrack {
         return midiChannelChanged;    
     }
 
-    public getEventsByType(dataType: MidiEventDataType): any{
+    public getEventsByType(dataType: MidiEventDataType): MidiEvent[] {
         let midiEvents: MidiEvent[] = []
         for(let midiEvent of this.midiEvents) {
             if (midiEvent.isOfType(dataType))
@@ -470,7 +467,7 @@ export abstract class MidiEvent {
         this._midiEventType = midiEventType;
     }
 
-    get deltaTime(): number{
+    get deltaTime(): number {
         return this._deltaTime;
     }
     
@@ -487,7 +484,7 @@ export abstract class MidiEvent {
         this._deltaTime = deltaTime;
     }
 
-    public sumDeltaTime(deltaTimeToSum: number){
+    public sumDeltaTime(deltaTimeToSum: number): void {
         if (!deltaTimeToSum && deltaTimeToSum != 0) 
             throw new Error(`O delta time não pode ser nulo.`);
         this.deltaTime += deltaTimeToSum;
@@ -508,11 +505,11 @@ export abstract class ChannelMidiEvent extends MidiEvent {
         this.channel = channel;
     }
 
-    public get channel(): string {
+    get channel(): string {
         return this._channel;
     }
     
-    public set channel(channel: string) {
+    set channel(channel: string) {
         if (!channel)
             throw new Error(`O canal midi não pode ser nulo.`);
 
@@ -531,9 +528,7 @@ export abstract class NoteMidiEvent extends ChannelMidiEvent {
 
     private _note: number;
     private _velocity: number;
-
     private _octaveTranspose: number;
-
     private _originalVelocity: number;
 
     constructor(deltaTime: number, channel: string, note: number, velocity: number) {
@@ -610,7 +605,7 @@ export abstract class NoteMidiEvent extends ChannelMidiEvent {
         return super.isOfType(dataType) || dataType == MidiEventDataType.NOTE
     }  
 
-    public applyNoteTranspose(convesionFactor: number) {
+    public applyNoteTranspose(convesionFactor: number): void {
         if (Midi.DRUMS_MIDI_CHANNELS.indexOf(this.channel) < 0) {
             if (!convesionFactor && convesionFactor != 0) 
                 throw new Error('O fator de conversão não deve ser nulo.')
@@ -631,7 +626,7 @@ export abstract class NoteMidiEvent extends ChannelMidiEvent {
         }
     }
 
-    public applyVolumeChange(volumePercent: number) {
+    public applyVolumeChange(volumePercent: number): void {
         
         if (!volumePercent && volumePercent != 0) 
             throw new Error('O volume não pode ser nulo.')
@@ -801,7 +796,7 @@ export class TimeSignatureMidiEvent extends MidiEvent {
         this._notes32in4note = notes32in4note;
     }
     
-    public compareTo(timeEventToCompare: TimeSignatureMidiEvent ){
+    public compareTo(timeEventToCompare: TimeSignatureMidiEvent): boolean {
         return this.numerator == timeEventToCompare.numerator
             && this.denominator == timeEventToCompare.denominator
             && this.midiClocks == timeEventToCompare.midiClocks
@@ -829,11 +824,11 @@ export class KeySignatureMidiEvent extends MidiEvent {
         this.mode = mode;
     }
 
-    public get tone(): number {
+    get tone(): number {
         return this._tone;
     }
     
-    public set tone(tone: number) {
+    set tone(tone: number) {
         if (!tone && tone != 0) 
             throw new Error(`O tom não pode ser nulo.`);
         
@@ -846,11 +841,11 @@ export class KeySignatureMidiEvent extends MidiEvent {
         this._tone = tone;
     }  
     
-    public get mode(): number {
+    get mode(): number {
         return this._mode;
     }
     
-    public set mode(mode: number) {
+    set mode(mode: number) {
         if (!mode && mode != 0) 
             throw new Error(`O modo não pode ser nulo.`);
         

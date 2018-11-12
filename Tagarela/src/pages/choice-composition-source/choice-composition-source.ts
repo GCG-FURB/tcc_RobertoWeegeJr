@@ -31,8 +31,6 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
               alertCtrl,
               popoverCtrl,
               toastCtrl);
-
-              //alert('não não, aqui')    
     }
 
     //gets e sets - variaveis locais
@@ -64,9 +62,9 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
         //alert('não, aqui')
         try {
             if (this.plataform.is('android')) {
-                this.customCompositionSystemFileSystem = this.fileProvider.file.externalRootDirectory;
+                this.customCompositionSystemFileSystem = this.fileProvider.getExternalRootDirectory();
             } else if (this.plataform.is('ios')) {
-                this.customCompositionSystemFileSystem = this.fileProvider.file.documentsDirectory;
+                this.customCompositionSystemFileSystem = this.fileProvider.getDocumentsDirectory();
             } else {
                 throw new Error('plataforma não suportada')
             }
@@ -75,7 +73,7 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
         }
     }
 
-    private async chooseDefaultCompositionSource() {
+    private async chooseDefaultCompositionSource(): Promise<void> {
         try {
 
             await this.createLoading('Buscando Dados de Composição');
@@ -83,13 +81,13 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
             this.defaultCompositionSources = null;
 
             this.defaultCompositionSources = await this.fileProvider.getListOfDirectories(
-                                                        this.fileProvider.file.applicationDirectory, 
+                                                        this.fileProvider.getApplicationDirectory(), 
                                                         MusicalCompositionConfigControl.DEFAULT_COMPOSITION_SOURCES_RELATIVE_PATH
                                                    );
 
             let callbackFunction = this.getCompositionSetupFunction (
                                         false, 
-                                        this.fileProvider.file.applicationDirectory, 
+                                        this.fileProvider.getApplicationDirectory(), 
                                         MusicalCompositionConfigControl.DEFAULT_COMPOSITION_SOURCES_RELATIVE_PATH
                                    );
 
@@ -118,7 +116,7 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
         }
     }
 
-    private async chooseCustomCompositionSource() {
+    private async chooseCustomCompositionSource(): Promise<void> {
         try {
 
             await this.createLoading('Buscando Dados de Composição');
@@ -173,7 +171,7 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
     private async startCompositionSetup(chosedDefaultCompositionSource: string, 
                                         isCustomSource: boolean,
                                         baseFileSystem: string, 
-                                        relativePath: string) {
+                                        relativePath: string): Promise<void> {
             
         await this.createLoading('Carregando Dados de Composição');
 

@@ -17,7 +17,7 @@ export class MusicalCompositionConfig {
     private _showCompositionData: boolean;
 
     //Step config
-    private _stepsConfig: MusicalCompositionStepConfig[];             //sdfsdfsdfsdf
+    private _stepsConfig: MusicalCompositionStepConfig[];
 
     //Line config
     private _linesConfig: MusicalCompositionLineConfig[];
@@ -31,7 +31,7 @@ export class MusicalCompositionConfig {
         return this._baseFileSystem;
     }
     
-    set baseFileSystem(baseFileSystem:string) {
+    set baseFileSystem(baseFileSystem: string) {
         this._baseFileSystem = baseFileSystem;
     }
 
@@ -39,7 +39,7 @@ export class MusicalCompositionConfig {
         return this._relativePath;
     }
     
-    set relativePath(relativePath:string) {
+    set relativePath(relativePath: string) {
         this._relativePath = relativePath;
     }
     
@@ -47,7 +47,7 @@ export class MusicalCompositionConfig {
         return this._minTempo;
     }
     
-    set minTempo(minTempo:number) {
+    set minTempo(minTempo: number) {
         minTempo = +minTempo;
         this._minTempo = minTempo;
     }
@@ -56,7 +56,7 @@ export class MusicalCompositionConfig {
         return this._maxTempo;
     }
     
-    set maxTempo(maxTempo:number) {
+    set maxTempo(maxTempo: number) {
         maxTempo = +maxTempo;
         this._maxTempo = maxTempo;
     }
@@ -74,7 +74,7 @@ export class MusicalCompositionConfig {
         return this._defaultTempo;
     }
     
-    set defaultTempo(defaultTempo:number) {
+    set defaultTempo(defaultTempo: number) {
         defaultTempo = +defaultTempo;
         this._defaultTempo = defaultTempo;
     }
@@ -83,7 +83,7 @@ export class MusicalCompositionConfig {
         return this._stepsConfig;
     }
     
-    set stepsConfig(stepsConfig:MusicalCompositionStepConfig[]) {
+    set stepsConfig(stepsConfig: MusicalCompositionStepConfig[]) {
         this._stepsConfig = stepsConfig;
     }
     
@@ -91,7 +91,7 @@ export class MusicalCompositionConfig {
         return this._linesConfig;
     }
     
-    set linesConfig(linesConfig:MusicalCompositionLineConfig[]) {
+    set linesConfig(linesConfig: MusicalCompositionLineConfig[]) {
         this._linesConfig = linesConfig;
     }
 
@@ -143,16 +143,16 @@ export class MusicalCompositionConfig {
         return this._baseKeySignaturesAllowed;
     }
     
-    set baseKeySignaturesAllowed(value: number[]) {
-        this._baseKeySignaturesAllowed = value;
+    set baseKeySignaturesAllowed(baseKeySignaturesAllowed: number[]) {
+        this._baseKeySignaturesAllowed = baseKeySignaturesAllowed;
     }
     
     get showCompositionData(): boolean {
         return this._showCompositionData;
     }
     
-    set showCompositionData(value: boolean) {
-        this._showCompositionData = value;
+    set showCompositionData(showCompositionData: boolean) {
+        this._showCompositionData = showCompositionData;
     }
 
     get mode(): number {
@@ -171,32 +171,32 @@ export class MusicalCompositionStepConfig {
     //Step Config
     private _relativePath: string;       //Caminho relativo raiz da composição 
     
-    //Group Config
-    private _groupsConfig: MusicalCompositionGroupConfig[];           // 
+    //Line Config
+    private _linesConfig: MusicalCompositionLinesConfig[];           // 
 
     private _quantityOfQuarterNote: number;
 
     constructor(){
-        this.groupsConfig = [];
+        this.linesConfig = [];
     }
 
     get relativePath(): string {
         return this._relativePath;
     }
     
-    set relativePath(relativePath:string) {
+    set relativePath(relativePath: string) {
         if (!relativePath || relativePath.length <= 0){
             throw new Error("O caminho relativo não pode ser nulo ou vazio");
         }
         this._relativePath = relativePath;
     }
     
-    get groupsConfig(): MusicalCompositionGroupConfig[] {
-        return this._groupsConfig;
+    get linesConfig(): MusicalCompositionLinesConfig[] {
+        return this._linesConfig;
     }
     
-    set groupsConfig(groupsConfig:MusicalCompositionGroupConfig[]) {
-        this._groupsConfig = groupsConfig;
+    set linesConfig(linesConfig: MusicalCompositionLinesConfig[]) {
+        this._linesConfig = linesConfig;
     }
 
     get quantityOfQuarterNote(): number {
@@ -209,9 +209,9 @@ export class MusicalCompositionStepConfig {
     }
 }
 
-export class MusicalCompositionGroupConfig {
+export class MusicalCompositionLinesConfig {
 
-    //Group Config
+    //Lines Config
     private _relativePath: string;
     
     //Options Config
@@ -225,7 +225,7 @@ export class MusicalCompositionGroupConfig {
         return this._relativePath;
     }
     
-    set relativePath(relativePath:string) {
+    set relativePath(relativePath: string) {
         this._relativePath = relativePath;
     }
     
@@ -233,7 +233,7 @@ export class MusicalCompositionGroupConfig {
         return this._optionsConfig;
     }
     
-    set optionsConfig(optionsConfig:MusicalCompositionOptionConfig[]) {
+    set optionsConfig(optionsConfig: MusicalCompositionOptionConfig[]) {
         this._optionsConfig = optionsConfig;
     }
 
@@ -251,7 +251,7 @@ export class MusicalCompositionOptionConfig {
         return this._fileName;
     }
     
-    set fileName(fileName:string) {
+    set fileName(fileName: string) {
         if (!fileName || fileName.length <= 0){
             throw new Error("O nome do arquivo não pode ser nulo ou vazio");
         }
@@ -262,7 +262,7 @@ export class MusicalCompositionOptionConfig {
         return this._baseMusicalInstrumentsAllowed;
     }
     
-    set baseMusicalInstrumentsAllowed(baseMusicalInstrumentsAllowed:number[]) {
+    set baseMusicalInstrumentsAllowed(baseMusicalInstrumentsAllowed: number[]) {
         this._baseMusicalInstrumentsAllowed = baseMusicalInstrumentsAllowed;
     }
 
@@ -270,7 +270,7 @@ export class MusicalCompositionOptionConfig {
         return this._musicalInstrumentsAllowed;
     }
     
-    set musicalInstrumentsAllowed(musicalInstrumentsAllowed:number[]) {
+    set musicalInstrumentsAllowed(musicalInstrumentsAllowed: number[]) {
         this._musicalInstrumentsAllowed = musicalInstrumentsAllowed;
     }
     
@@ -278,7 +278,7 @@ export class MusicalCompositionOptionConfig {
         return this._defaultMusicalInstrument;
     }
     
-    set defaultMusicalInstrument(defaultMusicalInstrument:number) {
+    set defaultMusicalInstrument(defaultMusicalInstrument: number) {
         defaultMusicalInstrument =+ defaultMusicalInstrument;
         this._defaultMusicalInstrument = defaultMusicalInstrument;
     }

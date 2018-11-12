@@ -3,11 +3,11 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class VisualMidiProvider {
 
-    public getCompassFormula(numerator: number, denominator: number) {
+    public getCompassFormula(numerator: number, denominator: number): string {
         return numerator + '/' + Math.pow(2, denominator)
     }
 
-    public getMode(mode: number) {
+    public getMode(mode: number): string {
         switch (mode) {
             case 0: return 'Maior'
             case 1: return 'Menor'
@@ -234,7 +234,7 @@ export class VisualMidiProvider {
         return 'none'
     }
 
-    public getSpectrumPaleteByInstrumentType(instrumentType: string){
+    public getSpectrumPaleteByInstrumentType(instrumentType: string): string[] {
 
         switch(instrumentType){
             case 'instrument_type_keys':

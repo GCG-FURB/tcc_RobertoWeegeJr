@@ -10,7 +10,7 @@ export class MidiSpectrumSvgProvider {
     private DEFAULT_HEIGHT_BLOCK_SIZE: number = 30;
     private NOTE_CHANGE_AJUST_FRACTION: number = 32;
 
-    constructor (private visualMidiProvider: VisualMidiProvider) {}
+    constructor(private visualMidiProvider: VisualMidiProvider) {}
   
     public getEncodedSVGSpectrum(spectrum: MidiSpectrum, musicalInstrumentMidiNumber: number, deltaTimeMetric: number, minNote?: number, maxNote?: number): string {
 
@@ -46,7 +46,7 @@ export class MidiSpectrumSvgProvider {
 
     }
 
-    public getEncodedSVG(svg: string) {
+    public getEncodedSVG(svg: string): string {
         return encodeURI('data:image/svg+xml;utf8,' + svg)
     }
 

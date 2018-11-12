@@ -1,8 +1,8 @@
-import { MusicalCompositionSource, MusicalCompositionStepSource, MusicalCompositionGroupSource, MusicalCompositionOptionSource } from "../model/musical-composition-source";
+import { MusicalCompositionSource, MusicalCompositionStepSource, MusicalCompositionLineSource, MusicalCompositionOptionSource } from "../model/musical-composition-source";
 import { MusicalCompositionConfig, MusicalCompositionOptionConfig } from '../model/musical-composition-config';
 import { Midi } from '../model/midi';
 import { FileProvider } from '../providers/file/file';
-import { MidiControl, MidiFileControl } from "./midi";
+import { MidiFileControl } from "./midi";
 
 export class MusicalCompositionSourceControl {
 
@@ -41,12 +41,12 @@ export class MusicalCompositionSourceControl {
         this._baseFileSystem = baseFileSystem;
     }
     
-    public get midiControl(): MidiFileControl {
+    get midiControl(): MidiFileControl {
         return this._midiControl;
     }
     
-    public set midiControl(value: MidiFileControl) {
-        this._midiControl = value;
+    set midiControl(midiControl: MidiFileControl) {
+        this._midiControl = midiControl;
     }    
     
     public async loadSources(config: MusicalCompositionConfig){
@@ -54,7 +54,7 @@ export class MusicalCompositionSourceControl {
         let source = new MusicalCompositionSource();
         let lastMidi: Midi;
         let stepSource: MusicalCompositionStepSource;
-        let groupSource: MusicalCompositionGroupSource;
+        let lineSource: MusicalCompositionLineSource;
         let optionSource: MusicalCompositionOptionSource;
 
         let midis: Midi[];
@@ -67,15 +67,15 @@ export class MusicalCompositionSourceControl {
         for (let step of config.stepsConfig) {
             stepSource = new MusicalCompositionStepSource();
             stepSource.relativePath = step.relativePath;
-            //groups
-            for (let group of step.groupsConfig) {
+            //lines
+            for (let line of step.linesConfig) {
                 newOptionConfigs = [];
-                groupSource = new MusicalCompositionGroupSource();
-                groupSource.relativePath = group.relativePath;
+                lineSource = new MusicalCompositionLineSource();
+                lineSource.relativePath = line.relativePath;
                 //options
-                for (let option of group.optionsConfig) {
+                for (let option of line.optionsConfig) {
                     
-                    fullOptionPath = this.fileProvider.concatenatePaths([this.baseFileSystem, config.relativePath, step.relativePath, group.relativePath]);
+                    fullOptionPath = this.fileProvider.concatenatePaths([this.baseFileSystem, config.relativePath, step.relativePath, line.relativePath]);
                     midiFile = await this.fileProvider.readFileAsBinaryString(fullOptionPath, option.fileName);
                     
                     try {
@@ -89,7 +89,7 @@ export class MusicalCompositionSourceControl {
                         optionSource.fileName = option.fileName + (i ? ` (${i})`: '');
                         optionSource.midi = midis[i]
                         lastMidi = midis[i];
-                        groupSource.optionsSource.push(optionSource);
+                        lineSource.optionsSource.push(optionSource);
                         if (i > 0) {
                             let optionConfig = new MusicalCompositionOptionConfig();
                             optionConfig.fileName = optionSource.fileName  
@@ -98,9 +98,9 @@ export class MusicalCompositionSourceControl {
                     }
                 }
                 for (let option of newOptionConfigs) {
-                    group.optionsConfig.push(option);
+                    line.optionsConfig.push(option);
                 }
-                stepSource.groupsSource.push(groupSource);
+                stepSource.linesSource.push(lineSource);
             }
             source.stepsSource.push(stepSource);
         }

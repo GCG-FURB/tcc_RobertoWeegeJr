@@ -4,7 +4,7 @@ import { MidiSpectrumLine, MidiSpectrum, MidiSpectrumNote } from "../model/midi-
 
 export class MidiControl {
 
-    public ajustMidiSize(midi: Midi, trackIndex: number, targetDeltaTimeSize: number) {
+    public ajustMidiSize(midi: Midi, trackIndex: number, targetDeltaTimeSize: number): void {
         if (!midi) 
             throw new Error('Midi não pode ser nulo.')
         
@@ -23,7 +23,7 @@ export class MidiControl {
         }
     }
 
-    public ajustMidiTimeDivision(midi: Midi, timeDivisionMetric: number){
+    public ajustMidiTimeDivision(midi: Midi, timeDivisionMetric: number): void{
         
         if (!midi) 
             throw new Error('Midi não pode ser nulo.')
@@ -217,7 +217,7 @@ export class MidiControl {
         return newMidi;
     }
 
-    public concatenateMidisInTracks(midis: Midi[]) {
+    public concatenateMidisInTracks(midis: Midi[]): Midi {
         
         if (!midis || midis.length < 0)
             throw Error('Os midis não pode ser nulos.');
@@ -686,7 +686,7 @@ export class MidiFileControl {
         return this.numberConversion.getHexaStringFirstBit(binaryString) == 0;
     }
 
-    private calculateDeltaTime(binaryString: string) : number {
+    private calculateDeltaTime(binaryString: string): number {
         let binaryDeltaTime: string = '';
         for (let str of binaryString) {
             binaryDeltaTime += this.numberConversion.completeOrRemoveChars(
@@ -696,7 +696,7 @@ export class MidiFileControl {
         return parseInt(binaryDeltaTime, 2);
     }
     
-    private getDeltaTimeStringFromNumber(deltaTime: number){
+    private getDeltaTimeStringFromNumber(deltaTime: number): string {
 
         let tempDeltaTimeBinary: string = this.numberConversion.convertIntegerToBinaryArray(deltaTime);
         let deltaTimeBinary: string = '';
@@ -950,7 +950,7 @@ export class MidiFileControl {
         return binaryString;
     }
 
-    private convertEventDataToHexaData(midiEvent: MidiEvent) {
+    private convertEventDataToHexaData(midiEvent: MidiEvent): string {
         if (midiEvent.isOfType(MidiEventDataType.NOTE_OFF)) {
 
             let event: NoteOffMidiEvent = <NoteOffMidiEvent> midiEvent; 
@@ -1023,20 +1023,20 @@ class MidiCreatedEventModel {
         this.event = event;
     }
 
-    public get event(): MidiEvent {
+    get event(): MidiEvent {
         return this._event;
     }
 
-    public set event(value: MidiEvent) {
-        this._event = value;
+    set event(event: MidiEvent) {
+        this._event = event;
     }
 
-    public get eventLength(): number {
+    get eventLength(): number {
         return this._eventLength;
     }
 
-    public set eventLength(value: number) {
-        this._eventLength = value;
+    set eventLength(eventLength: number) {
+        this._eventLength = eventLength;
     }
 
 }

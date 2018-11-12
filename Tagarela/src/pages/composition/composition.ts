@@ -32,7 +32,7 @@ export class CompositionPage extends GenericComponent{
         this._compositionControl = compositionControl;
     }
 
-    private ngOnInit(){
+    private ngOnInit(): void{
         try {
             this.compositionControl = this.navParams.get('compositionControl');
         } catch (e) {

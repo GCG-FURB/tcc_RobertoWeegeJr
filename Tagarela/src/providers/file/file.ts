@@ -16,7 +16,7 @@ export class FileProvider {
     private _downloadRelativeDir: string;
     private _downloadFullDir: string;
     
-    constructor(public file: File) {
+    constructor(private file: File) {
         this.tempAreaSystemDir = this.file.dataDirectory; 
         this.tempAreaRelativeDir = this.DEFAULT_TEMP_AREA_RELATIVE_DIR;
         this.tempAreaFullDir = this.concatenatePath(this.tempAreaSystemDir, this.tempAreaRelativeDir);
@@ -75,6 +75,22 @@ export class FileProvider {
         this._downloadFullDir = downloadFullDir;
     }
 
+    public getExternalRootDirectory(): string {
+        return this.file.externalRootDirectory;
+    }
+
+    public getDocumentsDirectory(): string {
+        return this.file.documentsDirectory;
+    }
+
+    public getApplicationDirectory(): string {
+        return this.file.applicationDirectory;
+    }
+
+    public getDataDirectory(): string {
+        return this.file.dataDirectory;
+    }
+
     public concatenatePaths(paths: string[]): string {
 
         if (!paths) 
@@ -119,7 +135,6 @@ export class FileProvider {
         return relativePath.substring(0, relativePath.lastIndexOf('/'));
     }
 
-
     public async getListOfDirectories(devicePath: string, relativePath: string): Promise<string[]> {
         let files: any = await this.file.listDir(devicePath, relativePath);
         let diretoriesList: string[] = [];
@@ -146,7 +161,7 @@ export class FileProvider {
         return await this.verifyFile(this.downloadSystemDir, this.downloadRelativeDir, fileName + this.MIDI_FILE_EXTENSION);
     }
 
-    public async verifyFile(systemPath: string, relativePath: string, fileName: string) {
+    public async verifyFile(systemPath: string, relativePath: string, fileName: string): Promise<boolean> {
         try {
             return await this.file.checkFile(systemPath, this.concatenatePath(relativePath, fileName));
         } catch (e) {
@@ -158,7 +173,7 @@ export class FileProvider {
         }
     }
 
-    public async verifyDir(systemPath: string, relativePath: string) {
+    public async verifyDir(systemPath: string, relativePath: string): Promise<boolean> {
         try { 
             return await this.file.checkDir(systemPath, relativePath);
         } catch (e) {
@@ -166,7 +181,7 @@ export class FileProvider {
         }
     }
 
-    public async verifyAndCreateDirs(systemPath: string, relativePath: string){
+    public async verifyAndCreateDirs(systemPath: string, relativePath: string): Promise<void> {
         try { 
             await this.file.checkDir(systemPath, relativePath);
         } catch (e) {
@@ -191,7 +206,7 @@ export class FileProvider {
         return await this.file.readAsBinaryString(path, file);
     }
 
-    public async readFileTextContentIfExists(systemPath: string, relativePath: string, fileName: string): Promise<any> {
+    public async readFileTextContentIfExists(systemPath: string, relativePath: string, fileName: string): Promise<string> {
         if (await this.verifyFile(systemPath, relativePath, fileName)) {
             return await this.file.readAsText(this.concatenatePath(systemPath, relativePath), fileName);
         } else {
@@ -199,7 +214,7 @@ export class FileProvider {
         }
     }
 
-    public async writeMidiBinaryStringToTempArea(uId: string, binaryString: string) {
+    public async writeMidiBinaryStringToTempArea(uId: string, binaryString: string): Promise<void> {
         let options: IWriteOptions = { replace: true };
 
         let len = binaryString.length;
@@ -211,7 +226,7 @@ export class FileProvider {
         await this.file.writeFile(this.tempAreaFullDir, uId + this.MIDI_FILE_EXTENSION, bytes.buffer, options)
     }
 
-    public async writeBinaryStringDownloadArea(fileName: string, binaryString: string){
+    public async writeBinaryStringDownloadArea(fileName: string, binaryString: string): Promise<void> {
         let options: IWriteOptions = { replace: true };
         let len = binaryString.length;
         let bytes = new Uint8Array(len);
@@ -221,17 +236,17 @@ export class FileProvider {
         await this.file.writeFile(this.concatenatePath(this.downloadSystemDir, this.downloadRelativeDir) , fileName + this.MIDI_FILE_EXTENSION, bytes.buffer, options)
     }
 
-    public async writeFile(systemPath: string, relativePath: string, fileName: string, fileContent: string): Promise<any> {
+    public async writeFile(systemPath: string, relativePath: string, fileName: string, fileContent: string): Promise<void> {
         await this.verifyAndCreateDirs(systemPath, relativePath);
         let options: IWriteOptions = { replace: true };
         await this.file.writeFile(this.concatenatePath(systemPath, relativePath) , fileName, fileContent, options);
     }
 
-    public async removeFile(systemPath: string, relativePath: string, fileName: string) {
+    public async removeFile(systemPath: string, relativePath: string, fileName: string): Promise<void> {
         await this.file.removeFile(this.concatenatePath(systemPath, relativePath), fileName);
     }
 
-    public async cleanTempArea(){
+    public async cleanTempArea(): Promise<void> {
         let files = await this.file.listDir(this.tempAreaSystemDir, this.tempAreaRelativeDir);
         for (let file of files) {
             if (file.isDirectory) {
@@ -242,7 +257,7 @@ export class FileProvider {
         }
     }
 
-    public async deleteAll(systemDir: string, relativeDir: string){
+    public async deleteAll(systemDir: string, relativeDir: string): Promise<void> {
         let files = await this.file.listDir(systemDir, relativeDir);
         for (let file of files) {
             if (file.isDirectory) {

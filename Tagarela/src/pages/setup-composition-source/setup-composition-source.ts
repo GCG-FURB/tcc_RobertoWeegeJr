@@ -53,7 +53,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         return this._sourceControl;
     }
     
-    set sourceControl(sourceControl:MusicalCompositionSourceControl) {
+    set sourceControl(sourceControl: MusicalCompositionSourceControl) {
         this._sourceControl = sourceControl;
     }
          
@@ -61,7 +61,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         return this._configSegment;
     }
     
-    set configSegment(configSegment:string) {
+    set configSegment(configSegment: string) {
         this._configSegment = configSegment;
     }
 
@@ -69,7 +69,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         return this._generalForm;
     }
     
-    set generalForm(generalForm:FormGroup) {
+    set generalForm(generalForm: FormGroup) {
         this._generalForm = generalForm;
     }
         
@@ -89,23 +89,23 @@ export class SetupCompositionSourcePage extends GenericComponent {
         this._optionForms = optionForms;
     }
     
-    public get tempoRange(): IonRangeDualKnobsModel {
+    get tempoRange(): IonRangeDualKnobsModel {
         return this._tempoRange;
     }
 
-    public set tempoRange(value: IonRangeDualKnobsModel) {
-        this._tempoRange = value;
+    set tempoRange(tempoRange: IonRangeDualKnobsModel) {
+        this._tempoRange = tempoRange;
     }
 
-    public get volumeRange(): IonRangeDualKnobsModel[] {
+    get volumeRange(): IonRangeDualKnobsModel[] {
         return this._volumeRange;
     }
     
-    public set volumeRange(value: IonRangeDualKnobsModel[]) {
+    set volumeRange(value: IonRangeDualKnobsModel[]) {
         this._volumeRange = value;
     }
 
-    private ngOnInit(){
+    private ngOnInit(): void {
         try {
             this.configSegment = 'general';
             let configControl = this.navParams.get('configControl');
@@ -125,7 +125,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         }
     }
 
-    private configureTempoValues() {
+    private configureTempoValues(): void {
 
         if (!this.configControl.config.minTempo || this.configControl.config.minTempo < this.getLowerAllowedTempo()) {
             this.configControl.config.minTempo = this.getLowerAllowedTempo();
@@ -151,7 +151,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
 
     }
 
-    private configureVolumeValues() {
+    private configureVolumeValues(): void {
         this.volumeRange = [];
         for (let line of this.configControl.config.linesConfig) {
             
@@ -179,7 +179,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         }
     }
 
-    private loadForms(configControl: MusicalCompositionConfigControl) {
+    private loadForms(configControl: MusicalCompositionConfigControl): void {
 
         let generalForm: FormGroup = this.formBuilder.group({
             defaultKeySignature: [configControl.config.keySignature, Validators.compose([this.required(this.errorHandler.bind(this))])],
@@ -198,8 +198,8 @@ export class SetupCompositionSourcePage extends GenericComponent {
         let optionForms: FormGroup[][][] = [];
 
         for (let i = 0; i < configControl.config.stepsConfig.length; i++) {
-            for (let j = 0; j < configControl.config.stepsConfig[i].groupsConfig.length; j++) {
-                for (let k = 0; k < configControl.config.stepsConfig[i].groupsConfig[j].optionsConfig.length; k++) {
+            for (let j = 0; j < configControl.config.stepsConfig[i].linesConfig.length; j++) {
+                for (let k = 0; k < configControl.config.stepsConfig[i].linesConfig[j].optionsConfig.length; k++) {
                     
                     if (optionForms.length -1 < i)
                         optionForms.push([]);
@@ -209,8 +209,8 @@ export class SetupCompositionSourcePage extends GenericComponent {
                     }
                          
                     optionForms[i][j].push(this.formBuilder.group({
-                        musicalInstrumentsAllowed: [configControl.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].musicalInstrumentsAllowed, Validators.compose([this.required(this.errorHandler.bind(this))])],
-                        defaultMusicalInstrument:  [configControl.config.stepsConfig[i].groupsConfig[j].optionsConfig[k].defaultMusicalInstrument,  Validators.compose([this.required(this.errorHandler.bind(this))])]
+                        musicalInstrumentsAllowed: [configControl.config.stepsConfig[i].linesConfig[j].optionsConfig[k].musicalInstrumentsAllowed, Validators.compose([this.required(this.errorHandler.bind(this))])],
+                        defaultMusicalInstrument:  [configControl.config.stepsConfig[i].linesConfig[j].optionsConfig[k].defaultMusicalInstrument,  Validators.compose([this.required(this.errorHandler.bind(this))])]
                     }));
 
                 }
@@ -223,7 +223,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         
     }
 
-    private async saveConfigAndStartComposition() {    
+    private async saveConfigAndStartComposition(): Promise<void> {    
         try {
             
             this.createLoading('Iniciando Composição');
@@ -251,33 +251,33 @@ export class SetupCompositionSourcePage extends GenericComponent {
     }
 
     //page values
-    private getLowerAllowedTempo():number {return Midi.LOWER_ALLOWED_TEMPO}
-	private getHighestAllowedTempo():number {return Midi.HIGHEST_ALLOWED_TEMPO} 
-	private getLowerAllowedVolume():number {return Midi.LOWER_ALLOWED_VOLUME}
-	private getHighestAllowedVolume():number {return Midi.HIGHEST_ALLOWED_VOLUME}
-	private getLowerQuantityOfQuarterNote():number {return Midi.LOWER_QUANTITY_OF_QUARTER_NOTE}
-	private getHighestQuantityOfQuarterNote():number {return Midi.HIGHEST_QUANTITY_OF_QUARTER_NOTE}
+    private getLowerAllowedTempo(): number {return Midi.LOWER_ALLOWED_TEMPO}
+	private getHighestAllowedTempo(): number {return Midi.HIGHEST_ALLOWED_TEMPO} 
+	private getLowerAllowedVolume(): number {return Midi.LOWER_ALLOWED_VOLUME}
+	private getHighestAllowedVolume(): number {return Midi.HIGHEST_ALLOWED_VOLUME}
+	private getLowerQuantityOfQuarterNote(): number {return Midi.LOWER_QUANTITY_OF_QUARTER_NOTE}
+	private getHighestQuantityOfQuarterNote(): number {return Midi.HIGHEST_QUANTITY_OF_QUARTER_NOTE}
 
-    private getMinStepValueTempo(): number{
+    private getMinStepValueTempo(): number {
         return 1;
     }
 
-    private getMaxStepValueTempo(): number{
+    private getMaxStepValueTempo(): number {
         let diference: number = Math.round((this.tempoRange.upper - this.tempoRange.lower) / 2);
         return (diference >= this.getMinStepValueTempo() ? diference : this.getMinStepValueTempo())
     }
 
-    private getMinStepValueVolume(index: number): number{
+    private getMinStepValueVolume(index: number): number {
         return 1;
     }
 
-    private getMaxStepValueVolume(index: number): number{
+    private getMaxStepValueVolume(index: number): number {
         let diference: number = Math.round((this.volumeRange[index].upper - this.volumeRange[index].lower) / 2);
         return (diference >= this.getMinStepValueVolume(index) ? diference : this.getMinStepValueVolume(index))
     }
 
     //page refresh
-    private updateGeneralFormControl() {
+    private updateGeneralFormControl(): void {
         try {
             
             if (this.configControl.config.stepTempo > this.getMaxStepValueTempo()) 
@@ -295,7 +295,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         }
     }
 
-    private updateAllLineFormControl() {
+    private updateAllLineFormControl(): void {
         try {
             for (let i = 0; i < this.volumeRange.length; i++) {
                 this.updateLineFormControl(i);
@@ -305,7 +305,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         }
     }
  
-    private updateLineFormControl(lineIndex: number) {
+    private updateLineFormControl(lineIndex: number): void {
         try {
 
             if (this.configControl.config.linesConfig[lineIndex].stepVolume > this.getMaxStepValueVolume(lineIndex)) 
@@ -399,7 +399,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         }
     }
 
-    private minQuantityOfQuarterNoteMidiFV(errorHandlerFunction: Function): any {
+    private minQuantityOfQuarterNoteMidiFV(errorHandlerFunction: Function): ValidatorFn {
         return (control: FormControl) => {
             try {
                 if (!isNaN(control.value) && +control.value < this.getLowerQuantityOfQuarterNote()) {
@@ -417,7 +417,7 @@ export class SetupCompositionSourcePage extends GenericComponent {
         }
     }
 
-    private maxQuantityOfQuarterNoteMidiFV(errorHandlerFunction: Function): any {
+    private maxQuantityOfQuarterNoteMidiFV(errorHandlerFunction: Function): ValidatorFn {
         return (control: FormControl) => {
             try {
                 if (!isNaN(control.value) && +control.value > this.getHighestQuantityOfQuarterNote()) {

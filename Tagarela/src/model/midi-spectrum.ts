@@ -112,11 +112,11 @@ export class MidiSpectrumNote {
     private _deltaTimeStart: number;
     private _deltaTimeEnd: number; 
 
-    public get deltaTimeStart(): number {
+    get deltaTimeStart(): number {
         return this._deltaTimeStart;
     }
 
-    public set deltaTimeStart(deltaTimeStart: number) {
+    set deltaTimeStart(deltaTimeStart: number) {
         if (!deltaTimeStart && deltaTimeStart != 0) 
             throw new Error(`O delta time de início não pode ser nulo.`);
         
@@ -129,11 +129,11 @@ export class MidiSpectrumNote {
         this._deltaTimeStart = deltaTimeStart;
     }
 
-    public get deltaTimeEnd(): number {
+    get deltaTimeEnd(): number {
         return this._deltaTimeEnd;
     }
 
-    public set deltaTimeEnd(deltaTimeEnd: number) {
+    set deltaTimeEnd(deltaTimeEnd: number) {
         if (!deltaTimeEnd && deltaTimeEnd != 0) 
             throw new Error(`O delta time de finalização não pode ser nulo.`);
         
@@ -166,32 +166,32 @@ export class CompositionMidiSpectrumsData {
         return this._spectrums;
     }
 
-    set spectrums(value: MidiSpectrum[][]) {
-        this._spectrums = value;
+    set spectrums(spectrums: MidiSpectrum[][]) {
+        this._spectrums = spectrums;
     }
     
     get musicalInstruments(): number[][] {
         return this._musicalInstruments;
     }
     
-    set musicalInstruments(value: number[][]) {
-        this._musicalInstruments = value;
+    set musicalInstruments(musicalInstruments: number[][]) {
+        this._musicalInstruments = musicalInstruments;
     }
     
     get minNotes(): number[] {
         return this._minNotes;
     }
     
-    set minNotes(value: number[]) {
-        this._minNotes = value;
+    set minNotes(minNotes: number[]) {
+        this._minNotes = minNotes;
     }
     
     get maxNotes(): number[] {
         return this._maxNotes;
     }
     
-    set maxNotes(value: number[]) {
-        this._maxNotes = value;
+    set maxNotes(maxNotes: number[]) {
+        this._maxNotes = maxNotes;
     }
 
 }

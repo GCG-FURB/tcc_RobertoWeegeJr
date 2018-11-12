@@ -34,7 +34,7 @@ export class MusicalComposition {
         return this._minTempo;
     }
     
-    set minTempo(minTempo:number) {
+    set minTempo(minTempo: number) {
         if (!minTempo && minTempo != 0) 
             throw new Error(`O tempo mínimo não pode ser nulo.`);
 
@@ -60,7 +60,7 @@ export class MusicalComposition {
         return this._maxTempo;
     }
     
-    set maxTempo(maxTempo:number) {
+    set maxTempo(maxTempo: number) {
         if (!maxTempo && maxTempo != 0) 
             throw new Error(`O tempo máximo não pode ser nulo.`);
         
@@ -86,7 +86,7 @@ export class MusicalComposition {
         return this._stepTempo;
     }
     
-    set stepTempo(stepTempo:number) {
+    set stepTempo(stepTempo: number) {
         if (!stepTempo && stepTempo != 0)
             throw new Error(`O intervalo de escolha de tempo não pode ser nulo.`);
         
@@ -284,7 +284,7 @@ export class MusicalCompositionLine {
         return this._name;
     }
     
-    set name(name:string) {
+    set name(name: string) {
         if (!name || name.length <= 0)
             throw new Error(`O nome não pode ser nulo ou vazio.`);
         
@@ -295,7 +295,7 @@ export class MusicalCompositionLine {
         return this._minVolume;
     }
     
-    set minVolume(minVolume:number) {
+    set minVolume(minVolume: number) {
         if (!minVolume && minVolume != 0) 
             throw new Error(`O volume mínimo não pode ser nulo.`);
 
@@ -321,7 +321,7 @@ export class MusicalCompositionLine {
         return this._maxVolume;
     }
     
-    set maxVolume(maxVolume:number) {
+    set maxVolume(maxVolume: number) {
         if (!maxVolume && maxVolume != 0) 
             throw new Error(`O volume máximo não pode ser nulo.`);
 
@@ -347,7 +347,7 @@ export class MusicalCompositionLine {
         return this._stepVolume;
     }
     
-    set stepVolume(stepVolume:number) {
+    set stepVolume(stepVolume: number) {
         if (!stepVolume && stepVolume != 0) 
             throw new Error(`O intervalo de escolha de volume não pode ser nulo.`);
 
@@ -361,7 +361,7 @@ export class MusicalCompositionLine {
         return this._volume;
     }
     
-    set volume(volume:number) {
+    set volume(volume: number) {
         if (!volume && volume != 0) 
             throw new Error(`O volume não pode ser nulo.`);
 
@@ -412,7 +412,7 @@ export class MusicalCompositionLine {
         this._options = options;
     }
 
-    public getMinSpectrumNote() {
+    public getMinNote(): number {
         if (this.options.length <= 0)
             return null;
         let minValue: number = this.options[0].spectrum.minNote;
@@ -423,7 +423,7 @@ export class MusicalCompositionLine {
         return minValue;
     }
 
-    public getMaxSpectrumNote() {
+    public getMaxNote(): number {
 
         if (this.options.length <= 0)
             return null;
@@ -467,7 +467,7 @@ export class MusicalCompositionOption {
         return this._fileName;
     }
     
-    set fileName(fileName:string) {
+    set fileName(fileName: string) {
         if (!fileName || fileName.length <= 0){
             throw new Error(`O nome do arquivo não pode ser nulo ou vazio`);
         }
@@ -497,7 +497,7 @@ export class MusicalCompositionOption {
         return this._musicalInstrument;
     }
     
-    set musicalInstrument(musicalInstrument:number) {
+    set musicalInstrument(musicalInstrument: number) {
         if (!musicalInstrument && musicalInstrument !== 0) 
             throw new Error(`O instrumento musical padrão não pode ser nulo.`);
 
@@ -531,11 +531,11 @@ export class MusicalCompositionOption {
         this._midi = midi;
     }
 
-    public get spectrum(): MidiSpectrum {
+    get spectrum(): MidiSpectrum {
         return this._spectrum;
     }
 
-    public set spectrum(spectrum: MidiSpectrum) {
+    set spectrum(spectrum: MidiSpectrum) {
         if (!spectrum)
             throw new Error(`O espectro não pode ser nulo.`);
         this._spectrum = spectrum;

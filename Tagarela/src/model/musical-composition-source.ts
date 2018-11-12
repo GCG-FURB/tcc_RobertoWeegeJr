@@ -4,7 +4,7 @@ export class MusicalCompositionSource {
     private _relativePath: string;           //Caminho relativo raiz da composição 
 
     //Step  Source
-    private _stepsSource: MusicalCompositionStepSource[];             //sdfsdfsdfsdf
+    private _stepsSource: MusicalCompositionStepSource[];
 
     constructor(){
         this.stepsSource = [];
@@ -14,7 +14,7 @@ export class MusicalCompositionSource {
         return this._relativePath;
     }
     
-    set relativePath(relativePath:string) {
+    set relativePath(relativePath: string) {
         if (!relativePath || relativePath.length <= 0){
             throw new Error("O caminho relativo não pode ser nulo ou vazio");
         }
@@ -25,7 +25,7 @@ export class MusicalCompositionSource {
         return this._stepsSource;
     }
     
-    set stepsSource(stepsSource:MusicalCompositionStepSource[]) {
+    set stepsSource(stepsSource: MusicalCompositionStepSource[]) {
         if (!stepsSource) {
             throw new Error("As fonte de passos não podem ser nulas");
         }
@@ -39,39 +39,39 @@ export class MusicalCompositionStepSource {
     //Step  Source
     private _relativePath: string;       //Caminho relativo raiz da composição 
     
-    //Group  Source
-    private _groupsSource: MusicalCompositionGroupSource[];           // 
+    //Line  Source
+    private _linesSource: MusicalCompositionLineSource[];           // 
 
     constructor(){
-        this.groupsSource = [];
+        this.linesSource = [];
     }
 
     get relativePath(): string {
         return this._relativePath;
     }
     
-    set relativePath(relativePath:string) {
+    set relativePath(relativePath: string) {
         if (!relativePath || relativePath.length <= 0){
             throw new Error("O caminho relativo não pode ser nulo ou vazio");
         }
         this._relativePath = relativePath;
     }
     
-    get groupsSource(): MusicalCompositionGroupSource[] {
-        return this._groupsSource;
+    get linesSource(): MusicalCompositionLineSource[] {
+        return this._linesSource;
     }
     
-    set groupsSource(groupsSource:MusicalCompositionGroupSource[]) {
-        if (!groupsSource) {
+    set linesSource(linesSource: MusicalCompositionLineSource[]) {
+        if (!linesSource) {
             throw new Error("As fontes de grupos não podem ser nulas");
         }
-        this._groupsSource = groupsSource;
+        this._linesSource = linesSource;
     }
 }
 
-export class MusicalCompositionGroupSource {
+export class MusicalCompositionLineSource {
 
-    //Group  Source
+    //Line  Source
     private _relativePath: string;
     
     //Options  Source
@@ -115,7 +115,7 @@ export class MusicalCompositionOptionSource {
         return this._fileName;
     }
     
-    set fileName(fileName:string) {
+    set fileName(fileName: string) {
         if (!fileName || fileName.length <= 0){
             throw new Error("O nome do arquivo não pode ser nulo ou vazio");
         }
@@ -126,7 +126,7 @@ export class MusicalCompositionOptionSource {
         return this._midi;
     }
     
-    set midi(midi:Midi) {
+    set midi(midi: Midi) {
         if (!midi) {
             throw new Error("O midi não pode ser nulo");
         }

@@ -192,10 +192,10 @@
             <div *ngFor="let stepConfig of configControl.config.stepsConfig; let i = index">
                 <h6 ion-text class="headers_margin">Passo: {{stepConfig.relativePath}}</h6>
                 
-                <div *ngFor="let groupConfig of stepConfig.groupsConfig; let j = index">
-                    <h6 ion-text class="headers_margin">Linha: {{groupConfig.relativePath}}</h6>
+                <div *ngFor="let lineConfig of stepConfig.linesConfig; let j = index">
+                    <h6 ion-text class="headers_margin">Linha: {{lineConfig.relativePath}}</h6>
                 
-                    <div *ngFor="let optionConfig of groupConfig.optionsConfig; let k = index">
+                    <div *ngFor="let optionConfig of lineConfig.optionsConfig; let k = index">
                         <h6 ion-text class="headers_margin headers_margin_top">Opção: {{optionConfig.fileName}}</h6>
                         
                         <form [formGroup]="optionForms[i][j][k]">

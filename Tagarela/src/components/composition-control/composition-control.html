@@ -43,7 +43,7 @@
                 <div #scroll2 class="scroll-2">
                     <div class="composition-line" *ngFor="let compositionLine of getCompositionLinesList()">
                         <choice-component class="float-left-child" *ngFor="let compositionOption of compositionLine.options"
-                        [midiChoice]="compositionOption" [composition]="compositionControl" [minNote]="compositionLine.getMinSpectrumNote()" [maxNote]="compositionLine.getMaxSpectrumNote()">
+                        [midiChoice]="compositionOption" [composition]="compositionControl" [minNote]="compositionLine.getMinNote()" [maxNote]="compositionLine.getMaxNote()">
                         </choice-component>
                     </div>
                 </div>

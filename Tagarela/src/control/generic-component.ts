@@ -50,7 +50,7 @@ export class GenericComponent {
         await toast.present();
     }
 
-    public errorHandler(e){
+    public errorHandler(e: any): void{
         this.dismissLoading();
         this.startAlert({
             title: 'Ocorreu um Erro',
