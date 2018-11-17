@@ -5,6 +5,7 @@ import { MidiFileControl } from '../../control/midi';
 import { Midi } from '../../model/midi';
 import { GenericComponent } from '../../control/generic-component';
 import { Media, MediaObject } from '@ionic-native/media';
+import { Device } from '@ionic-native/device';
 
 @Component({
   selector: 'play-midi',
@@ -41,12 +42,14 @@ export class PlayMidiComponent extends GenericComponent {
                 private alertCtrl: AlertController,
                 private popoverCtrl: PopoverController,
                 private toastCtrl: ToastController,
-                private nativeMedia: Media) {
+                private nativeMedia: Media,
+                private dev: Device) {
 
         super(loadingCtrl,
               alertCtrl,
               popoverCtrl,
-              toastCtrl);
+              toastCtrl,
+              dev);
     
 
     }
@@ -83,10 +86,11 @@ export class PlayMidiComponent extends GenericComponent {
         this._midiControl = midiControl;
     }
 
-    public get file(): MediaObject {
+    get file(): MediaObject {
         return this._file;
     }
-    public set file(file: MediaObject) {
+
+    set file(file: MediaObject) {
         this._file = file;
     }
 
@@ -118,14 +122,16 @@ export class PlayMidiComponent extends GenericComponent {
         return this._indicatorMarginLeft
     }
 
-    set indicatorMarginLeft(indicatorMarginLeft: number){
+    set indicatorMarginLeft(indicatorMarginLeft: number) {
         if (this.indicator) 
             this.indicator.nativeElement.style.marginLeft = indicatorMarginLeft + 'vw';
         this._indicatorMarginLeft = indicatorMarginLeft;
     }
+
     get spectrumMarginLeft(): number {
         return this._spectrumMarginLeft;
     }
+
     set spectrumMarginLeft(spectrumMarginLeft: number) {
         if (this.spectrumDiv) 
             this.spectrumDiv.nativeElement.style.marginLeft = spectrumMarginLeft + 'vw'
@@ -172,7 +178,7 @@ export class PlayMidiComponent extends GenericComponent {
         }
     }
 
-    private async playMidi() {
+    private async playMidi(): Promise<void> {
         try { 
 
             let midiString = this.midiControl.getBinaryString(this.midi);
@@ -200,22 +206,7 @@ export class PlayMidiComponent extends GenericComponent {
         }
     }
 
-
-    StringToUint8Array(string) {
-        var binary, binLen, buffer, chars, i, _i;
-        binary = string;
-        binLen = binary.length;
-        buffer = new ArrayBuffer(binLen);
-        chars  = new Uint8Array(buffer);
-        for (i = _i = 0; 0 <= binLen ? _i < binLen : _i > binLen; i = 0 <= binLen ? ++_i : --_i) {
-            chars[i] = String.prototype.charCodeAt.call(binary, i);
-        }
-        return chars;
-    }
-
-
-
-    private goBack() {
+    private goBack(): void {
         try { 
             this.navCtrl.pop();
         } catch (e) {
@@ -223,7 +214,7 @@ export class PlayMidiComponent extends GenericComponent {
         }
     }
 
-    private updateViewValues() {
+    private updateViewValues(): void {
         setTimeout(() => {
             try {
                 this.fileDuration = this.file.getDuration();
@@ -242,7 +233,7 @@ export class PlayMidiComponent extends GenericComponent {
         }, 10);
     }
 
-    private updateIndicators(){
+    private updateIndicators(): void {
         setTimeout(async() => {
             try {
                 let percentOfPlay: number;
@@ -281,7 +272,7 @@ export class PlayMidiComponent extends GenericComponent {
         }, 10);
     }
 
-    public errorHandler(e){
+    public errorHandler(e): void {
         super.errorHandler(e);
         this.navCtrl.pop();
     };

@@ -3,8 +3,9 @@ import { Midi } from '../../model/midi';
 import { GenericComponent } from '../../control/generic-component';
 import { NavController, NavParams, LoadingController, AlertController, PopoverController, ToastController } from 'ionic-angular';
 import { FileProvider } from '../../providers/file/file';
-import { MidiControl, MidiFileControl } from '../../control/midi';
+import { MidiFileControl } from '../../control/midi';
 import { ValidatorFn, FormControl, Validators, FormGroup, FormBuilder } from '@angular/forms';
+import { Device } from '@ionic-native/device';
 
 @Component({
   selector: 'download-midi',
@@ -25,12 +26,14 @@ export class DownloadMidiComponent extends GenericComponent{
                 private alertCtrl: AlertController,
                 private popoverCtrl: PopoverController,
                 private toastCtrl: ToastController,
-                private formBuilder: FormBuilder) {
+                private formBuilder: FormBuilder,
+                private dev: Device) {
 
         super(loadingCtrl,
             alertCtrl,
             popoverCtrl,
-            toastCtrl);
+            toastCtrl,
+            dev);
     
     }
     
@@ -89,7 +92,7 @@ export class DownloadMidiComponent extends GenericComponent{
         }
     }
 
-    private async downloadMidi() {
+    private async downloadMidi(): Promise<void> {
         try {
 
             if (await this.fileProvider.verifyFileToDownloadMidi(this.fileName)) {
@@ -115,7 +118,7 @@ export class DownloadMidiComponent extends GenericComponent{
 
     }
 
-    private async whiteMidiFileAndExit(){
+    private async whiteMidiFileAndExit(): Promise<void> {
         try {
             this.createLoading('Baixando Arquivo');
             await this.fileProvider.writeBinaryStringDownloadArea(this.fileName, this.midiControl.getBinaryString(this.midi));

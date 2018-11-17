@@ -1,16 +1,16 @@
 <div [ngStyle]="{'background-image':'url('+ this.getBackgroundImage() +')', 'width': getWidthSize()+'vw'}" class="flex-parent image"
      [class.image-choice]="toChoice">
-    <div class="flex-child">
+    <div class="flex-child-choice-component" [class.old-android-margin]="isOldAndroid()">
         <button ion-button icon-only class="center" (click)="playMidi()" [color]="getColor()">
             <ion-icon name="play"></ion-icon>
         </button>
     </div>
-    <div class="flex-child" *ngIf="toChoice">
+    <div class="flex-child-choice-component" [class.old-android-margin]="isOldAndroid()" *ngIf="toChoice">
         <button ion-button icon-only class="center" (click)="applyChoice()" [color]="getColor()">
             <ion-icon name="ios-checkmark-circle"></ion-icon>
         </button>
     </div>
-    <div class="flex-child">
+    <div class="flex-child-choice-component" [class.old-android-margin]="isOldAndroid()">
         <button ion-button icon-only class="center" (click)="goToMusicalInstrumentChoice()" [color]="getColor()">
             <ion-icon [name]="visualMidiProvider.getIonIconToMidiNumber(midiChoice.musicalInstrument)"></ion-icon>
         </button>       

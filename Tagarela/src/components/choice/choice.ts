@@ -7,16 +7,14 @@ import { PlayMidiComponent } from '../play-midi/play-midi';
 import { VisualMidiProvider } from '../../providers/visual-midi/visual-midi';
 import { GenericComponent } from '../../control/generic-component';
 import { MidiSpectrumSvgProvider } from '../../providers/midi-spectrum-svg/midi-spectrum-svg';
+import { CompositionControlComponent } from '../composition-control/composition-control';
+import { Device } from '@ionic-native/device';
 
 @Component({
   selector: 'choice-component',
   templateUrl: 'choice.html'
 })
 export class ChoiceComponent extends GenericComponent{
-
-    //constants
-    private MIDI_TRACK: number = 0;
-    private SPECTRUM_SIZE_OF_QUARTER_NOTE: number = 4.0;
 
     //inputs
     private _composition: MusicalCompositionControl;
@@ -27,19 +25,20 @@ export class ChoiceComponent extends GenericComponent{
 
     //local
     private _backgroundSVGImageURL: string;
-    private _widthSize: number;
 
     constructor(private loadingCtrl: LoadingController,
                 private alertCtrl: AlertController,
                 private popoverCtrl: PopoverController, 
                 private visualMidiProvider: VisualMidiProvider,
                 private midiSpectrumSvgProvider: MidiSpectrumSvgProvider,
-                private toastCtrl: ToastController) { 
+                private toastCtrl: ToastController,
+                private dev: Device) { 
 
         super(loadingCtrl,
               alertCtrl,
               popoverCtrl,
-              toastCtrl);
+              toastCtrl,
+              dev);
     
     }
     
@@ -92,14 +91,6 @@ export class ChoiceComponent extends GenericComponent{
         this._maxNote = maxNote;
     }
 
-    get widthSize(): number {
-        return this._widthSize;
-    }
-
-    set widthSize(widthSize: number) {
-        this._widthSize = widthSize;
-    }
-
     get backgroundSVGImageURL(): string {
         return this._backgroundSVGImageURL;
     }
@@ -118,7 +109,7 @@ export class ChoiceComponent extends GenericComponent{
         }
     }
         
-    private generateBackgroundImageSVG(){
+    private generateBackgroundImageSVG(): void {
         if (this.midiChoice && this.midiChoice.midi) {
             this.backgroundSVGImageURL = this.midiSpectrumSvgProvider
                                              .getEncodedSVGSpectrum(this.midiChoice.spectrum, 
@@ -138,13 +129,13 @@ export class ChoiceComponent extends GenericComponent{
     }
 
     private getWidthSize(): number {
-        if (this.midiChoice && this.midiChoice.midi && !this.widthSize) {
-            this.widthSize = this.midiChoice.midi.getDeltaTimeSum(this.MIDI_TRACK) / this.midiChoice.midi.getTimeDivisionMetric() * this.SPECTRUM_SIZE_OF_QUARTER_NOTE;
+        if (this.midiChoice && this.midiChoice.midi) {
+            return this.midiChoice.midi.getDeltaTimeSum(CompositionControlComponent.MIDI_TRACK) / this.midiChoice.midi.getTimeDivisionMetric() * CompositionControlComponent.SPECTRUM_SIZE_OF_QUARTER_NOTE;
         }
-        return this.widthSize;
+        return 0;
     }
 
-    private playMidi() {
+    private playMidi(): void {
         try {
             this.composition.applyOptionChanges(this.midiChoice);
             this.startPopover(
@@ -164,7 +155,7 @@ export class ChoiceComponent extends GenericComponent{
         }
     }
 
-    private applyChoice() {
+    private applyChoice(): void {
         try {
             this.composition.applyChoice(this.midiChoice);
         } catch (e) {
@@ -172,7 +163,7 @@ export class ChoiceComponent extends GenericComponent{
         }
     }
 
-    private goToMusicalInstrumentChoice() {
+    private goToMusicalInstrumentChoice(): void {
         try {
             this.startPopover(
                 ListPopoverComponent, 
@@ -188,7 +179,7 @@ export class ChoiceComponent extends GenericComponent{
         }
     }
     
-    private changeInstrumentMidiNumber(instrumentMidiNumber: number) {
+    private changeInstrumentMidiNumber(instrumentMidiNumber: number): void {
         try {
             this.midiChoice.musicalInstrument = instrumentMidiNumber;
             this.backgroundSVGImageURL = null;

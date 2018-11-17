@@ -18,8 +18,9 @@ import { PlayMidiComponent } from '../components/play-midi/play-midi';
 import { FileProvider } from '../providers/file/file';
 import { VisualMidiProvider } from '../providers/visual-midi/visual-midi';
 import { MidiSpectrumSvgProvider } from '../providers/midi-spectrum-svg/midi-spectrum-svg';
-import { LineControl } from '../components/line-control/line-control';
+import { LineControlComponent } from '../components/line-control/line-control';
 import { DownloadMidiComponent } from '../components/download-midi/download-midi';
+import { Device } from '@ionic-native/device';
 
 @NgModule({
     declarations: [
@@ -30,7 +31,7 @@ import { DownloadMidiComponent } from '../components/download-midi/download-midi
         GeneralControlComponent,
         CompositionControlComponent,
         ChoiceComponent, 
-        LineControl,
+        LineControlComponent,
         SlidePopoverComponent,
         ListPopoverComponent,
         PlayMidiComponent,
@@ -56,6 +57,7 @@ import { DownloadMidiComponent } from '../components/download-midi/download-midi
         SplashScreen,
         File,
         Media,
+        Device,
         {provide: ErrorHandler, useClass: IonicErrorHandler},
         FileProvider,
         VisualMidiProvider,

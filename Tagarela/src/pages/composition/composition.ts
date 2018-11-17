@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { NavParams, LoadingController, AlertController, PopoverController, ToastController } from 'ionic-angular';
 import { MusicalCompositionControl } from '../../control/musical-composition';
 import { GenericComponent } from '../../control/generic-component';
+import { Device } from '@ionic-native/device';
 
 @Component({
   selector: 'page-composition',
@@ -15,12 +16,14 @@ export class CompositionPage extends GenericComponent{
                 private loadingCtrl: LoadingController,
                 private alertCtrl: AlertController,
                 private popoverCtrl: PopoverController,
-                private toastCtrl: ToastController) { 
+                private toastCtrl: ToastController,
+                private dev: Device) { 
 
         super(loadingCtrl,
               alertCtrl,
               popoverCtrl,
-              toastCtrl);
+              toastCtrl,
+              dev);
             
     }
 

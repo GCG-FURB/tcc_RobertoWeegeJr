@@ -9,6 +9,7 @@ import { GenericComponent } from '../../control/generic-component';
 import { MidiSpectrumSvgProvider } from '../../providers/midi-spectrum-svg/midi-spectrum-svg';
 import { DownloadMidiComponent } from '../download-midi/download-midi';
 import { CompositionMidiSpectrumsData } from '../../model/midi-spectrum';
+import { Device } from '@ionic-native/device';
 
 @Component({
     selector: 'general-control',
@@ -23,12 +24,14 @@ export class GeneralControlComponent extends GenericComponent {
                 private popoverCtrl: PopoverController,
                 private visualMidiProvider: VisualMidiProvider,
                 private midiSpectrumSvgProvider: MidiSpectrumSvgProvider,
-                private toastCtrl: ToastController) {
+                private toastCtrl: ToastController,
+                private dev: Device) {
 
         super(loadingCtrl,
               alertCtrl,
               popoverCtrl,
-              toastCtrl);
+              toastCtrl,
+              dev);
 
     }
    
@@ -41,7 +44,7 @@ export class GeneralControlComponent extends GenericComponent {
         this._compositionControl = compositionControl;
     }
 
-    private playMidi() {
+    private playMidi(): void {
         try {
             this.compositionControl.applyGeneralChanges();
             this.startPopover(
@@ -70,7 +73,7 @@ export class GeneralControlComponent extends GenericComponent {
                                                                  compositionMidiSpectrumsData.maxNotes);
     }
 
-    private changeKeySignature(){
+    private changeKeySignature(): void {
         try {
             this.startPopover(
                 ListPopoverComponent, 
@@ -87,13 +90,13 @@ export class GeneralControlComponent extends GenericComponent {
         }
     }
 
-    private getKeySignatureName(mode: number) {
+    private getKeySignatureName(mode: number): Function {
         return (keySignatureNumber: number): string => {
             return this.visualMidiProvider.getKeySignatureName(keySignatureNumber, mode);
         }
     }
 
-    private setKeySignature(keySignature: number) {
+    private setKeySignature(keySignature: number): void {
         try {
             this.compositionControl.composition.keySignature = keySignature;
         } catch (e) {
@@ -101,7 +104,7 @@ export class GeneralControlComponent extends GenericComponent {
         }
     }
 
-    private changeTempo(){
+    private changeTempo(): void {
         try {
             this.startPopover(
                 SlidePopoverComponent, 
@@ -121,7 +124,7 @@ export class GeneralControlComponent extends GenericComponent {
         }
     }
 
-    private setTempo(tempo: number) {
+    private setTempo(tempo: number): void {
         try {
             this.compositionControl.composition.tempo = tempo;
         } catch (e) {
@@ -129,7 +132,7 @@ export class GeneralControlComponent extends GenericComponent {
         }
     }
 
-    private undo() {
+    private undo(): void {
         try {
             this.compositionControl.undoChoice();
         } catch (e) {
@@ -137,7 +140,7 @@ export class GeneralControlComponent extends GenericComponent {
         }
     }
 
-    private compositionHasStarted(): boolean{
+    private compositionHasStarted(): boolean {
         try {
             return this.compositionControl.compositionHasStarted();
         } catch (e) {
@@ -145,7 +148,7 @@ export class GeneralControlComponent extends GenericComponent {
         }
     }
 
-    private compositionHasEnded(): boolean{
+    private compositionHasEnded(): boolean {
         try {
             return this.compositionControl.compositionHasEnded();
         } catch (e) {
@@ -153,7 +156,7 @@ export class GeneralControlComponent extends GenericComponent {
         }
     }
 
-    private downloadComposition() {
+    private downloadComposition(): void {
         try {
             this.compositionControl.applyGeneralChanges();
             this.startPopover(

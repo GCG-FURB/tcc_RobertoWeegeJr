@@ -1,9 +1,10 @@
 import { Component, Input, ViewChild, ElementRef } from '@angular/core';
 import { MusicalCompositionControl } from '../../control/musical-composition';
 import { MusicalCompositionOption, MusicalCompositionLine } from '../../model/musical-composition';
-import { LoadingController, AlertController, PopoverController, ToastController, Content } from 'ionic-angular';
+import { LoadingController, AlertController, PopoverController, ToastController } from 'ionic-angular';
 import { GenericComponent } from '../../control/generic-component';
 import { VisualMidiProvider } from '../../providers/visual-midi/visual-midi';
+import { Device } from '@ionic-native/device';
 
 @Component({
   selector: 'composition-control',
@@ -11,6 +12,10 @@ import { VisualMidiProvider } from '../../providers/visual-midi/visual-midi';
 })
 export class CompositionControlComponent extends GenericComponent {
     @ViewChild('scroll2') scroll2: ElementRef;
+
+    //constants
+    public static SPECTRUM_SIZE_OF_QUARTER_NOTE: number = 4.0;
+    public static MIDI_TRACK: number = 0;
 
     private _compositionControl: MusicalCompositionControl;
     private _lineDashboardHeight: number;
@@ -21,11 +26,13 @@ export class CompositionControlComponent extends GenericComponent {
                 private alertCtrl: AlertController,
                 private popoverCtrl: PopoverController,
                 private visualMidiProvider: VisualMidiProvider,
-                private toastCtrl: ToastController) {
+                private toastCtrl: ToastController,
+                private dev: Device) {
         super(loadingCtrl,
               alertCtrl,
               popoverCtrl,
-              toastCtrl);
+              toastCtrl,
+              dev);
     }
 
     get compositionControl(): MusicalCompositionControl {
@@ -38,19 +45,20 @@ export class CompositionControlComponent extends GenericComponent {
         this.lineDashboardHeight = null;
     }
 
-    public get lineDashboardHeight(): number {
+    get lineDashboardHeight(): number {
         return this._lineDashboardHeight;
     }
 
-    public set lineDashboardHeight(value: number) {
-        this._lineDashboardHeight = value;
+    set lineDashboardHeight(lineDashboardHeight: number) {
+        this._lineDashboardHeight = lineDashboardHeight;
     }
 
-    public get optionsInLines(): number[] {
+    get optionsInLines(): number[] {
         return this._optionsInLines;
     }
-    public set optionsInLines(value: number[]) {
-        this._optionsInLines = value;
+
+    set optionsInLines(optionsInLines: number[]) {
+        this._optionsInLines = optionsInLines;
     }
 
     private getOptionsList(): MusicalCompositionOption[] {
@@ -64,7 +72,7 @@ export class CompositionControlComponent extends GenericComponent {
         }
     }
 
-    private getCompositionLinesList(){
+    private getCompositionLinesList():  MusicalCompositionLine[] {
         try {
             if (this.compositionControl && this.compositionControl.composition) {
                 this.manageLinesScroll(this.compositionControl.composition.lines);
@@ -76,7 +84,7 @@ export class CompositionControlComponent extends GenericComponent {
         }
     }
 
-    private manageLinesScroll(lines: MusicalCompositionLine[]) {
+    private manageLinesScroll(lines: MusicalCompositionLine[]): void {
         let actualOptionsInLines: number[] = [];
         let changed: boolean = false;
         if (this.optionsInLines && lines) {
@@ -102,7 +110,7 @@ export class CompositionControlComponent extends GenericComponent {
         
     }
 
-    private compositionHasStarted(): boolean{
+    private compositionHasStarted(): boolean {
         try {
             return this.compositionControl.compositionHasStarted();
         } catch (e) {
@@ -110,12 +118,19 @@ export class CompositionControlComponent extends GenericComponent {
         }
     }
 
-    private compositionHasEnded(): boolean{
+    private compositionHasEnded(): boolean {
         try {
             return this.compositionControl.compositionHasEnded();
         } catch (e) {
             this.errorHandler(e)
         }
+    }
+
+    private getWidthSize(midiChoice: MusicalCompositionOption): number {
+        if (midiChoice && midiChoice.midi) {
+            return midiChoice.midi.getDeltaTimeSum(CompositionControlComponent.MIDI_TRACK) / midiChoice.midi.getTimeDivisionMetric() * CompositionControlComponent.SPECTRUM_SIZE_OF_QUARTER_NOTE;
+        }
+        return 0;
     }
 
 }

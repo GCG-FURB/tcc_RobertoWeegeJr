@@ -9,6 +9,7 @@ import { GenericComponent } from '../../control/generic-component';
 import { MusicalCompositionControl } from '../../control/musical-composition';
 import { Midi } from '../../model/midi';
 import { FileProvider } from '../../providers/file/file';
+import { Device } from '@ionic-native/device';
 
 @Component({
     selector: 'page-setup-composition-source',
@@ -33,12 +34,14 @@ export class SetupCompositionSourcePage extends GenericComponent {
                 private popoverCtrl: PopoverController,
                 private visualMidiProvider: VisualMidiProvider,
                 private toastCtrl: ToastController,
-                private fileProvider: FileProvider) { 
+                private fileProvider: FileProvider,
+                private dev: Device) { 
 
         super(loadingCtrl,
               alertCtrl,
               popoverCtrl,
-              toastCtrl);
+              toastCtrl,
+              dev);
     }
 
     get configControl(): MusicalCompositionConfigControl {

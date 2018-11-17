@@ -7,12 +7,13 @@ import { GenericComponent } from '../../control/generic-component';
 import { MidiSpectrumSvgProvider } from '../../providers/midi-spectrum-svg/midi-spectrum-svg';
 import { MusicalCompositionControl } from '../../control/musical-composition';
 import { CompositionMidiSpectrumsData } from '../../model/midi-spectrum';
+import { Device } from '@ionic-native/device';
 
 @Component({
     selector: 'line-control-component',
     templateUrl: 'line-control.html'
 })
-export class LineControl extends GenericComponent {
+export class LineControlComponent extends GenericComponent {
     
     private _compositionLine: MusicalCompositionLine;
     private _compositionControl: MusicalCompositionControl;
@@ -21,33 +22,35 @@ export class LineControl extends GenericComponent {
                 private alertCtrl: AlertController,
                 private popoverCtrl: PopoverController,
                 private midiSpectrumSvgProvider: MidiSpectrumSvgProvider,
-                private toastCtrl: ToastController) {
+                private toastCtrl: ToastController,
+                private dev: Device) {
 
         super(loadingCtrl,
               alertCtrl,
               popoverCtrl,
-              toastCtrl);
+              toastCtrl,
+              dev);
     }
 
-    public get compositionLine(): MusicalCompositionLine {
+    get compositionLine(): MusicalCompositionLine {
         return this._compositionLine;
     }
 
     @Input()
-    public set compositionLine(value: MusicalCompositionLine) {
-        this._compositionLine = value;
+    set compositionLine(compositionLine: MusicalCompositionLine) {
+        this._compositionLine = compositionLine;
     }
 
-    public get compositionControl(): MusicalCompositionControl {
+    get compositionControl(): MusicalCompositionControl {
         return this._compositionControl;
     }
 
     @Input()
-    public set compositionControl(value: MusicalCompositionControl) {
-        this._compositionControl = value;
+    set compositionControl(compositionControl: MusicalCompositionControl) {
+        this._compositionControl = compositionControl;
     }
 
-    private playMidi() {
+    private playMidi(): void {
         try {
             if (this.compositionLine.options.length > 0) {
                 this.compositionControl.applyLineChanges(this.compositionLine);
@@ -68,7 +71,8 @@ export class LineControl extends GenericComponent {
             this.errorHandler(e)
         }
     }
-    private goToVolumePopover(){
+
+    private goToVolumePopover(): void {
         try {
             this.startPopover(
                 SlidePopoverComponent, 
@@ -88,7 +92,7 @@ export class LineControl extends GenericComponent {
         }
     }
 
-    private changeVolume(volume: number) {
+    private changeVolume(volume: number): void {
         try {
             this.compositionLine.volume = volume;
         } catch (e) {
@@ -96,7 +100,7 @@ export class LineControl extends GenericComponent {
         }
     }
 
-    private getVolumeIcon(){
+    private getVolumeIcon(): string {
         try {
             if (this.compositionLine.volume == 0) {
                 return 'volume-mute'

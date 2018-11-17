@@ -1,4 +1,5 @@
 import { Loading, LoadingController, AlertController, PopoverController, ToastController } from "ionic-angular";
+import { Device } from '@ionic-native/device';
 
 export class GenericComponent {
 
@@ -8,7 +9,8 @@ export class GenericComponent {
     constructor(private loadingController: LoadingController,
                 private alertController: AlertController,
                 private popoverController: PopoverController,
-                private toastController: ToastController) {}
+                private toastController: ToastController,
+                private device: Device) {}
 
     get loading(): Loading {
         return this._loading;
@@ -48,6 +50,10 @@ export class GenericComponent {
             position: 'down'
         });
         await toast.present();
+    }
+
+    public isOldAndroid(): boolean {
+        return +this.device.version[0] < 5; 
     }
 
     public errorHandler(e: any): void{

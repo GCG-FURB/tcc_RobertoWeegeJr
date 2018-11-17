@@ -2,17 +2,22 @@
     display: flex;
   }
 
-.flex-child {
+.flex-child-choice-component {
     flex: 1;
 }
 
 .image {
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
-    background-position: center;
     height: 10vh;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 100%;
 }
 
 .image-choice {
     background-size: 95% 95%;
+}
+
+
+.old-android-margin {
+    margin-top: 5vh;
 }

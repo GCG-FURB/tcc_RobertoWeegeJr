@@ -26,7 +26,7 @@ export class MidiSpectrumSvgProvider {
         let lineHeightUnit = svgHeight / (maxNote - minNote + 1) ;
         let adjustNoteChangeFactor = deltaTimeWidthUnit * (deltaTimeMetric / this.NOTE_CHANGE_AJUST_FRACTION);
 
-        let svg: string = `<svg width="${svgWidth}cm" height="${svgHeight}cm" version="1.1" xmlns="http://www.w3.org/2000/svg">`;
+        let svg: string = `<svg width="${svgWidth}cm" height="${svgHeight}cm" preserveAspectRatio="none" version="1.1" xmlns="http://www.w3.org/2000/svg">`;
         svg += `<rect x="0cm" y="0cm" width="${svgWidth + adjustNoteChangeFactor}cm" height="${svgHeight}cm" fill="${paleteColors[0]}"/>`
         
         let deslocationFactor: number = maxNote - spectrum.maxNote;
@@ -70,7 +70,7 @@ export class MidiSpectrumSvgProvider {
 
         let adjustNoteChangeFactor = deltaTimeWidthUnit * (deltaTimeMetric / this.NOTE_CHANGE_AJUST_FRACTION);
 
-        let svg: string = `<svg width="${svgWidth}cm" height="${svgHeight}cm" version="1.1" xmlns="http://www.w3.org/2000/svg">`;
+        let svg: string = `<svg width="${svgWidth}cm" height="${svgHeight}cm" preserveAspectRatio="none" version="1.1" xmlns="http://www.w3.org/2000/svg">`;
 
         let widthDeslocation: number = 0;
         let heightDeslocation: number = 0;

@@ -7,6 +7,7 @@ import { ListPopoverComponent } from '../../components/list-popover/list-popover
 import { MusicalCompositionSourceControl } from '../../control/musical-composition-source';
 import { GenericComponent } from '../../control/generic-component';
 import { FileProvider } from '../../providers/file/file';
+import { Device } from '@ionic-native/device';
 
 @Component({
     selector: 'page-choice-composition-source',
@@ -25,12 +26,14 @@ export class ChoiceCompositionSourcePage extends GenericComponent {
                 private alertCtrl: AlertController,
                 private popoverCtrl: PopoverController,
                 private fileProvider: FileProvider,
-                private toastCtrl: ToastController) { 
+                private toastCtrl: ToastController,
+                private dev: Device) { 
 
         super(loadingCtrl,
               alertCtrl,
               popoverCtrl,
-              toastCtrl);
+              toastCtrl,
+              dev);
     }
 
     //gets e sets - variaveis locais
