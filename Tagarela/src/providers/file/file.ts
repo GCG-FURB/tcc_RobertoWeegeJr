@@ -24,7 +24,7 @@ export class FileProvider {
         this.downloadRelativeDir = this.DEFAULT_DOWNLOAD_RELATIVE_DIR;
         this.downloadFullDir = this.concatenatePath(this.downloadSystemDir, this.downloadRelativeDir);
         this.verifyAndCreateDirs(this.tempAreaSystemDir, this.tempAreaRelativeDir);
-        this.verifyAndCreateDirs(this.downloadSystemDir, this.downloadRelativeDir);
+        //this.verifyAndCreateDirs(this.downloadSystemDir, this.downloadRelativeDir);
     }
 
     get tempAreaSystemDir(): string {
@@ -165,11 +165,7 @@ export class FileProvider {
         try {
             return await this.file.checkFile(systemPath, this.concatenatePath(relativePath, fileName));
         } catch (e) {
-            if (e && e.code && e.code == 1 && e.message && e.message == 'NOT_FOUND_ERR') {
                 return false;
-            } else {
-                throw e;
-            }
         }
     }
 
@@ -188,14 +184,10 @@ export class FileProvider {
             try { 
                 await this.file.createDir(systemPath, relativePath, false);
             } catch (e) {
-                if (e && e.code && e.code == 12 && e.message && e.message == 'PATH_EXISTS_ERR') {
-                    await this.verifyAndCreateDirs(systemPath, this.removePath(relativePath))
-                    try {
-                        await this.file.createDir(systemPath, relativePath, false);
-                    } catch (e) {
-                        throw e;
-                    }
-                } else {
+                await this.verifyAndCreateDirs(systemPath, this.removePath(relativePath))
+                try {
+                    await this.file.createDir(systemPath, relativePath, false);
+                } catch (e) {
                     throw e;
                 }
             }
