@@ -1,0 +1,45 @@
+.flex-parent-composition-control {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+}
+
+.inline-display {
+    display: inline;
+}
+
+.float-left-child {
+    display: inline-block;
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+}
+
+.scroll-1 {
+    white-space: nowrap;
+    height: 15vh;
+}
+
+.scroll-2-control {
+    white-space: nowrap;
+    margin-right: 0;
+    padding-top: 1vh;
+}
+
+.scroll-2 {
+    padding-top: 1vh;
+    margin-left: 1vw;
+    white-space: nowrap;
+    width: 100%;
+    overflow-x: scroll;
+}
+
+.composition-line {
+    margin-top: 1vh;
+    margin-bottom: 1vh;
+}
+
+.composition-line-control {
+    margin-top: 1vh;
+    margin-bottom: 1vh;
+    height: 10vh;
+}

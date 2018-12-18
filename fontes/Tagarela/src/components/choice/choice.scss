@@ -1,0 +1,23 @@
+.flex-parent {
+    display: flex;
+  }
+
+.flex-child-choice-component {
+    flex: 1;
+}
+
+.image {
+    height: 10vh;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 100%;
+}
+
+.image-choice {
+    background-size: 95% 95%;
+}
+
+
+.old-android-margin {
+    margin-top: 5vh;
+}

@@ -1,0 +1,12 @@
+<div class="image2 flex-parent">
+    <div class="flex-child-line-control" [class.old-android-margin]="isOldAndroid()">
+        <button ion-button small icon-only (click)="playMidi()" class="center">
+            <ion-icon name="play"></ion-icon>
+        </button>      
+    </div>
+    <div class="flex-child-line-control" [class.old-android-margin]="isOldAndroid()">
+        <button ion-button small icon-only (click)="goToVolumePopover()" class="center">
+            <ion-icon [name]="getVolumeIcon()"></ion-icon>
+        </button>
+    </div>
+</div>
