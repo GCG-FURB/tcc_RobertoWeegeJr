@@ -1,0 +1,3 @@
+﻿1. Mova o arquivo Tagarela/dist/Tagarela_Musicoterapia.apk, localizado na pasta dos fontes, para um dispositivo Android;
+2. Execute o arquivo para instalar o aplicativo;
+3. Inicie o aplicativo.
